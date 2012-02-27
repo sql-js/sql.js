@@ -35,3 +35,5 @@ Module['exec'] = function(db, sql, callback) {
   }
 }
 
+this['SQL'] = Module;
+
