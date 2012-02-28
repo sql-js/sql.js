@@ -21,8 +21,8 @@ Module['exec'] = function(db, sql, callback) {
       var data = [];
       for (var i = 0; i < argc; i++) {
         data.push({
-          column: Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
-          value: Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
+          'column': Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
+          'value': Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
         });
       }
       callback(data);
