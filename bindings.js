@@ -16,17 +16,20 @@ FUNCTION_TABLE.push(0, 0);
 
 Module['exec'] = function(db, sql, callback) {
   setValue(apiTemp, 0, 'i32');
-  FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
-    var data = [];
-    for (var i = 0; i < argc; i++) {
-      data.push({
-        column: Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
-        value: Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
-      });
-    }
-    callback(data);
-  };
-  var ret = Module['ccall']('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number'], [db, sql, callbackTemp, 0, apiTemp]);
+  if (callback) {
+    FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
+      var data = [];
+      for (var i = 0; i < argc; i++) {
+        data.push({
+          column: Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
+          value: Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
+        });
+      }
+      callback(data);
+    };
+  }
+  var ret = Module['ccall']('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number'],
+                            [db, sql, callback ? callbackTemp : 0, 0, apiTemp]);
   var errPtr = getValue(apiTemp, 'i32');
   if (ret || errPtr) {
     var msg = 'SQLite exception: ' + ret + ', ' + (errPtr ? Pointer_stringify(errPtr) : '');
