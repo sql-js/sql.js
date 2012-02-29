@@ -24,3 +24,5 @@ SQL.exec(db, "SELECT a, b, c FROM my_table;", report);
 // prints [{ "column": "a", "value": "1" }, { "column": "b", "value": "13153" }, { "column": "c", "value": "thirteen thousand one hundred fifty three" }]
 //        [{ "column": "a", "value": "1" }, { "column": "b", "value": "987"   }, { "column": "c", "value": "some other number" }]
 
+SQL.close(db);
+
