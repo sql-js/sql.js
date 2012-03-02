@@ -1,3 +1,5 @@
+// js -m -n -e "load('sql.js')" benchmark.js
+
 var then = Date.now();
 function TIME(msg) {
   var now = Date.now();
