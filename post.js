@@ -1,5 +1,17 @@
 var apiTemp = Runtime.stackAlloc(4);
+var dataTemp;
+
 var callbackTemp = FUNCTION_TABLE.length;
+FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
+  var curr = [];
+  for (var i = 0; i < argc; i++) {
+    curr.push({
+      'column': Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
+      'value': Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
+    });
+  }
+  dataTemp.push(curr);
+};
 FUNCTION_TABLE.push(0, 0);
 
 Module['open'] = function(filename) {
@@ -14,28 +26,18 @@ Module['open'] = function(filename) {
       if (ret) throw 'SQLite exception: ' + ret;
     },
 
-    'exec': function(sql, callback) {
+    'exec': function(sql) {
       setValue(apiTemp, 0, 'i32');
-      if (callback) {
-        FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
-          var data = [];
-          for (var i = 0; i < argc; i++) {
-            data.push({
-              'column': Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
-              'value': Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
-            });
-          }
-          callback(data);
-        };
-      }
+      dataTemp = [];
       var ret = Module['ccall']('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number'],
-                                [this.ptr, sql, callback ? callbackTemp : 0, 0, apiTemp]);
+                                [this.ptr, sql, callbackTemp, 0, apiTemp]);
       var errPtr = getValue(apiTemp, 'i32');
       if (ret || errPtr) {
-        var msg = 'SQLite exception: ' + ret + ', ' + (errPtr ? Pointer_stringify(errPtr) : '');
+        var msg = 'SQLite exception: ' + ret + (errPtr ? ', ' + Pointer_stringify(errPtr) : '');
         if (errPtr) _sqlite3_free(errPtr);
         throw msg;
       }
+      return dataTemp;
     }
   };
 };

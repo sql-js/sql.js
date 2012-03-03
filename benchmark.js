@@ -8,13 +8,16 @@ function TIME(msg) {
 }
 
 var db = SQL.open();
-function report(data) {
-  for (var i = 0; i < data.length; i++) {
-    print(data[i].column + ' = ' + data[i].value + '\n');
+function report(all) {
+  for (var j = 0; j < all.length; j++) {
+    var data = all[j];
+    for (var i = 0; i < data.length; i++) {
+      print(data[i].column + ' = ' + data[i].value + '\n');
+    }
   }
 }
 function RUN(cmd) {
-  db.exec(cmd, report);
+  report(db.exec(cmd));
 }
 
 TIME("'startup'");

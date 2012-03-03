@@ -16,19 +16,20 @@ function test() {
     print(JSON.stringify(data, null, '  '));
   }
 
-  db.exec("SELECT count(*) FROM my_table;", report);
+  report(db.exec("SELECT count(*) FROM my_table;"));
+
   // prints [{ "column": "count(*)", "value": "2" }]
 
   print('printed one report');
 
   var db2 = SQL.open();
   try {
-    db2.exec("SELECT a, b, c FROM my_table;", report);
+    db2.exec("SELECT a, b, c FROM my_table;");
   } catch(e) {
     // Failure is expected, as the other db doesn't have that table!
     db2.close();
 
-    db.exec("SELECT a, b, c FROM my_table;", report);
+    report(db.exec("SELECT a, b, c FROM my_table;"));
     // prints [{ "column": "a", "value": "1" }, { "column": "b", "value": "13153" }, { "column": "c", "value": "thirteen thousand one hundred fifty three" }]
     //        [{ "column": "a", "value": "1" }, { "column": "b", "value": "987"   }, { "column": "c", "value": "some other number" }]
 
