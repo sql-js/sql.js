@@ -7,14 +7,14 @@ function TIME(msg) {
   then = now;
 }
 
-var db = SQL.open(":memory:");
+var db = SQL.open();
 function report(data) {
   for (var i = 0; i < data.length; i++) {
     print(data[i].column + ' = ' + data[i].value + '\n');
   }
 }
 function RUN(cmd) {
-  SQL.exec(db, cmd, report);
+  db.exec(cmd, report);
 }
 
 TIME("'startup'");
@@ -53,5 +53,5 @@ RUN("SELECT count(*) FROM t1 WHERE a == 4");
 RUN("SELECT count(*) FROM t1 WHERE b > 20000 AND b < 50000;");
 TIME("selects with indexes");
 
-SQL.close(db);
+db.close();
 
