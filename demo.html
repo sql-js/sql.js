@@ -5,13 +5,16 @@
   </title>
   <script src="sql.js"></script>
   <script>
+    // Connect to the HTML element we 'print' to
     function print(text) {
       var element = document.getElementById('output');
       element.innerHTML = text.replace(/\n/g, '<br>');
     }
 
+    // Open a database
     var db = SQL.open();
 
+    // Run a command in the database
     function execute(commands) {
       try {
         var data = db.exec(commands.replace(/\n/g, '; '));
