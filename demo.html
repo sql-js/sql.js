@@ -1,0 +1,54 @@
+<html>
+<head>
+  <title>
+    sql.js
+  </title>
+  <script src="sql.js"></script>
+  <script>
+    function print(text) {
+      var element = document.getElementById('output');
+      element.innerHTML = text.replace(/\n/g, '<br>');
+    }
+
+    var db = SQL.open();
+
+    function execute(commands) {
+      try {
+        var data = db.exec(commands.replace(/\n/g, '; '));
+        print(JSON.stringify(data, null, '  '));
+      } catch(e) {
+        print(e);
+      }
+    }
+  </script>
+</head>
+<body>
+  <p>
+    This is <a href="https://github.com/kripken/sql.js">sql.js</a>: <a href="http://www.sqlite.org/">SQLite</a> compiled from C to JavaScript using <a href="http://emscripten.org">Emscripten</a>.
+  </p>
+  <p>
+    <ul>
+      <li>This is <b>not</b> a fully optimized build (optimized builds break both <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=733208">Firefox</a> and <a href="http://code.google.com/p/v8/issues/detail?id=1986">Chrome</a>).</li>
+    </ul>
+  </p>
+  <hr>
+  <form onsubmit="execute(commands.value); return false">
+    <b>Enter some SQL</b>:
+    <br>
+    <textarea rows="10" cols="80" id="commands">CREATE TABLE my_table(key INTEGER, value INTEGER, text VARCHAR(100));
+
+INSERT INTO my_table VALUES(1, 25, 'the first item');
+INSERT INTO my_table VALUES(2, 987, 'the second item');
+
+SELECT key, text FROM my_table WHERE value == 987;
+</textarea>
+    <br>
+    <input type="submit" value="execute">
+  </form>
+  <hr>
+  <pre>
+    <div id="output" style="font-family: Courier New,Courier,monospace;"></div>
+  </pre>
+</body>
+</html>
+
