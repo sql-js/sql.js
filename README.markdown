@@ -15,30 +15,30 @@ for another example including the output you will receive.
 
 The API is as follows:
 
-  SQL.open() creates a new database, returning a database object
+ * SQL.open() creates a new database, returning a database object
 
-  SQL.open(data) creates a new database with given data, which should be
+ * SQL.open(data) creates a new database with given data, which should be
        a typed array of 8-bit values (typically generated from
        calling exportData, see below)
 
 Database objects (created from SQL.open) have the following methods:
 
-  .exec(command) runs a command in the database, returning JSON output
+ * .exec(command) runs a command in the database, returning JSON output
 
-  .close() closes the database (this frees the memory it uses)
+ * .close() closes the database (this frees the memory it uses)
 
-  .exportData() serializes the data to a typed array of 8-bit values,
+ * .exportData() serializes the data to a typed array of 8-bit values,
        which you can save using any method you like (localStorage,
        indexedDB, send to a remote server, etc.), and later re-use
        by calling SQL.open with that data.
 
 Note that the output rows from .exec(..) look like
 
-  [{ "column": "a", "value": "1" }, { "column": "b", "value": "13153" }]
+        [{ "column": "a", "value": "1" }, { "column": "b", "value": "13153" }]
 
 whereas in theory they could look like
 
-  { a: "1", b: "13153" }
+        { a: "1", b: "13153" }
 
 The reason for the more verbose format is that it preserves the order of
 columns. It also prevents problems with column names stepping on special
