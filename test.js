@@ -48,6 +48,7 @@ function testPersistence() {
   check(db.exec("SELECT * FROM my_table;"), []); // make sure its gone
   db.close();
 
+  // Create a new db with the data we saved from before
   var db2 = SQL.open(data);
   check(db2.exec("SELECT * FROM my_table;"), [
     [{ "column": "a", "value": "1" }, { "column": "b", "value": "987"  }, { "column": "c", "value": "some other number" }],
