@@ -13,7 +13,26 @@ Usage
 See demo.html for an example use, and see test.js and the comments inside
 for another example including the output you will receive.
 
-Note that the output rows look like
+The API is as follows:
+
+  SQL.open() creates a new database, returning a database object
+
+  SQL.open(data) creates a new database with given data, which should be
+       a typed array of 8-bit values (typically generated from
+       calling exportData, see below)
+
+Database objects (created from SQL.open) have the following methods:
+
+  .exec(command) runs a command in the database, returning JSON output
+
+  .close() closes the database (this frees the memory it uses)
+
+  .exportData() serializes the data to a typed array of 8-bit values,
+       which you can save using any method you like (localStorage,
+       indexedDB, send to a remote server, etc.), and later re-use
+       by calling SQL.open with that data.
+
+Note that the output rows from .exec(..) look like
 
   [{ "column": "a", "value": "1" }, { "column": "b", "value": "13153" }]
 

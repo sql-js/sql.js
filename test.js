@@ -5,7 +5,7 @@ function jsonCompare(x, y) {
 }
 
 function check(data, expected) {
-  if (!jsonCompare(data, expected)) throw 'Comparison failed: ' + JSON.stringify(data) + ' vs. ' + JSON.stringify(expected) + ' at ' + new Error().stack;
+  if (!jsonCompare(data, expected)) throw 'Comparison failed: Seeing ' + JSON.stringify(data, null, '  ') + ' but expected ' + JSON.stringify(expected, null, '  ') + ' at ' + new Error().stack;
 }
 
 function testBasics() {
@@ -43,15 +43,24 @@ function testPersistence() {
   db.exec("INSERT INTO my_table VALUES(5,6987,'moar numberz');");
 
   // Serialize it to a typed array
-  var serialized = db.serialize();
+  var data = db.exportData();
+  db.exec("DELETE FROM my_table;");
+  check(db.exec("SELECT * FROM my_table;"), []); // make sure its gone
+  db.close();
 
-  var db2 = SQL.open(serialized);
+  var db2 = SQL.open(data);
+  check(db2.exec("SELECT * FROM my_table;"), [
+    [{ "column": "a", "value": "1" }, { "column": "b", "value": "987"  }, { "column": "c", "value": "some other number" }],
+    [{ "column": "a", "value": "5" }, { "column": "b", "value": "6987" }, { "column": "c", "value": "moar numberz" }]
+  ]);
 
+  db2.close();
 }
 
 // Run tests
 
 testBasics();
+testPersistence();
 
 print('ok.');
 

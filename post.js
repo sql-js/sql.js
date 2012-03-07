@@ -14,19 +14,27 @@ FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
 };
 FUNCTION_TABLE.push(0, 0);
 
-Module['open'] = function(filename) {
-  filename = filename || ":memory:";
+var fileCounter = 0;
+
+Module['open'] = function(data) {
+  var filename = 'file_' + fileCounter++;
+  if (data) {
+    FS.createDataFile('/', filename, data, true, true);
+  }
   var ret = Module['ccall']('sqlite3_open', 'number', ['string', 'number'], [filename, apiTemp]);
   if (ret) throw 'SQLite exception: ' + ret;
   return {
     ptr: getValue(apiTemp, 'i32'),
+    filename: filename,
 
     'close': function() {
       var ret = Module['ccall']('sqlite3_close', 'number', ['number'], [this.ptr]);
+      this.ptr = null;
       if (ret) throw 'SQLite exception: ' + ret;
     },
 
     'exec': function(sql) {
+      if (!this.ptr) throw 'Database closed!';
       setValue(apiTemp, 0, 'i32');
       dataTemp = [];
       var ret = Module['ccall']('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number'],
@@ -38,6 +46,11 @@ Module['open'] = function(filename) {
         throw msg;
       }
       return dataTemp;
+    },
+
+    'exportData': function() {
+      if (!this.ptr) throw 'Database closed!';
+      return new Uint8Array(FS.root.contents[this.filename].contents);
     }
   };
 };
