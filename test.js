@@ -58,10 +58,18 @@ function testPersistence() {
   db2.close();
 }
 
+function testDateTime() {
+  var db = SQL.open();
+  check(db.exec("SELECT datetime('2012-04-16 12:35:57', '+1 days');"), [
+    [{"column":"datetime('2012-04-16 12:35:57', '+1 days')","value":"2012-04-17 12:35:57"}]
+  ]);
+}
+
 // Run tests
 
 testBasics();
 testPersistence();
+testDateTime();
 
 print('ok.');
 
