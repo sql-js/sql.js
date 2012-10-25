@@ -3,12 +3,23 @@
   <title>
     sql.js
   </title>
+  <style>
+  #output table {
+    border-collapse: collapse;
+    border: 2px black solid;
+  }
+
+  #output th,td {
+    border:1px black solid;
+    padding:10px;
+  }
+  </style>
   <script src="sql.js"></script>
   <script src="http://d3js.org/d3.v2.min.js"></script>
   <script>
     // Connect to the HTML element we 'print' to
     function print(text) {
-      var element = document.getElementById('output');
+      var element = document.getElementById('error');
       element.innerHTML = text.replace(/\n/g, '<br>');
     }
 
@@ -18,8 +29,45 @@
     // Run a command in the database
     function execute(commands) {
       try {
+        // Select the <table> node
+        var table = d3.select("#output").select("table");
+
+        // Remove the contents (rows) of the table
+        table.selectAll("tr").remove();
+
+        // Clear any error messages printed earlier
+        d3.select("#error").text("");
+
         var data = db.exec(commands.replace(/\n/g, '; '));
-        print(JSON.stringify(data, null, '  '));
+
+        // Detach the header from the array
+        var header = data.splice(0,1);
+
+        // Print the header
+        table.selectAll("tr#h")// #h differentiates this row from data rows below
+          .data(header)
+          .enter()
+          .append("tr")
+          .attr("id", "h")// #h differentiates this row from data rows below
+          .selectAll("td")
+          .data(function(d,i){return d;})
+          .enter()
+          .append("th")
+          .text(function(d,i){return d;})
+          ;
+
+          // Print the rest of the data
+          table.selectAll("tr#d")// #d differentiates these rows from header row above
+            .data(data)
+            .enter()
+            .append("tr")
+            .attr("id", "d")// #d differentiates these rows from header row above
+            .selectAll("td")
+            .data(function(d,i){return d;})
+            .enter()
+            .append("td")
+            .text(function(d,i){return d;})
+            ;
       } catch(e) {
         print(e);
       }
@@ -50,9 +98,10 @@ SELECT key, text FROM my_table WHERE value == 987;
     <input type="submit" value="execute">
   </form>
   <hr>
-  <pre>
-    <div id="output" style="font-family: Courier New,Courier,monospace;"></div>
-  </pre>
+  <div id="error" style="font-family: Courier New,Courier,monospace;"></div>
+  <div id="output" style="font-family: Courier New,Courier,monospace;">
+    <table></table>
+  </div>
 
 <a href="https://github.com/gurjeet/sql.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
 
