@@ -25,12 +25,14 @@
     }
 
     #editor {
+      border:1px solid maroon;
       font-size: 14px;
     }
 
     #instructions{
       vertical-align: center;
     }
+
     #editor_table,#resultset table {
       margin-left: auto;
       margin-right: auto;
@@ -71,6 +73,8 @@
     function execute_sql(commands) {
       try {
 
+        var atLeastOneResutsetEmitted = false;
+
         // Remove the contents (rows) of the table
         d3.select("#resultset").selectAll("table").remove();
 
@@ -82,12 +86,23 @@
 
         for (var i = 0; i < split_commands.length; ++i) {
 
-          var data = db.exec(split_commands[i]);
+          var command = split_commands[i];
+
+          command.trim();
+          if (command.length === 0)
+            continue;
+
+          var data = db.exec(command);
 
           // First row in resultset contains the column-headers
 
           // Detach the header from the array
           var header = data.splice(0,1);
+
+          if (data.length === 0)
+            continue;
+
+          atLeastOneResutsetEmitted = true;
 
           // Add a <table> node
           var table = d3.select("#resultset").append("table");
@@ -117,6 +132,11 @@
               .append("td")
               .text(function(d,i){return d;})
               ;
+        }
+
+        if (!atLeastOneResutsetEmitted) {
+          var table = d3.select("#resultset").append("table");
+          table.append("td").text("Success!");
         }
       } catch(e) {
         print(e);
@@ -165,6 +185,13 @@ GROUP BY dept;
       // The above setValue causes the contents to be selected. Deselect it.
       editor.clearSelection();
       editor.gotoLine(0,0,true);
+      editor.commands.addCommand({
+          name: 'ExecuteSQLContents',
+          bindKey: {win: 'Ctrl-E',  mac: 'Command-E'},
+          exec: function(editor) {
+              execute_editor_contents();
+          }
+      });
     }
 
     function execute_editor_contents() {
@@ -191,6 +218,8 @@ GROUP BY dept;
         Hit 'Execute' to see the results of the queries.
         <br>
         Modify any SQL command, select it and hit 'Execute' to see the result of that query.
+        <br>
+        You can also use Ctrl+E keyboard shortcut to execute the SQL commands.
       </div></td>
     </tr>
     <tr>
