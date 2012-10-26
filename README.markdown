@@ -4,7 +4,7 @@ sql.js
 
 sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
 
-**[Demo](http://syntensity.com/static/sql.html)**
+**[Demo](http://gurjeet.singh.im/sqljsdemo.html)**
 
 SQLite is public domain, sql.js is MIT licensed.
 

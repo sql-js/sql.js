@@ -1,14 +1,19 @@
 var apiTemp = Runtime.stackAlloc(4);
 var dataTemp;
+var columns_header;
 
 var callbackTemp = FUNCTION_TABLE.length;
 FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
+  if (columns_header === null) {
+    columns_header = [];
+    for (var i = 0; i < argc; i++) {
+      columns_header.push( Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')));
+    }
+    dataTemp.push(columns_header);
+  }
   var curr = [];
   for (var i = 0; i < argc; i++) {
-    curr.push({
-      'column': Pointer_stringify(getValue(colNames + i*Runtime.QUANTUM_SIZE, 'i32')),
-      'value': Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32'))
-    });
+    curr.push(Pointer_stringify(getValue(argv + i*Runtime.QUANTUM_SIZE, 'i32')));
   }
   dataTemp.push(curr);
 };
@@ -37,6 +42,7 @@ Module['open'] = function(data) {
       if (!this.ptr) throw 'Database closed!';
       setValue(apiTemp, 0, 'i32');
       dataTemp = [];
+      columns_header = null;
       var ret = Module['ccall']('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number'],
                                 [this.ptr, sql, callbackTemp, 0, apiTemp]);
       var errPtr = getValue(apiTemp, 'i32');

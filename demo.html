@@ -3,11 +3,66 @@
   <title>
     sql.js
   </title>
+  <style>
+    #resultset table {
+      border-collapse: collapse;
+    }
+
+    #resultset th, #resultset td {
+      border:1px black solid;
+      padding:0.05in;
+      text-align: left;
+    }
+
+    #resultset th {
+      background:cyan;
+    }
+
+    #editor,#instructions {
+      position: relative;
+      width:7in;
+      height:5in;
+    }
+
+    #editor {
+      border:1px solid maroon;
+      font-size: 14px;
+    }
+
+    #instructions{
+      vertical-align: center;
+    }
+
+    #editor_table,#resultset table {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #editor_table td {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    #execute_button_container {
+      text-align: center;
+    }
+
+    #error {
+      background: red;
+    }
+
+    #about{
+      background: yellow;
+      /*text-align: center;*/
+    }
+  </style>
   <script src="sql.js"></script>
+  <!--script src="http://d3js.org/d3.v2.min.js"></script-->
+  <script src="https://raw.github.com/mbostock/d3/master/d3.v2.min.js"></script>
   <script>
     // Connect to the HTML element we 'print' to
     function print(text) {
-      var element = document.getElementById('output');
+      var element = document.getElementById('error');
       element.innerHTML = text.replace(/\n/g, '<br>');
     }
 
@@ -15,46 +70,180 @@
     var db = SQL.open();
 
     // Run a command in the database
-    function execute(commands) {
+    function execute_sql(commands) {
       try {
-        var data = db.exec(commands.replace(/\n/g, '; '));
-        print(JSON.stringify(data, null, '  '));
+
+        var atLeastOneResutsetEmitted = false;
+
+        // Remove the contents (rows) of the table
+        d3.select("#resultset").selectAll("table").remove();
+
+        // Clear any error messages printed earlier
+        d3.select("#error").text("");
+
+        /* Execute one command at a time*/
+        var split_commands = commands.split(';');
+
+        for (var i = 0; i < split_commands.length; ++i) {
+
+          var command = split_commands[i];
+
+          command.trim();
+          if (command.length === 0)
+            continue;
+
+          var data = db.exec(command);
+
+          // First row in resultset contains the column-headers
+
+          // Detach the header from the array
+          var header = data.splice(0,1);
+
+          if (data.length === 0)
+            continue;
+
+          atLeastOneResutsetEmitted = true;
+
+          // Add a <table> node
+          var table = d3.select("#resultset").append("table");
+
+          // Print the header
+          table.selectAll("tr")
+            .data(header)
+            .enter()
+            .append("tr")
+            .attr("id", "h")// #h differentiates this row from data rows below
+            .selectAll("td")
+            .data(function(d,i){return d;})
+            .enter()
+            .append("th")
+            .text(function(d,i){return d;})
+            ;
+
+            // Print the rest of the data
+            table.selectAll("tr#does_not_exist")// Select non-existent nodes since we want to perform append, irrespective of whether rows exist
+              .data(data)
+              .enter()
+              .append("tr")
+              .attr("id", "d")// #d differentiates these rows from header row above
+              .selectAll("td")
+              .data(function(d,i){return d;})
+              .enter()
+              .append("td")
+              .text(function(d,i){return d;})
+              ;
+        }
+
+        if (!atLeastOneResutsetEmitted) {
+          var table = d3.select("#resultset").append("table");
+          table.append("td").text("Success!");
+        }
       } catch(e) {
         print(e);
       }
     }
   </script>
+  <script src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script type="bogus" id="initial_contents">/* Demo DB */
+CREATE TABLE employees( id          integer,  name    text,
+                        designation text,     manager integer,
+                        hired_on    date,     salary  integer,
+                        commission  float,    dept    integer);
+
+INSERT INTO employees VALUES (1,'JOHNSON','ADMIN',6,'12-17-1990',18000,NULL,4);
+INSERT INTO employees VALUES (2,'HARDING','MANAGER',9,'02-02-1998',52000,300,3);
+INSERT INTO employees VALUES (3,'TAFT','SALES I',2,'01-02-1996',25000,500,3);
+INSERT INTO employees VALUES (4,'HOOVER','SALES I',2,'04-02-1990',27000,NULL,3);
+INSERT INTO employees VALUES (5,'LINCOLN','TECH',6,'06-23-1994',22500,1400,4);
+INSERT INTO employees VALUES (6,'GARFIELD','MANAGER',9,'05-01-1993',54000,NULL,4);
+INSERT INTO employees VALUES (7,'POLK','TECH',6,'09-22-1997',25000,NULL,4);
+INSERT INTO employees VALUES (8,'GRANT','ENGINEER',10,'03-30-1997',32000,NULL,2);
+INSERT INTO employees VALUES (9,'JACKSON','CEO',NULL,'01-01-1990',75000,NULL,4);
+INSERT INTO employees VALUES (10,'FILLMORE','MANAGER',9,'08-09-1994',56000,NULL,2);
+INSERT INTO employees VALUES (11,'ADAMS','ENGINEER',10,'03-15-1996',34000,NULL,2);
+INSERT INTO employees VALUES (12,'WASHINGTON','ADMIN',6,'04-16-1998',18000,NULL,4);
+INSERT INTO employees VALUES (13,'MONROE','ENGINEER',10,'12-03-2000',30000,NULL,2);
+INSERT INTO employees VALUES (14,'ROOSEVELT','CPA',9,'10-12-1995',35000,NULL,1);
+
+SELECT  * FROM employees WHERE designation = 'CEO';
+
+SELECT  MAX(salary) AS 'Highest Salary' FROM employees;
+
+SELECT  dept, MAX(salary) As 'Highest Salary in department'
+FROM    employees
+GROUP BY dept;
+</script>
+  <script>
+    var editor;
+
+    function init_editor() {
+      var editor_element_id = 'editor';
+      editor = ace.edit(editor_element_id);
+      editor.setTheme("ace/theme/textmate");
+      editor.getSession().setMode("ace/mode/pgsql");
+      editor.setValue(d3.select('#initial_contents').html());
+      // The above setValue causes the contents to be selected. Deselect it.
+      editor.clearSelection();
+      editor.gotoLine(0,0,true);
+      editor.commands.addCommand({
+          name: 'ExecuteSQLContents',
+          bindKey: {win: 'Ctrl-E',  mac: 'Command-E'},
+          exec: function(editor) {
+              execute_editor_contents();
+          }
+      });
+    }
+
+    function execute_editor_contents() {
+      // Get selected text from the editor
+      var commands = editor.session.getTextRange(editor.getSelectionRange());
+
+      // If nothing is selected, get the entire contents of the editor
+      if (commands.length === 0)
+        commands = editor.getValue();
+
+      execute_sql(commands);
+    }
+  </script>
 </head>
-<body>
-  <p>
-    This is <a href="https://github.com/kripken/sql.js">sql.js</a>: <a href="http://www.sqlite.org/">SQLite</a> compiled from C to JavaScript using <a href="http://emscripten.org">Emscripten</a>. View this page's source to see how easy it is to use it!
-  </p>
-  <p>
-    <ul>
-      <li>This is <b>not</b> a fully optimized build (optimized builds break both <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=733208">Firefox</a> and <a href="http://code.google.com/p/v8/issues/detail?id=1986">Chrome</a>).</li>
-    </ul>
-  </p>
-  <hr>
-  <form onsubmit="execute(commands.value); return false">
-    <b>Enter some SQL</b>:
-    <br>
-    <textarea rows="10" cols="80" id="commands">CREATE TABLE my_table(key INTEGER, value INTEGER, text VARCHAR(100));
+<body onload="init_editor()">
+  <div id="about">
+      This is <a href="https://github.com/gurjeet/sql.js">sql.js</a>: The <a href="http://www.sqlite.org/">SQLite</a> database compiled from C to JavaScript using <a href="http://emscripten.org">Emscripten</a>. View this page's source to see how easy it is to use it!
+  </div>
+  <table id="editor_table">
+    <tr>
+      <td><div id="editor" ></div></td>
+      <td><div id="instructions" >
+        <h2>Instructions</h2>
+        Hit 'Execute' to see the results of the queries.
+        <br>
+        Modify any SQL command, select it and hit 'Execute' to see the result of that query.
+        <br>
+        You can also use Ctrl+E keyboard shortcut to execute the SQL commands.
+      </div></td>
+    </tr>
+    <tr>
+      <td id="execute_button_container">
+        <input id="execute_button" type="button" value="Execute" onclick="execute_editor_contents()"/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="error" style="font-family: Courier New,Courier,monospace;"></div>
+      </td>
+    </tr>
+    <tr>
+      <td id="resultset">
+        <!-- Uncomment the following block to test how the resultset looks -->
+        <!--table id="resultset">
+          <tr><th>Header1</th><th>Header2</th></tr><tr><td>Data11</td><td>Data12</td></tr><tr><td>Data21</td><td>Data22</td></tr>
+        </table-->
+      </td>
+    </tr>
+  </table>
 
-INSERT INTO my_table VALUES(1, 25, 'the first item');
-INSERT INTO my_table VALUES(2, 987, 'the second item');
-
-SELECT key, text FROM my_table WHERE value == 987;
-</textarea>
-    <br>
-    <input type="submit" value="execute">
-  </form>
-  <hr>
-  <pre>
-    <div id="output" style="font-family: Courier New,Courier,monospace;"></div>
-  </pre>
-
-<a href="https://github.com/kripken/sql.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
+  <!-- GitHub's 'Fork Me' ribbon -->
+  <a href="https://github.com/gurjeet/sql.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
 
 </body>
 </html>
-
