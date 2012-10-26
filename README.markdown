@@ -1,10 +1,9 @@
-
 sql.js
 ======
 
 sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
 
-**[Demo](http://syntensity.com/static/sql.html)**
+**[Demo](http://bit.ly/RhSQDJ)**
 
 SQLite is public domain, sql.js is MIT licensed.
 
@@ -36,16 +35,14 @@ Database objects (created from SQL.open) have the following methods:
 
 Note that the output rows from .exec(..) look like
 
-        [{ "column": "a", "value": "1" }, { "column": "b", "value": "13153" }]
+        [
+          ["columname1", "columname2", "columname3"],
+          ["row1value1", "row1value2", "row1value3"],
+          ["row2value1", "row2value2", "row2value3"],
+        ]
 
-whereas in theory they could look like
-
-        { a: "1", b: "13153" }
-
-The reason for the more verbose format is that it preserves the order of
-columns. It also prevents problems with column names stepping on special
-JS property names. However, we should probably make it an option to get
-the other format, pull requests welcome.
+That is, it is a 2-dimensional array, whose first row contains column names, and
+the rest of the rows contain the data.
 
 Note that sql.js is *not* wrapped in a closure - it modifies the global scope. This
 is done because when wrapped in a closure it becomes slower in most JS engines. To
