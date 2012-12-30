@@ -8,8 +8,8 @@ SQLite is public domain, sql.js is MIT licensed.
 ## Usage
 
 ```coffeescript
-Sql = require 'node-sql'
-Sql.open db_file, {}, (err, db) ->
+Sql = require 'node-sqlite-purejs'
+Sql.open 'db/development.sqlite', {}, (err, db) ->
   throw err if err
   db.exec '''
   /* Demo DB */
@@ -37,6 +37,8 @@ Sql.open db_file, {}, (err, db) ->
   db.exec "SELECT * FROM employees WHERE designation = 'CEO';", (err, results) ->
     assert.deepEqual [{"id":"9","name":"JACKSON","designation":"CEO","manager":"(null)","hired_on":"01-01-1990","salary":"75000","commission":"(null)","dept":"4"}], results
 ```
+
+see [test/test.coffee](https://github.com/mikesmullin/node-sqlite-purejs/blob/master/test/test.coffee) for more examples.
 
 ## Related
 
