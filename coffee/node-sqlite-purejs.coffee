@@ -101,7 +101,6 @@ module.exports = class Sql
   save: (cb) ->
     view = @db.exportData()
     buffer = new Buffer view.byteLength
-    return false if buffer.length is 0 # happens sometimes when node is restarted; avoid blanking the db
     i = 0
     while i < buffer.length
       buffer[i] = view[i++]
