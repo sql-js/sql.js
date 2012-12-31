@@ -81,10 +81,14 @@ module.exports = Sql = (function() {
     var k, last_result, serial,
       _this = this;
     try {
-      sql = sql.split(';');
+      if (this.options.parse_multiple) {
+        sql = sql.split(';');
+      } else {
+        sql = [sql];
+      }
       for (k in sql) {
         if (sql[k]) {
-          last_result = this.db.exec(sql[k] + ';');
+          last_result = this.db.exec(sql[k]);
         }
       }
       serial = [];
@@ -120,6 +124,8 @@ module.exports = Sql = (function() {
       cb && cb(err);
     }
   };
+
+  Sql.prototype.execute_sql = Sql.prototype.exec;
 
   Sql.prototype.load = function(cb) {
     fs.readFile(this.file, function(err, buffer) {

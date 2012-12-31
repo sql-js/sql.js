@@ -12,6 +12,7 @@ describe 'Node SQLite', ->
     Sql.open db_file, {
       manual_load: true
       manual_save: true
+      parse_multiple: true
     }, (err, _db) ->
       throw err if err
       db = _db

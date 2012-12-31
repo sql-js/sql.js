@@ -54,10 +54,12 @@ module.exports = class Sql
   # query the in-memory database
   exec: (sql, cb) ->
     try
-      # split multiple queries
-      sql = sql.split ';'
+      if @options.parse_multiple
+        sql = sql.split ';'
+      else
+        sql = [sql]
       for k of sql when sql[k]
-        last_result = @db.exec sql[k]+';'
+        last_result = @db.exec sql[k]
 
       serial = []
       serial[0] = =>
@@ -84,6 +86,7 @@ module.exports = class Sql
       cb and cb err # return err
 
     return
+  execute_sql: Sql::exec # alias
 
   # read database from disk
   load: (cb) ->
