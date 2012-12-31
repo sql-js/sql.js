@@ -75,6 +75,8 @@ module.exports = class Sql
         for i, row of last_result
           record = {}
           for ii, col of row
+            if typeof col.value is 'string' and col.value is '(null)'
+              col.value = null # TODO: gotta be a better way to do this
             record[col.column] = col.value
           recordset.push record
 
@@ -99,6 +101,7 @@ module.exports = class Sql
   save: (cb) ->
     view = @db.exportData()
     buffer = new Buffer view.byteLength
+    return false if buffer.length is 0 # happens sometimes when node is restarted; avoid blanking the db
     i = 0
     while i < buffer.length
       buffer[i] = view[i++]
@@ -106,5 +109,3 @@ module.exports = class Sql
       setTimeout (-> cb err), 0
       return # important that this returns immediately
     return
-
-

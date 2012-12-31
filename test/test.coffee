@@ -62,7 +62,7 @@ describe 'Node SQLite', ->
     '''
 
     db.exec "SELECT * FROM employees WHERE designation = 'CEO';", (err, results) ->
-      assert.deepEqual [{"id":"9","name":"JACKSON","designation":"CEO","manager":"(null)","hired_on":"01-01-1990","salary":"75000","commission":"(null)","dept":"4"}], results
+      assert.deepEqual [{"id":"9","name":"JACKSON","designation":"CEO","manager":null,"hired_on":"01-01-1990","salary":"75000","commission":null,"dept":"4"}], results
 
     db.exec "SELECT MAX(salary) AS 'Highest Salary' FROM employees;", (err, results) ->
       assert.deepEqual [{"Highest Salary":"75000"}], results
@@ -76,10 +76,17 @@ describe 'Node SQLite', ->
       done()
 
   it "can write database to disk", (done) ->
-    db.save (err) ->
+    db.exec """
+    CREATE TABLE cars (
+      id INTEGER PRIMARY KEY ASC,
+      color varchar(25)
+    );
+    """, (err) ->
       throw err if err
-      assert.ok fs.existsSync db_file
-      done()
+      db.save (err) ->
+        throw err if err
+        assert.ok fs.existsSync db_file
+        done()
 
   it "can read database from disk", (done) ->
     Sql.open db_file, {}, (err, db) ->

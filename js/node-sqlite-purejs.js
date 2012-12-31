@@ -113,6 +113,9 @@ module.exports = Sql = (function() {
           record = {};
           for (ii in row) {
             col = row[ii];
+            if (typeof col.value === 'string' && col.value === '(null)') {
+              col.value = null;
+            }
             record[col.column] = col.value;
           }
           recordset.push(record);
@@ -140,6 +143,9 @@ module.exports = Sql = (function() {
     var buffer, i, view;
     view = this.db.exportData();
     buffer = new Buffer(view.byteLength);
+    if (buffer.length === 0) {
+      return false;
+    }
     i = 0;
     while (i < buffer.length) {
       buffer[i] = view[i++];
