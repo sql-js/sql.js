@@ -1,6 +1,6 @@
 {
   "name": "node-sqlite-purejs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "SQLite compiled to JavaScript by Emscripten",
   "main": "js/node-sqlite-purejs.js",
   "scripts": {
@@ -23,8 +23,7 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "devDependencies": {
-    "mocha": "~1.7.4",
-    "chai": "~1.4.2"
-  },
-  "dependencies": {}
+    "mocha": "*",
+    "chai": "*"
+  }
 }
