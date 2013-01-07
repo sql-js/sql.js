@@ -38,7 +38,7 @@ Sql.open 'db/development.sqlite', {}, (err, db) ->
     assert.deepEqual [{"id":"9","name":"JACKSON","designation":"CEO","manager":"(null)","hired_on":"01-01-1990","salary":"75000","commission":"(null)","dept":"4"}], results
 ```
 
-see [test/test.coffee](https://github.com/mikesmullin/node-sqlite-purejs/blob/master/test/test.coffee) for more examples.
+see [test/test.coffee](https://github.com/mikesmullin/node-sqlite-purejs/blob/stable/test/test.coffee) for more examples.
 
 ## Related
 
