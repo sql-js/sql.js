@@ -1,0 +1,6 @@
+test/
+c/
+coffee/
+node_modules/
+node-debug.log
+.git/
