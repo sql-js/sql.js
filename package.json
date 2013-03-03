@@ -1,0 +1,29 @@
+{
+  "name": "node-sqlite-purejs",
+  "version": "0.0.2",
+  "description": "SQLite compiled to JavaScript by Emscripten",
+  "main": "js/node-sqlite-purejs.js",
+  "scripts": {
+    "pretest": "coffee --bare -o js coffee/node-sqlite-purejs.coffee",
+    "test": "mocha --reporter spec --bail --ui bdd --colors --compilers coffee:coffee-script --require coffee-script test/test.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikesmullin/node-sqlite-purejs.git"
+  },
+  "keywords": [
+    "sqlite",
+    "pure",
+    "javascript",
+    "stand-alone",
+    "database",
+    "server"
+  ],
+  "author": "Mike Smullin <mike@smullindesign.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*"
+  }
+}
