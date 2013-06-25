@@ -1,4 +1,4 @@
-# Node.js SQLite 100% JavaScript implementation
+# sql.js
 
 sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
 no C bindings or node-gyp compilation here.
