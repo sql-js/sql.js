@@ -1,4 +1,4 @@
-// js -m -n -e "load('sql.js')" test.js
+// js -e "load('../js/sql.js')" test.js
 
 function jsonCompare(x, y) {
   return JSON.stringify(x) == JSON.stringify(y);

@@ -1,8 +1,7 @@
 var apiTemp = Runtime.stackAlloc(4);
 var dataTemp;
 
-var callbackTemp = FUNCTION_TABLE.length;
-FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
+var callbackTemp = Runtime.addFunction(function(notUsed, argc, argv, colNames) {
   var curr = [];
   for (var i = 0; i < argc; i++) {
     curr.push({
@@ -11,8 +10,7 @@ FUNCTION_TABLE[callbackTemp] = function(notUsed, argc, argv, colNames) {
     });
   }
   dataTemp.push(curr);
-};
-FUNCTION_TABLE.push(0, 0);
+});
 
 var fileCounter = 0;
 
