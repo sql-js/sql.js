@@ -42,4 +42,5 @@ see [test/test.coffee](https://github.com/mikesmullin/node-sqlite-purejs/blob/st
 
 ## Related
 
-* [In-Browser/Client-Side Demo](http://syntensity.com/static/sql.html)
+* [In-Browser/Client-Side Demo](http://kripken.github.io/sql.js/test/demo.html)
+
