@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "sqlite3.h"
 
+#define NUM 100000
+
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
   int i;
   for(i=0; i<argc; i++){
@@ -49,14 +51,15 @@ int main(){
   RUN("BEGIN;");
 
   // 25000 INSERTs in a transaction
-  for (i = 0; i < 5000; i++) {
+  for (i = 0; i < NUM/5; i++) {
     RUN("INSERT INTO t1 VALUES(1,12345,'one 1 one 1 one 1');");
     RUN("INSERT INTO t1 VALUES(2,23422,'two two two two');");
     RUN("INSERT INTO t1 VALUES(3,31233,'three three 33333333333 three');");
     RUN("INSERT INTO t1 VALUES(4,41414,'FOUR four 4 phor FOUR 44444');");
     RUN("INSERT INTO t1 VALUES(5,52555,'five 5 FIVE Five phayve 55 5 5 5 5 55  5');");
   }
-  TIME("25,000 inserts");
+  printf("%d ", NUM);
+  TIME("inserts");
 
   RUN("COMMIT;");
   TIME("commit");
