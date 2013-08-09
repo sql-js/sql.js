@@ -1,9 +1,15 @@
 
 <script>
-var startTime = Date.now();
+var Module = { noInitialRun: true };
+var startupStart = Date.now();
 </script>
+
 <script src="benchmark.js"></script>
+
 <script>
-console.log('total time: ' + (Date.now() - startTime));
+console.log('startup: ' + (Date.now() - startupStart));
+var runStart = Date.now();
+Module.callMain();
+console.log('runtime: ' + (Date.now() - runStart));
 </script>
 
