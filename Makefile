@@ -2,7 +2,7 @@
 
 EMCC=$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2 -O2 --closure 1 -s ASM_JS=0
 # -s INLINING_LIMIT=0
-CFLAGS=-DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
+CFLAGS=-DSQLITE_DISABLE_LFS -DSQLITE_OMIT_LOAD_EXTENSION -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
 
 all: js/sql.js test/benchmark.js test/benchmark
 
@@ -17,4 +17,3 @@ test/benchmark: c/benchmark.c
 
 clean:
 	rm js/sql.js test/benchmark.js test/benchmark
-
