@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "sqlite3.h"
 
 #define NUM 100000
@@ -38,7 +39,7 @@ int main(){
 
   #define TIME(msg) \
     { \
-      printf(msg " : took %l ms\n", (1000*(clock()-t))/CLOCKS_PER_SEC); \
+      printf(msg " : took %ld ms\n", (1000*(clock()-t))/CLOCKS_PER_SEC); \
       t = clock(); \
     }
 
