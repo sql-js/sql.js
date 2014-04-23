@@ -15,7 +15,7 @@ js/sql.js: c/sqlite3.c
 test/benchmark.js: c/sqlite3.c c/benchmark.c
 	$(EMCC) $(CFLAGS) c/sqlite3.c c/benchmark.c -o test/benchmark.js
 
-test/benchmark: c/benchmark.c
+test/benchmark: c/benchmark.c c/sqlite3.c
 	$(CC) $(CFLAGS) -pthread -O2 c/sqlite3.c c/benchmark.c -o test/benchmark -ldl
 
 clean:
