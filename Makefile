@@ -1,5 +1,6 @@
 # Need $(EMSCRIPTEN), for example run with        emmake make
 
+EMSCRIPTEN?=/usr/bin
 EMCC=$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2 -O2 --closure 1 -s ASM_JS=0
 # -s INLINING_LIMIT=0
 CFLAGS=-DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
