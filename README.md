@@ -35,10 +35,8 @@ Sql.open 'db/development.sqlite', {}, (err, db) ->
   '''
 
   db.exec "SELECT * FROM employees WHERE designation = 'CEO';", (err, results) ->
-    assert.deepEqual [{"id":"9","name":"JACKSON","designation":"CEO","manager":"(null)","hired_on":"01-01-1990","salary":"75000","commission":"(null)","dept":"4"}], results
+    assert.deepEqual [{"columns":["id","name","designation","manager","hired_on","salary","commission","dept"],"values":[["9","JACKSON","CEO","","01-01-1990","75000","","4"]]}], results
 ```
-
-see [test/test.coffee](https://github.com/mikesmullin/node-sqlite-purejs/blob/stable/test/test.coffee) for more examples.
 
 ## Related
 
