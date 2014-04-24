@@ -1,4 +1,6 @@
-# sql.js
+# SQLite compiled to javascript
+
+This is my fork of sql.js, by kripken. Try it online here: http://lovasoa.github.io/sql.js/GUI/
 
 sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
 no C bindings or node-gyp compilation here.
@@ -38,7 +40,13 @@ Sql.open 'db/development.sqlite', {}, (err, db) ->
     assert.deepEqual [{"columns":["id","name","designation","manager","hired_on","salary","commission","dept"],"values":[["9","JACKSON","CEO","","01-01-1990","75000","","4"]]}], results
 ```
 
+## Differences from the original sql.js
+ * More recent version of SQLite (3.8.4)
+ * Compiled to asm.js (should be faster, at least on firefox)
+ * Changed API. Results now have the form <code>[{'columns':[], values:[]}]</code>
+ * Improved GUI of the demo. It now has syntax highlighting, and displays results in nice HTML tables.
+
 ## Related
 
-* [In-Browser/Client-Side Demo](http://kripken.github.io/sql.js/test/demo.html)
+* [In-Browser/Client-Side Demo](http://lovasoa.github.io/sql.js/GUI/)
 
