@@ -1,4 +1,7 @@
-// js -e "load('../js/sql.js')" test.js
+// node test.js
+if (!SQL) {
+	var SQL = require("../js/sql.js");
+}
 
 function jsonCompare(x, y) {
   return JSON.stringify(x) == JSON.stringify(y);
@@ -71,5 +74,5 @@ testBasics();
 testPersistence();
 testDateTime();
 
-print('ok.');
+console.log('ok.');
 

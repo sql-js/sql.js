@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "sqlite3.h"
 
-#define NUM 100000
+#define NUM 1000
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
   int i;

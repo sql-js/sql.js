@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf8">
+  <title>
+    sql.js
+  </title>
+  <script src="../js/sql.js"></script>
+  <style>
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+}
+.CodeMirror-scroll {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.error {
+	color:red;
+	transition:.5s;
+	overflow:hidden;
+}
+
+table {
+	width:auto;
+	margin:auto;
+	border:1px solid black;
+ 	border-collapse:collapse;
+ 	margin-bottom:10px;
+}
+th, td {
+	border:1px solid #777;
+}
+  </style>
+	<link rel="stylesheet" href="codemirror/lib/codemirror.css">
+	<script src="codemirror/lib/codemirror.js"></script>
+	<script src="codemirror/mode/sql/sql.js"></script>
+
+</head>
+<body>
+	<h1>SQLite compiled to javascript</h1>
+
+    <label for='commands'>Enter some SQL</label>
+    <br>
+
+    <textarea id="commands">CREATE TABLE IF NOT EXISTS my_table(key INTEGER, value INTEGER, text VARCHAR(100));
+
+INSERT INTO my_table VALUES(1, 25, 'the first item');
+INSERT INTO my_table VALUES(2, 987, 'the second item');
+
+SELECT key, text FROM my_table WHERE value == 987;
+</textarea>
+
+    <button id="execute">Execute</button>
+
+	<div id="error" class="error"></div>
+Result:
+  <pre id="output"></pre>
+
+<script>
+var execBtn = document.getElementById("execute");
+var outputElm = document.getElementById('output');
+var errorElm = document.getElementById('error');
+var commandsElm = document.getElementById('commands');
+
+
+// Connect to the HTML element we 'print' to
+function print(text) {
+  outputElm.innerHTML = text.replace(/\n/g, '<br>');
+}
+function error(e) {
+	errorElm.style.height = '2em';
+	errorElm.textContent = e.toString();
+}
+function noerror() {
+		errorElm.style.height = '0';
+}
+
+// Open a database
+var db = SQL.open();
+
+// Run a command in the database
+function execute(commands) {
+  try {
+    var data = db.exec(commands);
+    outputElm.innerHTML = "";
+    for (var i=0; i<data.length; i++) {
+    	outputElm.appendChild(tableCreate(data[i].columns, data[i].values));
+    }
+  } catch(e) {
+    error(e);
+  }
+}
+
+// Create an HTML table
+function tableCreate(columns, values){
+  var tbl  = document.createElement('table');
+
+	var thead = document.createElement('thead');
+	var tr = thead.insertRow();
+	for(var j = 0; j < columns.length; j++){
+		var th = document.createElement('th');
+		th.appendChild(document.createTextNode(columns[j]));
+		tr.appendChild(th);
+	}
+	tbl.appendChild(thead);
+
+	for(var i = 0; i < values.length; i++){
+		var tr = tbl.insertRow();
+		for(var j = 0; j < columns.length; j++){
+			var td = tr.insertCell();
+			td.appendChild(document.createTextNode(values[i][j]));
+		}
+	}
+  return tbl;
+}
+
+// Execute the commands when the button is clicked
+execBtn.addEventListener("click", function(){
+	noerror();
+	execute (editor.getValue() + ';');
+}, true);
+
+
+// Add syntax highlihjting to the textarea
+var editor = CodeMirror.fromTextArea(commandsElm, {
+    mode: 'text/x-mysql',
+    viewportMargin: 1,
+    indentWithTabs: true,
+    smartIndent: true,
+    lineNumbers: true,
+    matchBrackets : true,
+    autofocus: true
+});
+</script>
+
+
+<footer>
+Original work by kripken (<a href='https://github.com/kripken/sql.js'>sql.js</a>).
+C to Javascript compiler by kripken (<a href='https://github.com/kripken/emscripten'>emscripten</a>).
+Fancy useless things by <a href='https://github.com/lovasoa'>lovasoa</a> (<a href='https://github.com/lovasoa/sql.js'>sql.js</a>).
+</footer>
+
+</body>
+</html>
