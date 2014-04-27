@@ -7,9 +7,8 @@ var sqlite3_exec = Module.cwrap('sqlite3_exec', 'number', ['number', 'string', '
 var sqlite3_free = Module.cwrap('sqlite3_free', '', ['number']);
 
 var callbackTemp = Runtime.addFunction(function(notUsed, argc, argv, colNames) {
-	var isNewResult = (dataTemp.length==0);
-
-  var curresult = isNewResult ? null : dataTemp[dataTemp.length-1];
+  var curresult = (dataTemp.length==0) ? null : dataTemp[dataTemp.length-1];
+  var isNewResult = (curresult === null || argc !== curresult.columns.length);
   var curvalues = [], curcolumns = [];
 
   for (var i = 0; i < argc; i++) {
@@ -32,10 +31,9 @@ var callbackTemp = Runtime.addFunction(function(notUsed, argc, argv, colNames) {
   }
 });
 
-var fileCounter = 0;
 
 Module['open'] = function(data) {
-  var filename = 'file_' + fileCounter++;
+  var filename = 'dbfile_' + (0xffffffff*Math.random()>>>0);
   if (data) {
     FS.createDataFile('/', filename, data, true, true);
   }
