@@ -44,7 +44,10 @@ Sql.open 'db/development.sqlite', {}, (err, db) ->
  * More recent version of SQLite (3.8.4)
  * Compiled to asm.js (should be faster, at least on firefox)
  * Changed API. Results now have the form <code>[{'columns':[], values:[]}]</code>
- * Improved GUI of the demo. It now has syntax highlighting, and displays results in nice HTML tables.
+ * Improved GUI of the demo. It now has :
+   * syntax highlighting
+   * nice HTML tables to display results
+   * ability to load and save sqlite database files
 
 ## Related
 
