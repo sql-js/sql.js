@@ -1,6 +1,6 @@
 # Need $(EMSCRIPTEN), for example run with        emmake make
 
-EMSCRIPTEN?=~/Téléchargements/emscripten/lovasoa-fork/#/usr/bin
+EMSCRIPTEN?=/usr/bin
 EMCC=$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2 -O2
 # -s INLINING_LIMIT=0
 CC=clang -O2
