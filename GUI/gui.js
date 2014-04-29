@@ -40,27 +40,21 @@ function execute(commands) {
 }
 
 // Create an HTML table
-function tableCreate(columns, values){
-  var tbl  = document.createElement('table');
-
-	var thead = document.createElement('thead');
-	var tr = thead.insertRow();
-	for(var j = 0; j < columns.length; j++){
-		var th = document.createElement('th');
-		th.appendChild(document.createTextNode(columns[j]));
-		tr.appendChild(th);
-	}
-	tbl.appendChild(thead);
-
-	for(var i = 0; i < values.length; i++){
-		var tr = tbl.insertRow();
-		for(var j = 0; j < columns.length; j++){
-			var td = tr.insertCell();
-			td.appendChild(document.createTextNode(values[i][j]));
-		}
-	}
-  return tbl;
-}
+var tableCreate = function () {
+  function valconcat(vals, tagName) {
+    if (vals.length === 0) return '';
+    var open = '<'+tagName+'>', close='</'+tagName+'>';
+    return open + vals.join(close + open) + close;
+  }
+  return function (columns, values){
+    var tbl  = document.createElement('table');
+    var html = '<thead>' + valconcat(columns, 'th') + '</thead>';
+    var rows = values.map(function(v){ return valconcat(v, 'td'); });
+    html += '<tbody>' + valconcat(rows, 'tr') + '</tbody>';
+	  tbl.innerHTML = html;
+    return tbl;
+  }
+}();
 
 // Execute the commands when the button is clicked
 function execEditorContents () {
