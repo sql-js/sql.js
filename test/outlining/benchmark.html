@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+    <title>Emscripten outlining benchmark</title>
+    <style>
+table {
+    border-collapse: collapse;
+    border-radius: 4px;
+}
+th {
+    background-color: #eef;
+}
+th, td {
+    border: 1px solid #444;
+    padding: 5px;
+}
+    </style>
+</head>
+
+<body>
+    <table id='results'>
+        <thead>
+        <tr>
+            <th>OUTLINING_LIMIT</th>
+            <th>file size (in bytes)</th>
+            <th>load time (in ms)</th>
+            <th>run time (in ms) for creating a table and inserting 100 values</th>
+        </tr>
+        </thead>
+        <tbody id='data'>
+        </tbody>
+    </table>
+
+<script>
+var tab = document.getElementById('data');
+var queryCreate = "CREATE TABLE test (a float, b char);"
+for (var i=0;i <100; i++) queryCreate += "INSERT INTO test VALUES ("+Math.random()+",'hello');";
+
+
+function result(res) {
+    var tr = tab.insertRow();
+    for (var i=0; i<res.length; i++) {
+        tr.innerHTML += '<td>'+res[i]+'</td>';
+    }
+}
+
+function timeit(fun) {
+    var t = performance.now();
+    fun();
+    return performance.now() - t;
+}
+
+function bench (outline) {
+    var x = new XMLHttpRequest();
+    x.open('GET', 'sql-outlining'+outline+'.js');
+    x.onload  = function() {
+        var src = x.responseText;
+        result( [
+            outline,
+            src.length,
+            timeit(function(){eval(src)}),
+            timeit(function(){SQL.open().exec(queryCreate)})
+        ] );
+        delete SQL;
+        if (outline<10000) bench(outline+500);
+    };
+    x.send();
+}
+bench(500);
+</script>
+</body>
+</html>
