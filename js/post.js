@@ -1,14 +1,14 @@
 var apiTemp = Runtime.stackAlloc(4);
 var dataTemp;
 
-var sqlite3_open = Module.cwrap('sqlite3_open', 'number', ['string', 'number']);
-var sqlite3_close = Module.cwrap('sqlite3_close', 'number', ['number']);
-var sqlite3_exec = Module.cwrap('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']);
-var sqlite3_free = Module.cwrap('sqlite3_free', '', ['number']);
+var sqlite3_open = Module['cwrap']('sqlite3_open', 'number', ['string', 'number']);
+var sqlite3_close = Module['cwrap']('sqlite3_close', 'number', ['number']);
+var sqlite3_exec = Module['cwrap']('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']);
+var sqlite3_free = Module['cwrap']('sqlite3_free', '', ['number']);
 
 var callbackTemp = Runtime.addFunction(function(notUsed, argc, argv, colNames) {
   var curresult = (dataTemp.length==0) ? null : dataTemp[dataTemp.length-1];
-  var isNewResult = (curresult === null || argc !== curresult.columns.length);
+  var isNewResult = (curresult === null || argc !== curresult['columns'].length);
   var curvalues = [], curcolumns = [];
 
   for (var i = 0; i < argc; i++) {
@@ -17,7 +17,7 @@ var callbackTemp = Runtime.addFunction(function(notUsed, argc, argv, colNames) {
 		curvalues.push(value);
 		curcolumns.push(column);
 
-  	if (!isNewResult && column !== curresult.columns[i]) {
+  	if (!isNewResult && column !== curresult['columns'][i]) {
 			isNewResult = true;
   	}
   }
@@ -27,7 +27,7 @@ var callbackTemp = Runtime.addFunction(function(notUsed, argc, argv, colNames) {
 			'values' : [curvalues]
 		});
   } else {
-	  curresult.values.push(curvalues);
+	  curresult['values'].push(curvalues);
   }
 });
 

@@ -7,9 +7,10 @@ var savedbElm = document.getElementById('savedb');
 
 // Connect to the HTML element we 'print' to
 function print(text) {
-  outputElm.innerHTML = text.replace(/\n/g, '<br>');
+    outputElm.innerHTML = text.replace(/\n/g, '<br>');
 }
 function error(e) {
+    console.log(e);
 	errorElm.style.height = '2em';
 	errorElm.textContent = e.toString();
 }
