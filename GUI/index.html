@@ -5,7 +5,6 @@
   <title>
     sql.js
   </title>
-  <script src="../js/sql.js"></script>
   <style>
 .CodeMirror {
   border: 1px solid #eee;
@@ -40,7 +39,11 @@ th, td {
 <body>
 	<h1>Online SQL interpreter</h1>
 
-<br>
+<div id="loading">Loading sql.js...</div>
+<script src="../js/sql.js"></script>
+<script>document.getElementById('loading').style.display='none';</script>
+
+<main>
     <label for='commands'>Enter some SQL</label>
     <br>
 
@@ -75,6 +78,7 @@ SELECT name,hired_on FROM employees ORDER BY hired_on;</textarea>
 	<div id="error" class="error"></div>
 Result:
   <pre id="output"></pre>
+</main>
 
 <script src="codemirror/mode/sql/sql.js"></script>
 <script type="text/javascript" src="gui.js"></script>

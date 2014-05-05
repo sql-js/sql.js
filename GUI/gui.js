@@ -66,7 +66,7 @@ execBtn.addEventListener("click", execEditorContents, true);
 
 // Performance measurement functions
 var tictime;
-if (!performance) {performance = {now:Date.now}}
+if (!window.performance || !performance.now) {window.performance = {now:Date.now}}
 function tic () {tictime = performance.now()}
 function toc(msg) {
 	var dt = performance.now()-tictime;
