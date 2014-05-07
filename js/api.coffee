@@ -39,7 +39,7 @@ class Statement
 	getString: (pos) ->
 		return sqlite3_column_text @stmt, pos
 	get: -> # Get all fields
-		for field in [0 .. sqlite3_data_count(@stmt)]
+		for field in [0 ... sqlite3_data_count(@stmt)]
 			type = sqlite3_column_type @stmt, field
 			if type in [SQLite.INTEGER, SQLite.FLOAT] then @getNumber field
 			else if type in [SQLite.TEXT, SQLite.BLOB] then @getString field
@@ -82,14 +82,15 @@ class Database
 		return new Statement(pStmt)
 
 handleErrors = (ret, errPtrPtr) ->
-	if ret isnt SQLite.OK
-		return SQLite.errorMessages[ret]
-	errPtr = getValue errPtrPtr, 'i32'
-	if errPtr isnt NULL and errPtr isnt undefined
-		msg = Pointer_stringify errPtr
-		sqlite3_free errPtr
-		return msg
-	return null
+	if not errPtrPtr
+		return if ret is SQLite.OK then null else SQLite.errorMessages[ret]
+	else
+		errPtr = getValue errPtrPtr, 'i32'
+		if errPtr isnt NULL and errPtr isnt undefined
+			msg = Pointer_stringify errPtr
+			sqlite3_free errPtr
+			return msg
+		else return null
 
 sqlite3_open = Module.cwrap 'sqlite3_open', 'number', ['string', 'number']
 sqlite3_close = Module.cwrap 'sqlite3_close', 'number', ['number'];
