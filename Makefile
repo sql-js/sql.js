@@ -4,7 +4,7 @@ EMSCRIPTEN?=/usr/bin
 EMCC=$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2  --closure 1 -O3 -s INLINING_LIMIT=10
 CC=clang -O2
 CFLAGS=-DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
-EXPORTED_FUNCTIONS="['_sqlite3_open', '_sqlite3_close', '_sqlite3_exec', '_sqlite3_free', '_sqlite3_data_count', '_sqlite3_column_type', '_sqlite3_column_text', '_sqlite3_column_double', '_sqlite3_prepare_v2', '_sqlite3_step', '_sqlite3_bind_text', '_sqlite3_bind_double']"
+EXPORTED_FUNCTIONS="['_sqlite3_open', '_sqlite3_close', '_sqlite3_exec', '_sqlite3_free', '_sqlite3_data_count', '_sqlite3_column_type', '_sqlite3_column_text', '_sqlite3_column_double', '_sqlite3_prepare_v2', '_sqlite3_step', '_sqlite3_bind_text', '_sqlite3_bind_double', '_sqlite3_reset', '_sqlite3_finalize']"
 
 
 all: js/sql.js test/benchmark.js test/benchmark

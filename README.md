@@ -29,6 +29,17 @@ stmt.bind([1, 'world']);
 
 // Fetch the results of the query
 while (stmt.step()) console.log(stmt.get()); // Will print [1, 'world']
+
+// Resets the statement, so it can be used again with other values
+stmt.reset()
+// Bind other values
+stmt.bind([0, 'hello']);
+while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
+
+// free the memory used by the statement
+stmt.free();
+// You can not use your statement anymore once it has been freed.
+// But not freeing your statements causes memory leaks. You don't want that.
 ```
 
 ## Differences from the original sql.js

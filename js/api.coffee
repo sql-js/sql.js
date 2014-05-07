@@ -60,6 +60,8 @@ class Statement
 	bind : (values) ->
 		@bindValue v,i+1 for v,i in values # Index of the leftmost parameter is 1
 		null
+	reset : -> sqlite3_reset @stmt
+	free: -> sqlite3_finalize @stmt
 
 class Database
 	# Open a new database:
@@ -130,6 +132,10 @@ sqlite3_data_count = Module.cwrap 'sqlite3_data_count', 'number', ['number']
 sqlite3_column_double = Module.cwrap 'sqlite3_column_double', 'number', ['number', 'number']
 sqlite3_column_text = Module.cwrap 'sqlite3_column_text', 'string', ['number', 'number']
 sqlite3_column_type = Module.cwrap 'sqlite3_column_type', 'number', ['number', 'number']
+# int sqlite3_reset(sqlite3_stmt *pStmt);
+sqlite3_reset = Module.cwrap 'sqlite3_reset', 'number', ['number']
+# int sqlite3_finalize(sqlite3_stmt *pStmt);
+sqlite3_finalize = Module.cwrap 'sqlite3_finalize', 'number', ['number']
 
 # Global constants
 NULL = 0 # Null pointer
