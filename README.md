@@ -11,6 +11,7 @@ SQLite is public domain, sql.js is MIT licensed.
 
 ```javascript
 var sql = require('./js/sql-api.js');
+// or sql = window.SQL if you are in a browser
 
 // Create a database
 var db = new sql.Database();
@@ -30,7 +31,7 @@ stmt.bind([1, 'world']);
 // Fetch the results of the query
 while (stmt.step()) console.log(stmt.get()); // Will print [1, 'world']
 
-// Resets the statement, so it can be used again with other values
+// Resets the statement, so it can be used again with other parameters
 stmt.reset()
 // Bind other values
 stmt.bind([0, 'hello']);
