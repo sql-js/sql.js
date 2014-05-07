@@ -81,7 +81,7 @@ class Database
 		if pStmt is NULL then throw 'Nothing to prepare'
 		return new Statement(pStmt)
 
-getErrors = (ret, errPtrPtr) ->
+handleErrors = (ret, errPtrPtr) ->
 	if ret isnt SQLite.OK
 		return SQLite.errorMessages[ret]
 	errPtr = getValue errPtrPtr, 'i32'
