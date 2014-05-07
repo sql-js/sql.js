@@ -82,6 +82,9 @@ class Database
 		return new Statement(pStmt)
 
 
+this['SQL'] = {'Database':Database}
+if exports? then exports = this['SQL']
+
 getErrors = (ret, errPtrPtr) ->
 	if ret isnt SQLite.OK
 		return SQLite.errorMessages[ret]
