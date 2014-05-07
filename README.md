@@ -16,15 +16,19 @@ var sql = require('./js/sql-api.js');
 var db = new sql.Database();
 
 // Execute some sql
-db.exec("CREATE TABLE hello (a int, b char); INSERT INTO hello VALUES (0, 'world');");
+sqlstr = "CREATE TABLE hello (a int, b char);";
+sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
+sqlstr += "INSERT INTO hello VALUES (1, 'world');"
+db.exec(sqlstr);
 
 // Prepare an sql statement
-var stmt = db.prepare("SELECT * FROM hello")
+var stmt = db.prepare("SELECT * FROM hello WHERE a=? AND b=?");
+
+// Bind values to the parameters
+stmt.bind([1, 'world']);
 
 // Fetch the results of the query
-while (stmt.step()) console.log(stmt.get()); // Will print [0, 'world']
-
-// stmt.bind support is coming...
+while (stmt.step()) console.log(stmt.get()); // Will print [1, 'world']
 ```
 
 ## Differences from the original sql.js

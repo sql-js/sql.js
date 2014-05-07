@@ -29,21 +29,37 @@ callbackTemp = Runtime.addFunction (notUsed, argc, argv, colNames) ->
 
 class Statement
 	constructor: (@stmt) ->
+		@pos = 1 # Index of the leftmost parameter is 1
 	step: ->
+		@pos = 1
 		ret = sqlite3_step @stmt
 		if ret is SQLite.ROW then return true
 		else if ret is SQLite.DONE then return false
 		else throw 'SQLite error: ' + handleErrors ret
-	getNumber: (pos) ->
-		return sqlite3_column_double @stmt, pos
-	getString: (pos) ->
-		return sqlite3_column_text @stmt, pos
+	getNumber: (pos = @pos++) -> sqlite3_column_double @stmt, pos
+	getString: (pos = @pos++) -> sqlite3_column_text @stmt, pos
 	get: -> # Get all fields
 		for field in [0 ... sqlite3_data_count(@stmt)]
 			type = sqlite3_column_type @stmt, field
 			if type in [SQLite.INTEGER, SQLite.FLOAT] then @getNumber field
 			else if type in [SQLite.TEXT, SQLite.BLOB] then @getString field
 			else null
+	bindString: (string, pos = @pos++) ->
+		ret = sqlite3_bind_text @stmt, pos, string, -1, NULL
+		err = handleErrors ret
+		if err isnt null then throw 'SQLite error : ' + err
+	bindNumber: (num, pos = @pos++) ->
+		ret = sqlite3_bind_double @stmt, pos, num
+		err = handleErrors ret
+		if err isnt null then throw 'SQLite error : ' + err
+	bindValue: (val, pos = @pos++) ->
+		switch typeof val
+			when "string" then @bindString val, pos
+			when "number" then @bindNumber val, pos
+			# Not binding a parameter is the same as binding it to NULL
+	bind : (values) ->
+		@bindValue v,i+1 for v,i in values # Index of the leftmost parameter is 1
+		null
 
 class Database
 	# Open a new database:
@@ -96,9 +112,21 @@ sqlite3_open = Module.cwrap 'sqlite3_open', 'number', ['string', 'number']
 sqlite3_close = Module.cwrap 'sqlite3_close', 'number', ['number'];
 sqlite3_exec = Module.cwrap 'sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']
 sqlite3_free = Module.cwrap 'sqlite3_free', '', ['number']
+
+# Prepared statements
+## prepare
 sqlite3_prepare_v2 = Module.cwrap 'sqlite3_prepare_v2', 'number', ['number', 'string', 'number', 'number', 'number']
-sqlite3_step = Module.cwrap 'sqlite3_step', 'number', ['number'] # int sqlite3_step(sqlite3_stmt*)
-sqlite3_data_count = Module.cwrap 'sqlite3_data_count', 'number', ['number'] # int sqlite3_data_count(sqlite3_stmt *pStmt);
+## Bind parameters
+#int sqlite3_bind_text(sqlite3_stmt*, int, const char*, int n, void(*)(void*));
+sqlite3_bind_text = Module.cwrap 'sqlite3_bind_text', 'number', ['number', 'number', 'string', 'number', 'number']
+#int sqlite3_bind_double(sqlite3_stmt*, int, double);
+sqlite3_bind_double = Module.cwrap 'sqlite3_bind_double', 'number', ['number', 'number', 'number']
+
+## Get values
+# int sqlite3_step(sqlite3_stmt*)
+sqlite3_step = Module.cwrap 'sqlite3_step', 'number', ['number']
+# int sqlite3_data_count(sqlite3_stmt *pStmt);
+sqlite3_data_count = Module.cwrap 'sqlite3_data_count', 'number', ['number']
 sqlite3_column_double = Module.cwrap 'sqlite3_column_double', 'number', ['number', 'number']
 sqlite3_column_text = Module.cwrap 'sqlite3_column_text', 'string', ['number', 'number']
 sqlite3_column_type = Module.cwrap 'sqlite3_column_type', 'number', ['number', 'number']
