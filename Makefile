@@ -19,7 +19,7 @@ js/sql-api.js: c/sqlite3.bc js/api.js
 	$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2 $(CFLAGS) c/sqlite3.c --post-js js/api.js -o js/sql-api.js -s EXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS)
 
 js/api.js: js/api.coffee
-	coffee -c js/api.coffee
+	coffee -b -c js/api.coffee
 
 c/sqlite3.bc: c/sqlite3.c
 	# Generate llvm bitcode

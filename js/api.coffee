@@ -50,8 +50,8 @@ class Database
 	#create a new one or open an existing database stored in the byte array passed in first argument
 	constructor: (data) ->
 		@filename = 'dbfile_' + (0xffffffff*Math.random()>>>0)
-		if data then FS.createDataFile '/', filename, data, true, true
-		ret = sqlite3_open filename, apiTemp
+		if data? then FS.createDataFile '/', @filename, data, true, true
+		ret = sqlite3_open @filename, apiTemp
 		if ret isnt SQLite.OK then throw 'SQLite error: ' + SQLite.errorMessages[ret]
 		@db = getValue(apiTemp, 'i32')
 
@@ -80,10 +80,6 @@ class Database
 		pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
 		if pStmt is NULL then throw 'Nothing to prepare'
 		return new Statement(pStmt)
-
-
-this['SQL'] = {'Database':Database}
-if exports? then exports = this['SQL']
 
 getErrors = (ret, errPtrPtr) ->
 	if ret isnt SQLite.OK
@@ -179,3 +175,7 @@ SQLite.TEXT=3
 SQLite.BLOB=4
 SQLite.NULL=5
 
+
+# Export the API
+this['SQL'] = {'Database':Database}
+Module[i] = this['SQL'][i] for i of this['SQL']
