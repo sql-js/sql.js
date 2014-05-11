@@ -71,4 +71,3 @@ Module['open'] = function(data) {
 };
 
 this['SQL'] = Module;
-
