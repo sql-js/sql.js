@@ -99,6 +99,9 @@ class Database
 		if pStmt is NULL then throw 'Nothing to prepare'
 		return new Statement(pStmt)
 
+	# Exports the contents of the database to a binary array
+	export: -> new Uint8Array FS.root.contents[@filename].contents
+
 handleErrors = (ret, errPtrPtr) ->
 	if not errPtrPtr
 		return if ret is SQLite.OK then null else SQLite.errorMessages[ret]

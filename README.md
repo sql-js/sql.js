@@ -15,6 +15,8 @@ var sql = require('./js/sql-api.js');
 
 // Create a database
 var db = new sql.Database();
+// NOTE: You can also use new sql.Database(data) where
+// data is an Uint8Array representing an SQLite database file
 
 // Execute some sql
 sqlstr = "CREATE TABLE hello (a int, b char);";
@@ -41,6 +43,9 @@ while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
 stmt.free();
 // You can not use your statement anymore once it has been freed.
 // But not freeing your statements causes memory leaks. You don't want that.
+
+// Export the database to an Uint8Array containing the SQLite database file
+var binaryArray = db.export();
 ```
 
 ## Differences from the original sql.js
