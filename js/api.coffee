@@ -7,17 +7,17 @@ SQLite = {
 
 dataTemp = []
 callbackTemp = Runtime.addFunction (notUsed, argc, argv, colNames) ->
-	curresult = if (dataTemp.length==0) then null else dataTemp[dataTemp.length-1]
+	curresult = if (dataTemp.length is 0) then null else dataTemp[dataTemp.length-1]
 	isNewResult = (curresult is null or argc isnt curresult.columns.length);
 	curvalues = []
 	curcolumns = []
 
-	for i in [0..argc]
-		column = Pointer_stringify getValue colNames+i*Runtime.QUANTUM_SIZE, 'i32'
-		value = Pointer_stringify getValue argv+i*Runtime.QUANTUM_SIZE, 'i32'
+	for i in [0...argc]
+		column = Pointer_stringify getValue colNames + i*Runtime.QUANTUM_SIZE, 'i32'
+		value  = Pointer_stringify getValue argv     + i*Runtime.QUANTUM_SIZE, 'i32'
 		curvalues.push value
 		curcolumns.push column
-		if not isNewResult and column isnt curresult.columns[i] then isNewResult = true;
+		if not isNewResult and column isnt curresult['columns'][i] then isNewResult = true
 
 	if isNewResult
 		dataTemp.push {
@@ -25,7 +25,9 @@ callbackTemp = Runtime.addFunction (notUsed, argc, argv, colNames) ->
 			'values' : [curvalues]
 		}
 	else
-	curresult.values.push(curvalues);
+		curresult['values'].push curvalues
+	# If the callback returns non-zero, the query is aborted
+	return 0
 
 class Statement
 	constructor: (@stmt) ->
@@ -77,6 +79,7 @@ class Database
 	close: ->
 		ret = sqlite3_close @db
 		if ret isnt 0 then throw 'SQLite error: ' + SQLite_codes[ret].msg
+		FS.deleteFile '/' + @filename
 		@db = null
 
 	# Execute an SQL query, and returns the result
