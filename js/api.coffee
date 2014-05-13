@@ -79,7 +79,7 @@ class Database
 	close: ->
 		ret = sqlite3_close @db
 		if ret isnt 0 then throw 'SQLite error: ' + SQLite_codes[ret].msg
-		FS.deleteFile '/' + @filename
+		FS.unlink '/' + @filename
 		@db = null
 
 	# Execute an SQL query, and returns the result
