@@ -14,14 +14,14 @@ js/sql.js: js/shell-pre.js js/sql-raw.js js/shell-post.js
 	cat js/shell-pre.js js/sql-raw.js js/shell-post.js > js/sql.js
 
 js/sql-raw.js: c/sqlite3.bc js/pre.js js/post.js
-	$(EMCC) -s ASM_JS=1 $(CFLAGS) c/sqlite3.c --pre-js js/pre.js --post-js js/post.js -o js/sql-raw.js -s EXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS)
+	$(EMCC) $(CFLAGS) c/sqlite3.bc --pre-js js/pre.js --post-js js/post.js -o js/sql-raw.js -s EXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS)
 
 # Object-oriented API
 js/sql-api.js: js/shell-pre.js js/sql-api-raw.js js/api-post.js
 	cat js/shell-pre.js js/sql-api-raw.js js/api-post.js > js/sql-api.js
 
 js/sql-api-raw.js: c/sqlite3.bc js/api.js
-	$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2 $(CFLAGS) c/sqlite3.c --post-js js/api.js -o js/sql-api-raw.js -s EXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS)
+	$(EMCC) $(CFLAGS) c/sqlite3.bc --post-js js/api.js -o js/sql-api-raw.js -s EXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS)
 
 js/api.js: js/api.coffee
 	coffee -b -c js/api.coffee

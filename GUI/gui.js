@@ -10,7 +10,7 @@ function print(text) {
     outputElm.innerHTML = text.replace(/\n/g, '<br>');
 }
 function error(e) {
-    console.log(e);
+  console.log(e);
 	errorElm.style.height = '2em';
 	errorElm.textContent = e.toString();
 }
@@ -19,7 +19,7 @@ function noerror() {
 }
 
 // Open a database
-var db = SQL.open();
+var db = new SQL.Database();
 
 // Run a command in the database
 function execute(commands) {
@@ -91,7 +91,7 @@ dbFileElm.onchange = function() {
 	r.onload = function() {
 		var Uints = new Uint8Array(r.result);
 		db.close(); // Close the old db (frees memory)
-		db = SQL.open(Uints);
+		db = new SQL.Database(Uints);
 		// Show the schema of the loaded database
 		editor.setValue("SELECT `name`, `sql`\n  FROM `sqlite_master`\n  WHERE type='table';");
 		execEditorContents();
@@ -101,7 +101,7 @@ dbFileElm.onchange = function() {
 
 // Save the db to a file
 function savedb () {
-	var arraybuff = db.exportData();
+	var arraybuff = db.export();
 	var blob = new Blob([arraybuff]);
 	var url = window.URL.createObjectURL(blob);
 	window.location = url;
