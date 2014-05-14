@@ -8,7 +8,7 @@ SQLite = {
 dataTemp = []
 callbackTemp = Runtime.addFunction (notUsed, argc, argv, colNames) ->
 	curresult = if (dataTemp.length is 0) then null else dataTemp[dataTemp.length-1]
-	isNewResult = (curresult is null or argc isnt curresult.columns.length);
+	isNewResult = (curresult is null or argc isnt curresult['columns'].length);
 	curvalues = []
 	curcolumns = []
 
@@ -40,7 +40,7 @@ class Statement
 		else throw 'SQLite error: ' + handleErrors ret
 	getNumber: (pos = @pos++) -> sqlite3_column_double @stmt, pos
 	getString: (pos = @pos++) -> sqlite3_column_text @stmt, pos
-	get: -> # Get all fields
+	'get': -> # Get all fields
 		for field in [0 ... sqlite3_data_count(@stmt)]
 			type = sqlite3_column_type @stmt, field
 			if type in [SQLite.INTEGER, SQLite.FLOAT] then @getNumber field
@@ -59,11 +59,11 @@ class Statement
 			when "string" then @bindString val, pos
 			when "number" then @bindNumber val, pos
 			# Not binding a parameter is the same as binding it to NULL
-	bind : (values) ->
+	'bind' : (values) ->
 		@bindValue v,i+1 for v,i in values # Index of the leftmost parameter is 1
 		null
-	reset : -> sqlite3_reset @stmt
-	free: -> sqlite3_finalize @stmt
+	'reset' : -> sqlite3_reset @stmt
+	'free': -> sqlite3_finalize @stmt
 
 class Database
 	# Open a new database:
@@ -76,14 +76,14 @@ class Database
 		@db = getValue(apiTemp, 'i32')
 
 	# Close the database
-	close: ->
+	'close': ->
 		ret = sqlite3_close @db
 		if ret isnt 0 then throw 'SQLite error: ' + SQLite_codes[ret].msg
 		FS.unlink '/' + @filename
 		@db = null
 
 	# Execute an SQL query, and returns the result
-	exec: (sql) ->
+	'exec': (sql) ->
 		if not @db then throw "Database closed"
 		dataTemp = []
 		setValue apiTemp, 0, 'i32'
@@ -93,7 +93,7 @@ class Database
 		return dataTemp
 
 	# Prepare an SQL statement
-	prepare: (sql) ->
+	'prepare': (sql) ->
 		setValue apiTemp, 0, 'i32'
 		ret = sqlite3_prepare_v2 @db, sql, -1, apiTemp, NULL
 		err = handleErrors ret, NULL
@@ -103,7 +103,7 @@ class Database
 		return new Statement(pStmt)
 
 	# Exports the contents of the database to a binary array
-	export: -> new Uint8Array FS.root.contents[@filename].contents
+	'export': -> new Uint8Array FS.root.contents[@filename].contents
 
 handleErrors = (ret, errPtrPtr) ->
 	if not errPtrPtr
@@ -116,32 +116,32 @@ handleErrors = (ret, errPtrPtr) ->
 			return msg
 		else return null
 
-sqlite3_open = Module.cwrap 'sqlite3_open', 'number', ['string', 'number']
-sqlite3_close = Module.cwrap 'sqlite3_close', 'number', ['number'];
-sqlite3_exec = Module.cwrap 'sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']
-sqlite3_free = Module.cwrap 'sqlite3_free', '', ['number']
+sqlite3_open = Module['cwrap'] 'sqlite3_open', 'number', ['string', 'number']
+sqlite3_close = Module['cwrap'] 'sqlite3_close', 'number', ['number'];
+sqlite3_exec = Module['cwrap'] 'sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']
+sqlite3_free = Module['cwrap'] 'sqlite3_free', '', ['number']
 
 # Prepared statements
 ## prepare
-sqlite3_prepare_v2 = Module.cwrap 'sqlite3_prepare_v2', 'number', ['number', 'string', 'number', 'number', 'number']
+sqlite3_prepare_v2 = Module['cwrap'] 'sqlite3_prepare_v2', 'number', ['number', 'string', 'number', 'number', 'number']
 ## Bind parameters
 #int sqlite3_bind_text(sqlite3_stmt*, int, const char*, int n, void(*)(void*));
-sqlite3_bind_text = Module.cwrap 'sqlite3_bind_text', 'number', ['number', 'number', 'string', 'number', 'number']
+sqlite3_bind_text = Module['cwrap'] 'sqlite3_bind_text', 'number', ['number', 'number', 'string', 'number', 'number']
 #int sqlite3_bind_double(sqlite3_stmt*, int, double);
-sqlite3_bind_double = Module.cwrap 'sqlite3_bind_double', 'number', ['number', 'number', 'number']
+sqlite3_bind_double = Module['cwrap'] 'sqlite3_bind_double', 'number', ['number', 'number', 'number']
 
 ## Get values
 # int sqlite3_step(sqlite3_stmt*)
-sqlite3_step = Module.cwrap 'sqlite3_step', 'number', ['number']
+sqlite3_step = Module['cwrap'] 'sqlite3_step', 'number', ['number']
 # int sqlite3_data_count(sqlite3_stmt *pStmt);
-sqlite3_data_count = Module.cwrap 'sqlite3_data_count', 'number', ['number']
-sqlite3_column_double = Module.cwrap 'sqlite3_column_double', 'number', ['number', 'number']
-sqlite3_column_text = Module.cwrap 'sqlite3_column_text', 'string', ['number', 'number']
-sqlite3_column_type = Module.cwrap 'sqlite3_column_type', 'number', ['number', 'number']
+sqlite3_data_count = Module['cwrap'] 'sqlite3_data_count', 'number', ['number']
+sqlite3_column_double = Module['cwrap'] 'sqlite3_column_double', 'number', ['number', 'number']
+sqlite3_column_text = Module['cwrap'] 'sqlite3_column_text', 'string', ['number', 'number']
+sqlite3_column_type = Module['cwrap'] 'sqlite3_column_type', 'number', ['number', 'number']
 # int sqlite3_reset(sqlite3_stmt *pStmt);
-sqlite3_reset = Module.cwrap 'sqlite3_reset', 'number', ['number']
+sqlite3_reset = Module['cwrap'] 'sqlite3_reset', 'number', ['number']
 # int sqlite3_finalize(sqlite3_stmt *pStmt);
-sqlite3_finalize = Module.cwrap 'sqlite3_finalize', 'number', ['number']
+sqlite3_finalize = Module['cwrap'] 'sqlite3_finalize', 'number', ['number']
 
 # Global constants
 NULL = 0 # Null pointer
