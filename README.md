@@ -53,6 +53,8 @@ The test files provide up to date example of the use of the api.
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_api.js
 ### Load sqlite database file from disk in node.js
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
+### Use BLOBs in sqlite
+See : https://github.com/lovasoa/sql.js/blob/master/test/test_blob.js
 
 ## Differences from the original sql.js
  * Support for BLOBs
