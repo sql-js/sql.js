@@ -56,6 +56,9 @@ See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
 ### Use BLOBs in sqlite
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_blob.js
 
+## Documentation
+The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
+
 ## Differences from the original sql.js
  * Support for BLOBs
  * Support for prepared statements
