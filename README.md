@@ -47,8 +47,15 @@ stmt.free();
 // Export the database to an Uint8Array containing the SQLite database file
 var binaryArray = db.export();
 ```
+## Exemples
+The test files provide up to date example of the use of the api.
+### API usage
+See : https://github.com/lovasoa/sql.js/blob/master/test/test_api.js
+### Load sqlite database file from disk in node.js
+See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
 
 ## Differences from the original sql.js
+ * Support for BLOBs
  * Support for prepared statements
  * Cleaner API
  * More recent version of SQLite (3.8.4)
