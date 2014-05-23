@@ -12,7 +12,7 @@ db.exec(sqlstr);
 var result = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
 assert.deepEqual(result, [{columns:['name'], values:[['alphabet']]}]);
 
-console.log("Testing prepared statements...")
+console.log("Testing prepared statements...");
 // Prepare a statement to insert values in tha database
 var stmt = db.prepare("INSERT INTO alphabet (letter,code) VALUES (?,?)");
 console.log("Testing Statement.run()");
@@ -29,6 +29,17 @@ result = db.exec("SELECT * FROM alphabet");
 assert.deepEqual(result, [{columns:['letter', 'code'], values:[['a','1'],['b','2.2'],['c','']]}]);
 
 console.log("Testing getting data...");
+
+var stmt = db.prepare("select 5 as nbr, 'hello' as str, null as nothing;");
+stmt.step(); // Run the statement
+assert.deepEqual(stmt.getColumnNames(), ['nbr','str','nothing']);
+var res = stmt.getAsObject();
+assert.strictEqual(res.nbr, 5);
+assert.strictEqual(res.str, 'hello');
+assert.strictEqual(res.nothing, null);
+assert.deepEqual(res, {nbr:5, str:'hello', nothing:null});
+stmt.free();
+
 // Prepare an sql statement
 var stmt = db.prepare("SELECT * FROM alphabet WHERE code BETWEEN :start AND :end ORDER BY code");
 // Bind values to the parameters
@@ -61,14 +72,3 @@ assert.throws(function(){
 stmt.free();
 // You can not use your statement anymore once it has been freed.
 // But not freeing your statements causes memory leaks. You don't want that.
-
-console.log("Testing database export...");
-// Export the database to an Uint8Array containing the SQLite database file
-var binaryArray = db.export();
-assert(String.fromCharCode.apply(null,binaryArray.slice(0,6)) === 'SQLite',
-        "The first 6 bytes of an SQLite database should form the word 'SQLite'");
-
-var db2 = new SQL.Database(binaryArray);
-result = db2.exec("SELECT * FROM alphabet");
-assert.deepEqual(result, [{columns:['letter', 'code'], values:[['a','1'],['b','2.2'],['c','']]}],
-                "Exporting and re-importing the database should lead to the same values");
