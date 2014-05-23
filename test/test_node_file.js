@@ -7,7 +7,7 @@ var fs = require('fs');
 var path = require('path');
 
 //Actual path I'm using to get to sql.js in my project. 
-var SQL = require('../js/sql-api.js');
+var SQL = require('../js/sql.js');
 
 var filebuffer = fs.readFileSync(path.join(__dirname, 'test.sqlite'));
 

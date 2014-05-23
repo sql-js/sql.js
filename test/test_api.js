@@ -1,5 +1,5 @@
 var assert = require("assert");
-var sql = require('../js/sql-api.js');
+var sql = require('../js/sql.js');
 
 console.log("Testing database creation...");
 // Create a database

@@ -1,5 +1,5 @@
 var assert = require("assert");
-var SQL = require("../js/sql-api.js");
+var SQL = require("../js/sql.js");
 
 function toSimpleArray(arr) {
   return Array.prototype.slice.call(arr);
