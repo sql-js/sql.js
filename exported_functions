@@ -18,6 +18,7 @@
  "_sqlite3_column_blob",
  "_sqlite3_column_bytes",
  "_sqlite3_column_type",
+ "_sqlite3_column_name",
  "_sqlite3_reset",
  "_sqlite3_clear_bindings",
  "_sqlite3_finalize"

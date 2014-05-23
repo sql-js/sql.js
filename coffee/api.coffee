@@ -31,7 +31,17 @@ callbackTemp = Runtime.addFunction (notUsed, argc, argv, colNames) ->
 	# If the callback returns non-zero, the query is aborted
 	return 0
 
-# Represents an prepared statement
+### Represents an prepared statement.
+
+Prepared statements allow you to have a template sql string,
+that you can execute multiple times with different parameters.
+
+You can't instantiate this class directly, you have to use a [Database](Database.html)
+object in order to create a statement.
+
+@see Database.html#prepare-dynamic
+@see https://en.wikipedia.org/wiki/Prepared_statement
+###
 class Statement
 	# Statements can't be created by the API user, only by Database::prepare
 	# @private
@@ -109,21 +119,51 @@ class Statement
 	### Get one row of results of a statement.
 	If the first parameter is not provided, step must have been called before get.
 	@param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
-	@return [Array] One row of result
+	@return [Array<String,Number,Uint8Array,null>] One row of result
 
 	@example Print all the rows of the table test to the console
 
 		var stmt = db.prepare("SELECT * FROM test");
 		while (stmt.step()) console.log(stmt.get());
 	###
-	'get': (values) -> # Get all fields
-		if values? then @['bind'](values) and @['step']()
+	'get': (params) -> # Get all fields
+		if params? then @['bind'](params) and @['step']()
 		for field in [0 ... sqlite3_data_count(@stmt)]
 			switch sqlite3_column_type @stmt, field
 				when SQLite.INTEGER, SQLite.FLOAT then @getNumber field
 				when SQLite.TEXT then @getString field
 				when SQLite.BLOB then @getBlob field
 				else null
+
+	### Get the list of column names of a row of result of a statement.
+	@return [Array<String>] The names of the columns
+	@example
+
+		var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS nothing;");
+		stmt.step(); // Execute the statement
+		console.log(stmt.getColumnNames()); // Will print ['nbr','data','nothing']
+	###
+	'getColumnNames' : () ->
+			sqlite3_column_name @stmt, i for i in [0 ... sqlite3_data_count(@stmt)]
+
+	### Get one row of result as a javascript object, associating column names with
+	their value in the current row.
+	@param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
+	@return [Object] The row of result
+	@see [Statement.get](#get-dynamic)
+
+	@example
+
+		var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS nothing;");
+		stmt.step(); // Execute the statement
+		console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), nothing:null}
+	###
+	'getAsObject': (params) ->
+		values = @['get'] params
+		names  = @['getColumnNames']()
+		rowObject = {}
+		rowObject[name] = values[i] for name,i in names
+		return rowObject
 
 	### Shorthand for bind + step + reset
 	Bind the values, execute the statement, ignoring the rows it returns, and resets it
@@ -296,6 +336,8 @@ sqlite3_column_text = Module['cwrap'] 'sqlite3_column_text', 'string', ['number'
 sqlite3_column_blob = Module['cwrap'] 'sqlite3_column_blob', 'number', ['number', 'number']
 sqlite3_column_bytes = Module['cwrap'] 'sqlite3_column_bytes', 'number', ['number', 'number']
 sqlite3_column_type = Module['cwrap'] 'sqlite3_column_type', 'number', ['number', 'number']
+#const char *sqlite3_column_name(sqlite3_stmt*, int N);
+sqlite3_column_name = Module['cwrap'] 'sqlite3_column_name', 'string', ['number', 'number']
 # int sqlite3_reset(sqlite3_stmt *pStmt);
 sqlite3_reset = Module['cwrap'] 'sqlite3_reset', 'number', ['number']
 sqlite3_clear_bindings = Module['cwrap'] 'sqlite3_clear_bindings', 'number', ['number']
