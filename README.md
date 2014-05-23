@@ -47,6 +47,10 @@ stmt.free();
 // Export the database to an Uint8Array containing the SQLite database file
 var binaryArray = db.export();
 ```
+
+## Demo
+There is an online demo available here : http://lovasoa.github.io/sql.js/GUI
+
 ## Exemples
 The test files provide up to date example of the use of the api.
 ### API usage
