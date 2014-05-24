@@ -31,7 +31,7 @@ var stmt = db.prepare("SELECT * FROM hello WHERE a=? AND b=?");
 stmt.bind([1, 'world']);
 
 // Fetch the results of the query
-while (stmt.step()) console.log(stmt.get()); // Will print [1, 'world']
+while (stmt.step()) console.log(stmt.getAsObject()); // Will print {a:1, b:'world'}
 
 // Resets the statement, so it can be used again with other parameters
 stmt.reset()
