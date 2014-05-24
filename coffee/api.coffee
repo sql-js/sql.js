@@ -51,6 +51,7 @@ class Statement
 	# @nodoc
 	constructor: (@stmt) ->
 		@pos = 1 # Index of the leftmost parameter is 1
+		@allocatedmem = [] # Pointers to allocated memory, that need to be freed when the statemend is destroyed
 
 	### Bind values to the parameters, after having reseted the statement
 
@@ -181,17 +182,16 @@ class Statement
 	# @private
 	# @nodoc
 	bindString: (string, pos = @pos++) ->
-		strptr = allocate intArrayFromString(string), 'i8', ALLOC_NORMAL
-		strfree = Runtime.addFunction -> _free strptr
-		ret = sqlite3_bind_text @stmt, pos, strptr, -1, strfree
+		bytes = intArrayFromString(string)
+		@allocatedmem.push strptr = allocate bytes, 'i8', ALLOC_NORMAL
+		ret = sqlite3_bind_text @stmt, pos, strptr, bytes.length, 0
 		if ret is SQLite.OK then return true
 		err = handleErrors ret
 		if err isnt null then throw 'SQLite error : ' + err
 	# @nodoc
 	bindBlob: (array, pos = @pos++) ->
-		blobptr = allocate array, 'i8', ALLOC_NORMAL
-		blobfree = Runtime.addFunction -> _free blobptr
-		ret = sqlite3_bind_blob @stmt, pos, blobptr, array.length, blobfree
+		@allocatedmem.push blobptr = allocate array, 'i8', ALLOC_NORMAL
+		ret = sqlite3_bind_blob @stmt, pos, blobptr, array.length, 0
 		if ret is SQLite.OK then return true
 		err = handleErrors ret
 		if err isnt null then throw 'SQLite error : ' + err
@@ -236,13 +236,24 @@ class Statement
 		return true
 
 	### Reset a statement, so that it's parameters can be bound to new values
-	It also clears all previous bindings
+	It also clears all previous bindings, freeing the memory used by bound parameters.
 	###
-	'reset' : -> sqlite3_reset(@stmt) is SQLite.OK and sqlite3_clear_bindings(@stmt) is SQLite.OK
+	'reset' : ->
+		@freemem()
+		sqlite3_reset(@stmt) is SQLite.OK and
+		sqlite3_clear_bindings(@stmt) is SQLite.OK
+
+	### Free the memory allocated during parameter binding
+	###
+	freemem : ->
+		_free mem while mem = @allocatedmem.pop()
+		return null
+
 	### Free the memory used by the statement
 	@return [Boolean] true in case of success
 	###
 	'free': ->
+		@freemem()
 		res = sqlite3_finalize(@stmt) is SQLite.OK
 		@stmt = NULL
 		return res
