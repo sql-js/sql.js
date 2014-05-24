@@ -65,9 +65,6 @@ console.log("Testing named parameters...");
 result = stmt.get({':start':1, ':end':1});
 assert.deepEqual(result, ['a',1]);
 
-assert.throws(function(){
-  stmt.bind([1,2,3]);
-}, "Binding too many parameters should throw an exception");
 // free the memory used by the statement
 stmt.free();
 // You can not use your statement anymore once it has been freed.

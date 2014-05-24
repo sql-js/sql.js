@@ -2,7 +2,6 @@
  "_malloc",
  "_free",
  "_sqlite3_open",
- "_sqlite3_close",
  "_sqlite3_exec",
  "_sqlite3_free",
  "_sqlite3_prepare_v2",
@@ -21,5 +20,6 @@
  "_sqlite3_column_name",
  "_sqlite3_reset",
  "_sqlite3_clear_bindings",
- "_sqlite3_finalize"
+ "_sqlite3_finalize",
+ "_sqlite3_close_v2"
 ]

@@ -39,6 +39,9 @@ that you can execute multiple times with different parameters.
 You can't instantiate this class directly, you have to use a [Database](Database.html)
 object in order to create a statement.
 
+**Warning**: When you close a database (using db.close()), all its statements are
+closed too and become unusable.
+
 @see Database.html#prepare-dynamic
 @see https://en.wikipedia.org/wiki/Prepared_statement
 ###
@@ -49,7 +52,7 @@ class Statement
 	constructor: (@stmt) ->
 		@pos = 1 # Index of the leftmost parameter is 1
 
-	### Bind values to the parameters
+	### Bind values to the parameters, after having reseted the statement
 
 	SQL statements can have parameters, named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
 	where NNN is a number and VVV a string.
@@ -255,6 +258,7 @@ class Database
 		ret = sqlite3_open @filename, apiTemp
 		if ret isnt SQLite.OK then throw 'SQLite error: ' + SQLite.errorMessages[ret]
 		@db = getValue(apiTemp, 'i32')
+		@statements = [] # A list of all prepared statements of the database
 
 	### Execute an SQL query, and returns the result
 	@param sql [String] a string containing some SQL text to execute
@@ -281,18 +285,29 @@ class Database
 		if err isnt null then throw 'SQLite error: ' + err
 		pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
 		if pStmt is NULL then throw 'Nothing to prepare'
-		return new Statement(pStmt)
+		stmt = new Statement(pStmt)
+		@statements.push(stmt)
+		return stmt
 
 	### Exports the contents of the database to a binary array
 	@return [Uint8Array] An array of bytes of the SQLite3 database file
 	###
 	'export': -> new Uint8Array FS.root.contents[@filename].contents
 
-	### Close the database
-	Databases must be closed, or the memory consumption will grow forever
+	### Close the database, and all associated prepared statements.
+
+	The memory associated to the database and all associated statements
+	will be freed.
+
+	**Warning**: A statement belonging to a database that has been closed cannot
+	be used anymore.
+
+	Databases **must** be closed, when you're finished with them, or the
+	memory consumption will grow forever
 	###
 	'close': ->
-		ret = sqlite3_close @db
+		stmt['free']() for stmt in @statements
+		ret = sqlite3_close_v2 @db
 		if ret isnt 0 then throw 'SQLite error: ' + SQLite_codes[ret].msg
 		FS.unlink '/' + @filename
 		@db = null
@@ -309,7 +324,7 @@ handleErrors = (ret, errPtrPtr) ->
 		else return null
 
 sqlite3_open = Module['cwrap'] 'sqlite3_open', 'number', ['string', 'number']
-sqlite3_close = Module['cwrap'] 'sqlite3_close', 'number', ['number']
+sqlite3_close_v2 = Module['cwrap'] 'sqlite3_close_v2', 'number', ['number']
 sqlite3_exec = Module['cwrap'] 'sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']
 sqlite3_free = Module['cwrap'] 'sqlite3_free', '', ['number']
 
