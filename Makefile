@@ -30,6 +30,9 @@ c/sqlite3.bc: c/sqlite3.c
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) c/sqlite3.c -o c/sqlite3.bc
 
+module.tar.gz: test package.json AUTHORS README.md js/sql.js
+	tar --create --gzip $^ > $@
+
 clean:
 	rm -rf js/sql*.js js/api.js js/sql*-raw.js c/sqlite3.bc
 
