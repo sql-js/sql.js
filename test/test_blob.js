@@ -1,34 +1,39 @@
-var assert = require("assert");
-var SQL = require("../js/sql.js");
+exports.test = function(SQL, assert){
+	var db = new SQL.Database();
+	db.exec("CREATE TABLE test (data); INSERT INTO test VALUES (x'6162ff'),(x'00')"); // Insert binary data. This is invalid UTF8 on purpose
 
-function toSimpleArray(arr) {
-  return Array.prototype.slice.call(arr);
+
+	console.log("Testing writing BLOBs");
+	var stmt = db.prepare("INSERT INTO test VALUES (?)");
+	var bigArray = new Uint8Array(1e6);
+	bigArray[500] = 0x42
+	stmt.run([ bigArray ]);
+
+	var stmt = db.prepare("SELECT * FROM test ORDER BY length(data) DESC");
+
+	stmt.step();
+	var array = stmt.get()[0];
+	assert.equal(array.length, bigArray.length, "BLOB read from the database should be the same size as the one that was inserted");
+	for (var i=0; i<array.length; i++) {
+		// Avoid doing 1e6 assert, to not pollute the console
+		if (array[i]!==bigArray[i])
+			assert.fail(array[i], bigArray[i] , "The blob stored in the database should be exactly the same as the one that was inserted");
+	}
+
+	stmt.step();
+	var res = stmt.get();
+	assert.deepEqual(res, [new Uint8Array([0x61, 0x62, 0xff])], "Reading BLOB");
+
+	stmt.step();
+	var res = stmt.get();
+	assert.deepEqual(res, [new Uint8Array([0x00])], "Reading BLOB with a null byte");
+
+	assert.strictEqual(stmt.step(), false, "stmt.step() should return false after all values were read");
+	db.close();
+};
+
+if (module == require.main) {
+	var sql = require('../js/sql.js');
+	var assert = require("assert");
+	exports.test(sql, assert);
 }
-
-var db = new SQL.Database();
-db.exec("CREATE TABLE test (data); INSERT INTO test VALUES (x'616200ff'),(x'00')"); // Insert binary data. This is invalid UTF8 on purpose
-
-
-console.log("Testing writing BLOBs");
-var stmt = db.prepare("INSERT INTO test VALUES (?)");
-var bigArray = new Uint8Array(1e6);
-bigArray[500] = 0x42
-stmt.run([ bigArray ]);
-
-console.log("Testing reading BLOBs");
-var stmt = db.prepare("SELECT * FROM test ORDER BY length(data) DESC");
-
-stmt.step();
-var array = stmt.get()[0];
-assert.equal(array.length, bigArray.length);
-for (var i=0; i<array.length; i++) if (array[i]!==bigArray[i]) assert(false, "The blob stored in the database was altered");
-
-stmt.step();
-var res = stmt.get();
-assert.deepEqual(res, [new Uint8Array([0x61, 0x62, 0x00, 0xff])]);
-
-stmt.step();
-var res = stmt.get();
-assert.deepEqual(res, [new Uint8Array([0x00])]);
-
-assert(stmt.step() === false, "All values should have been retrieved");
