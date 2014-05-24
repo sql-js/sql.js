@@ -239,7 +239,10 @@ class Statement
 	### Free the memory used by the statement
 	@return [Boolean] true in case of success
 	###
-	'free': -> sqlite3_finalize(@stmt) is SQLite.OK
+	'free': ->
+		res = sqlite3_finalize(@stmt) is SQLite.OK
+		@stmt = NULL
+		return res
 
 # Represents an SQLite database
 class Database
