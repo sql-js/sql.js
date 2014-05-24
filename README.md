@@ -25,16 +25,12 @@ sqlstr += "INSERT INTO hello VALUES (1, 'world');"
 db.exec(sqlstr);
 
 // Prepare an sql statement
-var stmt = db.prepare("SELECT * FROM hello WHERE a=? AND b=?");
+var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
 
-// Bind values to the parameters
-stmt.bind([1, 'world']);
+// Bind values to the parameters and fetch the results of the query
+var result = stmt.getAsObject({':aval' : 1, ':bval' : 'world'});
+console.log(result); // Will print {a:1, b:'world'}
 
-// Fetch the results of the query
-while (stmt.step()) console.log(stmt.getAsObject()); // Will print {a:1, b:'world'}
-
-// Resets the statement, so it can be used again with other parameters
-stmt.reset()
 // Bind other values
 stmt.bind([0, 'hello']);
 while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
