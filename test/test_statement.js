@@ -1,7 +1,6 @@
 var assert = require("assert");
 var sql = require('../js/sql.js');
 
-console.log("Testing database creation...");
 // Create a database
 var db = new sql.Database();
 
@@ -30,14 +29,14 @@ assert.deepEqual(result, [{columns:['letter', 'code'], values:[['a','1'],['b','2
 
 console.log("Testing getting data...");
 
-var stmt = db.prepare("select 5 as nbr, 'hello' as str, null as nothing;");
+var stmt = db.prepare("select 5 as nbr, '粵語😄' as str, null as nothing;");
 stmt.step(); // Run the statement
 assert.deepEqual(stmt.getColumnNames(), ['nbr','str','nothing']);
 var res = stmt.getAsObject();
 assert.strictEqual(res.nbr, 5);
-assert.strictEqual(res.str, 'hello');
+assert.strictEqual(res.str, '粵語😄');
 assert.strictEqual(res.nothing, null);
-assert.deepEqual(res, {nbr:5, str:'hello', nothing:null});
+assert.deepEqual(res, {nbr:5, str:'粵語😄', nothing:null});
 stmt.free();
 
 // Prepare an sql statement
@@ -61,7 +60,6 @@ result = stmt.get([0, 1]);
 assert.deepEqual(result, ['a',1]);
 
 // Pass objects to get() and bind() to use named parameters
-console.log("Testing named parameters...");
 result = stmt.get({':start':1, ':end':1});
 assert.deepEqual(result, ['a',1]);
 
