@@ -1,4 +1,5 @@
 # SQLite compiled to javascript
+[![Build Status](https://travis-ci.org/lovasoa/sql.js.svg?branch=master)](http://travis-ci.org/lovasoa/sql.js)
 
 This is my fork of sql.js, by kripken. Try it online here: http://lovasoa.github.io/sql.js/GUI/
 
