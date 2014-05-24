@@ -22,7 +22,7 @@ exports.test = function(sql, assert){
 
 	result = db.exec("SELECT * FROM alphabet");
 	assert.deepEqual(result,
-									[{columns:['letter', 'code'], values:[['a','1'],['b','2.2'],['c','']]}],
+									[{columns:['letter', 'code'], values:[['a',1],['b',2.2],['c',null]]}],
 									"Statement.run() should have added data to the database");
 
 	var stmt = db.prepare("select 5 as nbr, '粵語😄' as str, null as nothing;");

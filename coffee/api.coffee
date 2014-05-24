@@ -7,30 +7,6 @@ SQLite = {
 	errorMessages : [] # Will contain all SQLite error descriptions sorted by error codes
 };
 
-dataTemp = []
-callbackTemp = Runtime.addFunction (notUsed, argc, argv, colNames) ->
-	curresult = if (dataTemp.length is 0) then null else dataTemp[dataTemp.length-1]
-	isNewResult = (curresult is null or argc isnt curresult['columns'].length);
-	curvalues = []
-	curcolumns = []
-
-	for i in [0...argc]
-		column = Pointer_stringify getValue colNames + i*Runtime.QUANTUM_SIZE, 'i32'
-		value  = Pointer_stringify getValue argv     + i*Runtime.QUANTUM_SIZE, 'i32'
-		curvalues.push value
-		curcolumns.push column
-		if not isNewResult and column isnt curresult['columns'][i] then isNewResult = true
-
-	if isNewResult
-		dataTemp.push {
-			'columns' : curcolumns
-			'values' : [curvalues]
-		}
-	else
-		curresult['values'].push curvalues
-	# If the callback returns non-zero, the query is aborted
-	return 0
-
 ### Represents an prepared statement.
 
 Prepared statements allow you to have a template sql string,
@@ -101,6 +77,7 @@ class Statement
 	@throw [String] SQLite Error
 	###
 	'step': ->
+		if not @stmt then throw "Statement closed"
 		@pos = 1
 		ret = sqlite3_step @stmt
 		if ret is SQLite.ROW then return true
@@ -271,25 +248,96 @@ class Database
 		@db = getValue(apiTemp, 'i32')
 		@statements = [] # A list of all prepared statements of the database
 
-	### Execute an SQL query, and returns the result
+	### Execute an SQL query, ignoring the rows it returns.
+
+	@param sql [String] a string containing some SQL text to execute
+	@param params [Array] (*optional*) When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed.
+
+	If you use the params argument, you **cannot** provide an sql string that contains several
+	queries (separated by ';')
+
+	@example Insert values in a table
+	    db.run("INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'});
+
+	@return [Database] The database object (usefull for method chaining)
+	###
+	'run' : (sql, params) ->
+		if not @db then throw "Database closed"
+		if params
+			stmt = @['prepare'] sql, params
+			stmt['step']()
+			stmt['free']()
+		else
+			ret = sqlite3_exec @db, sql, 0, 0, apiTemp
+			err = handleErrors ret, apiTemp
+			if err isnt null then throw 'SQLite error : ' + err
+		return @
+
+	### Execute an SQL query, and returns the result.
+
+	This is a wrapper against Database.prepare, Statement.step, Statement.get,
+	and Statement.free.
+
+	The result is an array of result elements. There are as many result elements
+	as the number of statements in your sql string (statements are separated by a semicolon)
+
+	Each result element is an object with two properties:
+		'columns' : the name of the columns of the result (as returned by Statement.getColumnNames())
+		'values' : an array of rows. Each row is itself an array of values
+
+	## Example use
+	We have the following table, named *test* :
+
+	| id | age |  name  |
+	|:--:|:---:|:------:|
+	| 1  |  1  | Ling   |
+	| 2  |  18 | Paul   |
+	| 3  |  3  | Markus |
+
+
+	We query it like that:
+	```javascript
+	var db = new SQL.Database();
+	var res = db.exec("SELECT id FROM test; SELECT age,name FROM test;");
+	```
+
+	`res` is now :
+	```javascript
+		[
+		 	{columns: ['id'], values:[[1],[2],[3]]},
+		 	{columns: ['age','name'], values:[[1,'Ling'],[18,'Paul'],[3,'Markus']]}
+		]
+	```
+
 	@param sql [String] a string containing some SQL text to execute
 	@return [Array<QueryResults>] An array of results.
 	###
 	'exec': (sql) ->
 		if not @db then throw "Database closed"
-		dataTemp = []
-		setValue apiTemp, 0, 'i32'
-		ret = sqlite3_exec @db, sql, callbackTemp, 0, apiTemp
-		err = handleErrors ret, apiTemp
-		if err isnt null then throw 'SQLite error : ' + err
-		return dataTemp
+		results = []
+		for sqlstr in sql.split ';'
+			try stmt = @['prepare'] sqlstr
+			catch err
+				if err is 'Nothing to prepare' then continue
+				else throw err
+			curresult = null
+			while stmt['step']()
+				if curresult is null
+					curresult =
+						'columns' : stmt['getColumnNames']()
+						'values' : []
+					results.push curresult
+				curresult['values'].push stmt['get']()
+			stmt['free']()
+		return results
 
 	### Prepare an SQL statement
 	@param sql [String] a string of SQL, that can contain placeholders ('?', ':VVV', ':AAA', '@AAA')
+	@param params [Array] (*optional*) values to bind to placeholders
 	@return [Statement] the resulting statement
 	@throw [String] SQLite error
 	###
-	'prepare': (sql) ->
+	'prepare': (sql, params) ->
 		setValue apiTemp, 0, 'i32'
 		ret = sqlite3_prepare_v2 @db, sql, -1, apiTemp, NULL
 		err = handleErrors ret, NULL
@@ -297,6 +345,7 @@ class Database
 		pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
 		if pStmt is NULL then throw 'Nothing to prepare'
 		stmt = new Statement(pStmt)
+		if params? then stmt.bind params
 		@statements.push(stmt)
 		return stmt
 

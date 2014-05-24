@@ -22,7 +22,14 @@ var db = new sql.Database();
 sqlstr = "CREATE TABLE hello (a int, b char);";
 sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
 sqlstr += "INSERT INTO hello VALUES (1, 'world');"
-db.exec(sqlstr);
+db.run(sqlstr); // Run the query without returning anything
+
+var res = db.exec("SELECT * FROM hello");
+/*
+[
+	{columns:['a','b'], values:[[0,'hello'],[1,'world']]}
+]
+*/
 
 // Prepare an sql statement
 var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
