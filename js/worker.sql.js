@@ -481,9 +481,6 @@ if (typeof importScripts === 'function') {
         if (db === null) {
           createDb();
         }
-        if (!data['id']) {
-          throw 'exec: Missing query id';
-        }
         if (!data['sql']) {
           throw 'exec: Missing query string';
         }
