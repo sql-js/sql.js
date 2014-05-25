@@ -26,6 +26,13 @@ js/sql%-raw.js: c/sqlite3.bc js/api.js exported_functions
 js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
 	coffee --bare --compile --join $@ --compile $^
 
+# Web worker API
+js/worker.js: coffee/worker.coffee
+	coffee --bare --compile --join $@ --compile $^
+
+js/worker.sql.js: js/sql.js js/worker.js
+	cat $^ > $@
+
 c/sqlite3.bc: c/sqlite3.c
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) c/sqlite3.c -o c/sqlite3.bc
