@@ -17,7 +17,14 @@ exports.test = function(sql, assert) {
 		stmt.bind([1,2,3]);
 	}, "Binding too many parameters should throw an exception");
 
-	stmt.run([2]); // Previous errors should not hav spoiled the statement
+	assert.throws(function(){
+		db.run("CREATE TABLE test (this,wont,work)");
+	}, "Trying to create a table with a name that is already used should throw an error");
+
+	stmt.run([2])
+	assert.deepEqual(db.exec("SELECT a,b FROM test WHERE a=2"),
+														[{columns:['a', 'b'],values:[[2, null]]}]
+														, "Previous errors should not have spoiled the statement");
 
 	db.close();
 

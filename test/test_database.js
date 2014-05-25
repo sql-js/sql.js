@@ -35,6 +35,11 @@ exports.test = function(sql, assert) {
 	assert.deepEqual(result, expectedResult,
 		              "Exporting and re-importing the database should lead to the same database");
 	db2.close();
+
+	db = new SQL.Database();
+	assert.deepEqual(db.exec("SELECT * FROM sqlite_master"),
+									[],
+		              "Newly created databases should be empty");
 };
 
 if (module == require.main) {
