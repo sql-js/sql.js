@@ -20,7 +20,7 @@ exports.test = function(notUsed, assert, done) {
 			assert.strictEqual(row.values[0][1], 'a', 'Reading string');
 			assert.deepEqual(Array.prototype.slice.call(row.values[0][2]), [0x00, 0x42], 'Reading BLOB');
 
-			worker.onmessage = function(event) { console.log(event)
+			worker.onmessage = function(event) {
 				var data = event.data;
 
 				if (!data.finished) {
