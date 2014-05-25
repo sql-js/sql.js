@@ -1,4 +1,4 @@
-exports.test = function(sql, assert) {
+exports.test = function(sql, assert, done) {
 	assert.notEqual(sql.Database, undefined, "Should export a Database object");
 
 	// Create a database
@@ -40,10 +40,27 @@ exports.test = function(sql, assert) {
 	assert.deepEqual(db.exec("SELECT * FROM sqlite_master"),
 									[],
 		              "Newly created databases should be empty");
+		// Testing db.each
+		db.run("CREATE TABLE test (a,b); INSERT INTO test VALUES (1,'a'),(2,'b')");
+		var count = 0, finished = false;
+		db.each("SELECT * FROM test ORDER BY a", function callback (row){
+			count++;
+			if (count === 1) assert.deepEqual(row, {a:1,b:'a'}, 'db.each returns the correct 1st row');
+			if (count === 2) assert.deepEqual(row, {a:2,b:'b'}, 'db.each returns the correct 2nd row');
+		}, function finished () {
+			finished = true;
+			assert.ok(count === 2, "db.each returns the right number of rows");
+			done();
+		});
+		var timeout = setTimeout(function timeout(){
+			assert.ok(finished === true, "db.each should call its last callback after having returned the rows");
+			done();
+		}, 3000);
 };
 
 if (module == require.main) {
 	var sql = require('../js/sql.js');
 	var assert = require('assert');
-	exports.test(sql, assert);
+	var done = function(){process.exit();}
+	exports.test(sql, assert, done);
 }

@@ -27,6 +27,7 @@ js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
 	coffee --bare --compile --join $@ --compile $^
 
 # Web worker API
+worker: js/worker.sql.js
 js/worker.js: coffee/worker.coffee
 	coffee --bare --compile --join $@ --compile $^
 

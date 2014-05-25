@@ -9,7 +9,8 @@ if typeof importScripts is 'function' # Detect webworker context
 		data  = event['data']
 		switch data?['action']
 			when 'open'
-				createDb new Uint8Array(data?['buffer'])
+				buff = data['buffer']
+				createDb (if buff then new Uint8Array(buff) else undefined)
 				postMessage
 					'id': data['id']
 					'ready': true
@@ -20,6 +21,17 @@ if typeof importScripts is 'function' # Detect webworker context
 				postMessage
 					'id' : data['id']
 					'results': db.exec data['sql']
+			when 'each'
+				if db is null then createDb()
+				callback = (row) -> postMessage
+											'id': data['id']
+											'row': row
+											'finished': false
+				done = -> postMessage
+											'id' : data['id']
+											'finished': true
+				db.each data['sql'], data['params'], callback, done
+
 			when 'export'
 				buff = db.export().buffer
 				postMessage
@@ -29,4 +41,4 @@ if typeof importScripts is 'function' # Detect webworker context
 			when 'close'
 				db?.close()
 			else
-				throw 'Invalid action : ' + data?['action']
+				throw new 'Invalid action : ' + data?['action']

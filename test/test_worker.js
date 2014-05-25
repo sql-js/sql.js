@@ -20,13 +20,26 @@ exports.test = function(notUsed, assert, done) {
 			assert.strictEqual(row.values[0][1], 'a', 'Reading string');
 			assert.deepEqual(Array.prototype.slice.call(row.values[0][2]), [0x00, 0x42], 'Reading BLOB');
 
-			worker.onmessage = function(event) {
+			worker.onmessage = function(event) { console.log(event)
 				var data = event.data;
-				assert.equal(typeof data.buffer.byteLength, 'number', 'Export returns an ArrayBuffer');
-				assert.notEqual(data.buffer.byteLength, 0, 'ArrayBuffer returned is not empty');
-				done();
+
+				if (!data.finished) {
+					data.row.hex = Array.prototype.slice.call(data.row.hex);
+					assert.deepEqual(data.row, {num:1,str:'a',hex:[0x00,0x42]}, "Read row from db.each callback");
+				} else {
+					worker.onmessage = function(event) {
+						var data = event.data;
+						assert.equal(typeof data.buffer.byteLength, 'number', 'Export returns an ArrayBuffer');
+						assert.notEqual(data.buffer.byteLength, 0, 'ArrayBuffer returned is not empty');
+						done();
+					}
+					worker.postMessage({action:'export'});
+				}
 			}
-			worker.postMessage({id:3, action:'export'});
+			worker.postMessage ({
+				action: 'each',
+				sql: 'SELECT * FROM test'
+			})
 		}
 		var sqlstr = "CREATE TABLE test (num, str, hex);";
 		sqlstr += "INSERT INTO test VALUES (1, 'a', x'0042');";
@@ -39,13 +52,13 @@ exports.test = function(notUsed, assert, done) {
 	}
 	worker.onerror = function (e) {
 		console.log("Threw error: ", e);
-		assert.fail(e,null,"Sould not throw an error");
+		assert.fail(new Error(e),null,"Sould not throw an error");
 		done();
 	}
 	worker.postMessage({id:1, action: 'open'});
 
-	setTimeout(function(){
-		assert.fail(null, 'timeout', "Worker should answer in less than 3 seconds");
+	setTimeout(function ontimeout (){
+		assert.fail(new Error("Worker should answer in less than 3 seconds"));
 		done();
 	}, 3000);
 }

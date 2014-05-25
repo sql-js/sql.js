@@ -331,6 +331,36 @@ class Database
 			stmt['free']()
 		return results
 
+	### Execute an sql statement, and call a callback for each row of result.
+
+	**Currently** this method is synchronous, it will not return until the callback has
+	been called on every row of the result. But this might change.
+
+	@param sql [String] A string of SQL text. Can contain placeholders that will be
+	bound to the parameters given as the second argument
+	@param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters to bind 
+	to the query
+	@param callback [Function(Object)] A function that will be called on each row of result
+	@param done [Function] A function that will be called when all rows have been retrieved
+
+	@return [Database] The database object. Usefull for method chaining
+
+	@example Read values from a table
+	    db.each("SELECT name,age FROM users WHERE age >= $majority",
+	    				{$majority:18},
+	    				function(row){console.log(row.name + " is a grown-up.")}
+	    			);
+	###
+	'each' : (sql, params, callback, done) ->
+		if typeof params is 'function'
+			done = callback
+			callback = params
+			params = undefined
+		stmt = @['prepare'] sql, params
+		while stmt['step']()
+			callback stmt['getAsObject']()
+		if typeof done is 'function' then done()
+
 	### Prepare an SQL statement
 	@param sql [String] a string of SQL, that can contain placeholders ('?', ':VVV', ':AAA', '@AAA')
 	@param params [Array] (*optional*) values to bind to placeholders
