@@ -57,12 +57,75 @@ There is an online demo available here : http://lovasoa.github.io/sql.js/GUI
 
 ## Exemples
 The test files provide up to date example of the use of the api.
-### API usage
+### Inside the browser
+#### Example **HTML** file:
+```html
+<script src='js/sql.js'></script>
+<script>
+var db = new SQL.Database();
+db.run("CREATE TABLE test (a,b); INSERT INTO test VALUES (1,111),(2,222)");
+var stmt = db.prepare("SELECT b FROM test WHERE a=?");
+alert(stmt.get([1])); // Will alert 111
+alert(stmt.get([2])); // Will alert 222
+</script>
+```
+
+#### Creating a database from a file choosen by the user
+`SQL.Database` constructor takes an array of integer representing a database file as an optional parameter.
+The following code uses an HTML input as the source for loading a database:
+```javascript
+dbFileElm.onchange = function() {
+	var f = dbFileElm.files[0];
+	var r = new FileReader();
+	r.onload = function() {
+		var Uints = new Uint8Array(r.result);
+		db = new SQL.Database(Uints);
+	}
+	r.readAsArrayBuffer(f);
+}
+```
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_api.js
-### Load sqlite database file from disk in node.js
+
+### Use from node.js
+Example: read a database from the disk:
+```javascript
+var fs = require('fs');
+var SQL = require('../js/sql-api.js');
+var filebuffer = fs.readFileSync('test.sqlite');
+
+// Load the db
+var db = new SQL.Database(filebuffer);
+```
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
-### Use BLOBs in sqlite
-See : https://github.com/lovasoa/sql.js/blob/master/test/test_blob.js
+
+### Use as WebWorkers
+If you don't want to run CPU-intensive SQL queries in your main application thread, you can use the *more limited* WebWorker API.
+Example:
+```html
+<script>
+var worker = new Worker("js/worker.sql.js"); // You can find worker.sql.js in this repo
+worker.onmessage = function() {
+	console.log("Database opened");
+	worker.onmessage = function(event){
+		console.log(event.data); // The result of the query
+	};
+	worker.postMessage({
+		id: 2,
+		action: 'exec',
+		sql: 'SELECT * FROM test'
+	});
+};
+
+worker.onerror = function(e) {console.log("Worker error: ", e)};
+worker.postMessage({
+	id:1,
+	action:'open',
+	buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
+});
+</script>
+```
+
+See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
 
 ## Documentation
 The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
