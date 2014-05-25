@@ -16,7 +16,6 @@ if typeof importScripts is 'function' # Detect webworker context
 					'ready': true
 			when 'exec'
 				if db is null then createDb()
-				if not data['id'] then throw 'exec: Missing query id'
 				if not data['sql'] then throw 'exec: Missing query string'
 				postMessage
 					'id' : data['id']
