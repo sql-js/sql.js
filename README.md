@@ -109,8 +109,12 @@ fs.writeFileSync("filename.sqlite", buffer);
 
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
 
-### Use as WebWorkers
-If you don't want to run CPU-intensive SQL queries in your main application thread, you can use the *more limited* WebWorker API.
+### Use as web worker
+If you don't want to run CPU-intensive SQL queries in your main application thread,
+you can use the *more limited* WebWorker API.
+
+You will need to download `worker.sql.js`
+
 Example:
 ```html
 <script>
@@ -140,6 +144,10 @@ See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
 
 ## Documentation
 The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
+
+## Download
+You can download `sql.js` here : http://lovasoa.github.io/sql.js/js/sql.js
+And the Web Worker version: http://lovasoa.github.io/sql.js/js/worker.sql.js
 
 ## Differences from the original sql.js
  * Support for BLOBs
