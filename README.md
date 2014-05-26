@@ -99,10 +99,14 @@ dbFileElm.onchange = function() {
 See : http://lovasoa.github.io/sql.js/GUI/gui.js
 
 ### Use from node.js
+
+`sql.js` is hosted on npm. To install it, you can simply run `npm install sql.js`.
+Alternatively, you can simply download the file `sql.js`, from the download link below.
+
 #### read a database from the disk:
 ```javascript
 var fs = require('fs');
-var SQL = require('../js/sql-api.js');
+var SQL = require('sql.js');
 var filebuffer = fs.readFileSync('test.sqlite');
 
 // Load the db
