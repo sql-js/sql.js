@@ -84,10 +84,10 @@ dbFileElm.onchange = function() {
 	r.readAsArrayBuffer(f);
 }
 ```
-See : https://github.com/lovasoa/sql.js/blob/master/test/test_api.js
+See : http://lovasoa.github.io/sql.js/GUI/gui.js
 
 ### Use from node.js
-Example: read a database from the disk:
+#### read a database from the disk:
 ```javascript
 var fs = require('fs');
 var SQL = require('../js/sql-api.js');
@@ -96,6 +96,17 @@ var filebuffer = fs.readFileSync('test.sqlite');
 // Load the db
 var db = new SQL.Database(filebuffer);
 ```
+
+### Write a database to the disk
+You need to convert the result of `db.export` to a buffer
+```javascript
+var fs = require("fs");
+// [...] (create the database)
+var data = db.export();
+var buffer = new Buffer(data);
+fs.writeFileSync("filename.sqlite", buffer);
+```
+
 See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
 
 ### Use as WebWorkers
