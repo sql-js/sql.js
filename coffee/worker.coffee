@@ -33,10 +33,15 @@ if typeof importScripts is 'function' # Detect webworker context
 
 			when 'export'
 				buff = db.export().buffer
-				postMessage
-						'id' : data['id']
-						'buffer' : buff
-					, [buff]
+				try
+					postMessage
+							'id' : data['id']
+							'buffer' : buff
+						, [buff]
+				catch err # Some browsers fail when trying to use transferable objects
+					postMessage
+							'id' : data['id']
+							'buffer' : buff
 			when 'close'
 				db?.close()
 			else
