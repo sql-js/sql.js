@@ -2,10 +2,8 @@
 
 apiTemp = Runtime.stackAlloc(4);
 
-SQLite = {
-	# Constants are defined below
-	errorMessages : [] # Will contain all SQLite error descriptions sorted by error codes
-};
+# Constants are defined in api-data.coffee
+SQLite = {};
 
 ### Represents an prepared statement.
 
@@ -25,7 +23,7 @@ class Statement
 	# Statements can't be created by the API user, only by Database::prepare
 	# @private
 	# @nodoc
-	constructor: (@stmt) ->
+	constructor: (@stmt, @db) ->
 		@pos = 1 # Index of the leftmost parameter is 1
 		@allocatedmem = [] # Pointers to allocated memory, that need to be freed when the statemend is destroyed
 
@@ -79,10 +77,10 @@ class Statement
 	'step': ->
 		if not @stmt then throw "Statement closed"
 		@pos = 1
-		ret = sqlite3_step @stmt
-		if ret is SQLite.ROW then return true
-		else if ret is SQLite.DONE then return false
-		else throw 'SQLite error: ' + handleErrors ret
+		switch ret = sqlite3_step @stmt
+			when SQLite.ROW  then return true
+			when SQLite.DONE then return false
+			else @db.handleError ret
 
 	# Internal methods to retrieve data from the results of a statement that has been executed
 	# @nodoc
@@ -161,25 +159,22 @@ class Statement
 	bindString: (string, pos = @pos++) ->
 		bytes = intArrayFromString(string)
 		@allocatedmem.push strptr = allocate bytes, 'i8', ALLOC_NORMAL
-		ret = sqlite3_bind_text @stmt, pos, strptr, bytes.length, 0
-		if ret is SQLite.OK then return true
-		err = handleErrors ret
-		if err isnt null then throw 'SQLite error : ' + err
+		@db.handleError sqlite3_bind_text @stmt, pos, strptr, bytes.length, 0
+		return true
+
 	# @nodoc
 	bindBlob: (array, pos = @pos++) ->
 		@allocatedmem.push blobptr = allocate array, 'i8', ALLOC_NORMAL
-		ret = sqlite3_bind_blob @stmt, pos, blobptr, array.length, 0
-		if ret is SQLite.OK then return true
-		err = handleErrors ret
-		if err isnt null then throw 'SQLite error : ' + err
+		@db.handleError sqlite3_bind_blob @stmt, pos, blobptr, array.length, 0
+		return true
+
 	# @private
 	# @nodoc
 	bindNumber: (num, pos = @pos++) ->
 		bindfunc = if num is (num|0) then sqlite3_bind_int else sqlite3_bind_double
-		ret = bindfunc @stmt, pos, num
-		if ret is SQLite.OK then return true
-		err = handleErrors ret
-		if err isnt null then throw 'SQLite error : ' + err
+		@db.handleError bindfunc @stmt, pos, num
+		return true
+
 	# @nodoc
 	bindNull: (pos = @pos++) -> sqlite3_bind_blob(@stmt, pos, 0,0,0) is SQLite.OK
 	# Call bindNumber or bindString appropriatly
@@ -217,8 +212,8 @@ class Statement
 	###
 	'reset' : ->
 		@freemem()
-		sqlite3_reset(@stmt) is SQLite.OK and
-		sqlite3_clear_bindings(@stmt) is SQLite.OK
+		sqlite3_clear_bindings(@stmt) is SQLite.OK and
+		sqlite3_reset(@stmt) is SQLite.OK
 
 	### Free the memory allocated during parameter binding
 	###
@@ -243,8 +238,7 @@ class Database
 	constructor: (data) ->
 		@filename = 'dbfile_' + (0xffffffff*Math.random()>>>0)
 		if data? then FS.createDataFile '/', @filename, data, true, true
-		ret = sqlite3_open @filename, apiTemp
-		if ret isnt SQLite.OK then throw 'SQLite error: ' + SQLite.errorMessages[ret]
+		@handleError sqlite3_open @filename, apiTemp
 		@db = getValue(apiTemp, 'i32')
 		@statements = [] # A list of all prepared statements of the database
 
@@ -268,9 +262,7 @@ class Database
 			stmt['step']()
 			stmt['free']()
 		else
-			ret = sqlite3_exec @db, sql, 0, 0, apiTemp
-			err = handleErrors ret, apiTemp
-			if err isnt null then throw 'SQLite error : ' + err
+			@handleError sqlite3_exec @db, sql, 0, 0, apiTemp
 		return @
 
 	### Execute an SQL query, and returns the result.
@@ -369,14 +361,12 @@ class Database
 	###
 	'prepare': (sql, params) ->
 		setValue apiTemp, 0, 'i32'
-		ret = sqlite3_prepare_v2 @db, sql, -1, apiTemp, NULL
-		err = handleErrors ret, NULL
-		if err isnt null then throw 'SQLite error: ' + err
+		@handleError sqlite3_prepare_v2 @db, sql, -1, apiTemp, NULL
 		pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
 		if pStmt is NULL then throw 'Nothing to prepare'
-		stmt = new Statement(pStmt)
+		stmt = new Statement pStmt, this
 		if params? then stmt.bind params
-		@statements.push(stmt)
+		@statements.push stmt
 		return stmt
 
 	### Exports the contents of the database to a binary array
@@ -397,18 +387,17 @@ class Database
 	###
 	'close': ->
 		stmt['free']() for stmt in @statements
-		ret = sqlite3_close_v2 @db
-		if ret isnt 0 then throw 'SQLite error: ' + SQLite_codes[ret].msg
+		@handleError sqlite3_close_v2 @db
 		FS.unlink '/' + @filename
 		@db = null
 
-handleErrors = (ret, errPtrPtr) ->
-	if not errPtrPtr
-		return if ret is SQLite.OK then null else SQLite.errorMessages[ret]
-	else
-		errPtr = getValue errPtrPtr, 'i32'
-		if errPtr isnt NULL and errPtr isnt undefined
-			msg = Pointer_stringify errPtr
-			sqlite3_free errPtr
-			return msg
-		else return null
+	### Analyze a result code, return null if no error occured, and throw
+	an error with a descriptive message otherwise
+	@nodoc
+	###
+	handleError: (returnCode) ->
+		if returnCode is SQLite.OK
+			null
+		else
+			errmsg = sqlite3_errmsg @db
+			throw new Error(errmsg)

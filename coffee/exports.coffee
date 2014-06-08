@@ -22,6 +22,7 @@ sqlite3_bind_parameter_index = Module['cwrap'] 'sqlite3_bind_parameter_index', '
 ## Get values
 # int sqlite3_step(sqlite3_stmt*)
 sqlite3_step = Module['cwrap'] 'sqlite3_step', 'number', ['number']
+sqlite3_errmsg = Module['cwrap'] 'sqlite3_errmsg', 'string', ['number']
 # int sqlite3_data_count(sqlite3_stmt *pStmt);
 sqlite3_data_count = Module['cwrap'] 'sqlite3_data_count', 'number', ['number']
 sqlite3_column_double = Module['cwrap'] 'sqlite3_column_double', 'number', ['number', 'number']

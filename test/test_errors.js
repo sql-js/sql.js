@@ -1,25 +1,45 @@
 exports.test = function(sql, assert) {
+
+	assert.throws(function(){
+		var db = new sql.Database([1,2,3]);
+		db.exec("SELECT * FROM sqlite_master");
+	},
+	/not a database/,
+	"Querying an invalid database should throw an error");
+
 	// Create a database
 	var db = new sql.Database();
 
 	// Execute some sql
-	var res = db.exec("CREATE TABLE test (a, b, c, d, e);");
+	var res = db.exec("CREATE TABLE test (a INTEGER PRIMARY KEY, b, c, d, e);");
 
 	assert.throws(function(){
 		db.exec("I ain't be no valid sql ...");
-	}, "Executing invalid SQL should throw an error");
+	},
+	/syntax error/,
+	"Executing invalid SQL should throw an error");
 
+	assert.throws(function(){
+		db.run("INSERT INTO test (a) VALUES (1)");
+		db.run("INSERT INTO test (a) VALUES (1)");
+	},
+	/UNIQUE constraint failed/,
+	"Inserting two rows with the same primary key should fail");
 
 	var stmt = db.prepare("INSERT INTO test (a) VALUES (?)");
 
 
 	assert.throws(function(){
 		stmt.bind([1,2,3]);
-	}, "Binding too many parameters should throw an exception");
+	},
+	/out of range/,
+	"Binding too many parameters should throw an exception");
 
 	assert.throws(function(){
 		db.run("CREATE TABLE test (this,wont,work)");
-	}, "Trying to create a table with a name that is already used should throw an error");
+	},
+	/table .+ already exists/,
+	"Trying to create a table with a name that is already used should throw an error");
 
 	stmt.run([2])
 	assert.deepEqual(db.exec("SELECT a,b FROM test WHERE a=2"),
