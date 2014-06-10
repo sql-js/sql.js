@@ -113,7 +113,7 @@ var filebuffer = fs.readFileSync('test.sqlite');
 var db = new SQL.Database(filebuffer);
 ```
 
-### Write a database to the disk
+#### write a database to the disk
 You need to convert the result of `db.export` to a buffer
 ```javascript
 var fs = require("fs");
