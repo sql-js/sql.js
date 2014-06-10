@@ -100,7 +100,7 @@ See : http://lovasoa.github.io/sql.js/GUI/gui.js
 
 ### Use from node.js
 
-`sql.js` is hosted on npm. To install it, you can simply run `npm install sql.js`.
+`sql.js` is [hosted on npm](https://www.npmjs.org/package/sql.js). To install it, you can simply run `npm install sql.js`.
 Alternatively, you can simply download the file `sql.js`, from the download link below.
 
 #### read a database from the disk:
@@ -161,9 +161,9 @@ See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
 ## Documentation
 The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
 
-## Download
-You can download `sql.js` here : http://lovasoa.github.io/sql.js/js/sql.js
-And the Web Worker version: http://lovasoa.github.io/sql.js/js/worker.sql.js
+## Downloads
+ - You can download `sql.js` here : http://lovasoa.github.io/sql.js/js/sql.js
+ - And the Web Worker version: http://lovasoa.github.io/sql.js/js/worker.sql.js
 
 ## Differences from the original sql.js
  * Support for BLOBs
