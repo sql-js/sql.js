@@ -2,7 +2,7 @@
 	"name": "sql.js",
 	"version": "0.2.4",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
-	"keywords": ["SQL", "SQLite", "database", "emscripten"],
+	"keywords": ["sql", "sqlite", "stand-alone", "relational", "database", "RDBMS", "data", "query", "statement", "emscripten", "asm", "asm.js"],
 	"license": "MIT",
 	"main": "./js/sql.js",
 	"scripts": { "test": "node test/all.js" },
