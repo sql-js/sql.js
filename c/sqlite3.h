@@ -107,9 +107,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.8.4.3"
-#define SQLITE_VERSION_NUMBER 3008004
-#define SQLITE_SOURCE_ID      "2014-04-03 16:53:12 a611fa96c4a848614efe899130359c9f6fb889c3"
+#define SQLITE_VERSION        "3.8.5"
+#define SQLITE_VERSION_NUMBER 3008005
+#define SQLITE_SOURCE_ID      "2014-06-04 14:06:34 b1ed4f2a34ba66c29b130f8d13e9092758019212"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -560,7 +560,10 @@ SQLITE_API int sqlite3_exec(
 ** file that were written at the application level might have changed
 ** and that adjacent bytes, even bytes within the same sector are
 ** guaranteed to be unchanged.  The SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN
-** flag indicate that a file cannot be deleted when open.
+** flag indicate that a file cannot be deleted when open.  The
+** SQLITE_IOCAP_IMMUTABLE flag indicates that the file is on
+** read-only media and cannot be changed even by processes with
+** elevated privileges.
 */
 #define SQLITE_IOCAP_ATOMIC                 0x00000001
 #define SQLITE_IOCAP_ATOMIC512              0x00000002
@@ -575,6 +578,7 @@ SQLITE_API int sqlite3_exec(
 #define SQLITE_IOCAP_SEQUENTIAL             0x00000400
 #define SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN  0x00000800
 #define SQLITE_IOCAP_POWERSAFE_OVERWRITE    0x00001000
+#define SQLITE_IOCAP_IMMUTABLE              0x00002000
 
 /*
 ** CAPI3REF: File Locking Levels
@@ -943,6 +947,12 @@ struct sqlite3_io_methods {
 ** on whether or not the file has been renamed, moved, or deleted since it
 ** was first opened.
 **
+** <li>[[SQLITE_FCNTL_WIN32_SET_HANDLE]]
+** The [SQLITE_FCNTL_WIN32_SET_HANDLE] opcode is used for debugging.  This
+** opcode causes the xFileControl method to swap the file handle with the one
+** pointed to by the pArg argument.  This capability is used during testing
+** and only needs to be supported when SQLITE_TEST is defined.
+**
 ** </ul>
 */
 #define SQLITE_FCNTL_LOCKSTATE               1
@@ -966,6 +976,7 @@ struct sqlite3_io_methods {
 #define SQLITE_FCNTL_HAS_MOVED              20
 #define SQLITE_FCNTL_SYNC                   21
 #define SQLITE_FCNTL_COMMIT_PHASETWO        22
+#define SQLITE_FCNTL_WIN32_SET_HANDLE       23
 
 /*
 ** CAPI3REF: Mutex Handle
@@ -2779,6 +2790,30 @@ SQLITE_API void sqlite3_progress_handler(sqlite3*, int, int(*)(void*), void*);
 **     ^If sqlite3_open_v2() is used and the "cache" parameter is present in
 **     a URI filename, its value overrides any behavior requested by setting
 **     SQLITE_OPEN_PRIVATECACHE or SQLITE_OPEN_SHAREDCACHE flag.
+**
+**  <li> <b>psow</b>: ^The psow parameter may be "true" (or "on" or "yes" or
+**     "1") or "false" (or "off" or "no" or "0") to indicate that the
+**     [powersafe overwrite] property does or does not apply to the
+**     storage media on which the database file resides.  ^The psow query
+**     parameter only works for the built-in unix and Windows VFSes.
+**
+**  <li> <b>nolock</b>: ^The nolock parameter is a boolean query parameter
+**     which if set disables file locking in rollback journal modes.  This
+**     is useful for accessing a database on a filesystem that does not
+**     support locking.  Caution:  Database corruption might result if two
+**     or more processes write to the same database and any one of those
+**     processes uses nolock=1.
+**
+**  <li> <b>immutable</b>: ^The immutable parameter is a boolean query
+**     parameter that indicates that the database file is stored on
+**     read-only media.  ^When immutable is set, SQLite assumes that the
+**     database file cannot be changed, even by a process with higher
+**     privilege, and so the database is opened read-only and all locking
+**     and change detection is disabled.  Caution: Setting the immutable
+**     property on a database file that does in fact change can result
+**     in incorrect query results and/or [SQLITE_CORRUPT] errors.
+**     See also: [SQLITE_IOCAP_IMMUTABLE].
+**       
 ** </ul>
 **
 ** ^Specifying an unknown parameter in the query component of a URI is not an
@@ -2808,8 +2843,9 @@ SQLITE_API void sqlite3_progress_handler(sqlite3*, int, int(*)(void*), void*);
 **          Open file "data.db" in the current directory for read-only access.
 **          Regardless of whether or not shared-cache mode is enabled by
 **          default, use a private cache.
-** <tr><td> file:/home/fred/data.db?vfs=unix-nolock <td>
-**          Open file "/home/fred/data.db". Use the special VFS "unix-nolock".
+** <tr><td> file:/home/fred/data.db?vfs=unix-dotfile <td>
+**          Open file "/home/fred/data.db". Use the special VFS "unix-dotfile"
+**          that uses dot-files in place of posix advisory locking.
 ** <tr><td> file:data.db?mode=readonly <td> 
 **          An error. "readonly" is not a valid option for the "mode" parameter.
 ** </table>
@@ -6123,7 +6159,8 @@ SQLITE_API int sqlite3_test_control(int op, ...);
 #define SQLITE_TESTCTRL_EXPLAIN_STMT            19
 #define SQLITE_TESTCTRL_NEVER_CORRUPT           20
 #define SQLITE_TESTCTRL_VDBE_COVERAGE           21
-#define SQLITE_TESTCTRL_LAST                    21
+#define SQLITE_TESTCTRL_BYTEORDER               22
+#define SQLITE_TESTCTRL_LAST                    22
 
 /*
 ** CAPI3REF: SQLite Runtime Status
@@ -7346,6 +7383,16 @@ extern "C" {
 #endif
 
 typedef struct sqlite3_rtree_geometry sqlite3_rtree_geometry;
+typedef struct sqlite3_rtree_query_info sqlite3_rtree_query_info;
+
+/* The double-precision datatype used by RTree depends on the
+** SQLITE_RTREE_INT_ONLY compile-time option.
+*/
+#ifdef SQLITE_RTREE_INT_ONLY
+  typedef sqlite3_int64 sqlite3_rtree_dbl;
+#else
+  typedef double sqlite3_rtree_dbl;
+#endif
 
 /*
 ** Register a geometry callback named zGeom that can be used as part of an
@@ -7356,11 +7403,7 @@ typedef struct sqlite3_rtree_geometry sqlite3_rtree_geometry;
 SQLITE_API int sqlite3_rtree_geometry_callback(
   sqlite3 *db,
   const char *zGeom,
-#ifdef SQLITE_RTREE_INT_ONLY
-  int (*xGeom)(sqlite3_rtree_geometry*, int n, sqlite3_int64 *a, int *pRes),
-#else
-  int (*xGeom)(sqlite3_rtree_geometry*, int n, double *a, int *pRes),
-#endif
+  int (*xGeom)(sqlite3_rtree_geometry*, int, sqlite3_rtree_dbl*,int*),
   void *pContext
 );
 
@@ -7372,10 +7415,59 @@ SQLITE_API int sqlite3_rtree_geometry_callback(
 struct sqlite3_rtree_geometry {
   void *pContext;                 /* Copy of pContext passed to s_r_g_c() */
   int nParam;                     /* Size of array aParam[] */
-  double *aParam;                 /* Parameters passed to SQL geom function */
+  sqlite3_rtree_dbl *aParam;      /* Parameters passed to SQL geom function */
   void *pUser;                    /* Callback implementation user data */
   void (*xDelUser)(void *);       /* Called by SQLite to clean up pUser */
 };
+
+/*
+** Register a 2nd-generation geometry callback named zScore that can be 
+** used as part of an R-Tree geometry query as follows:
+**
+**   SELECT ... FROM <rtree> WHERE <rtree col> MATCH $zQueryFunc(... params ...)
+*/
+SQLITE_API int sqlite3_rtree_query_callback(
+  sqlite3 *db,
+  const char *zQueryFunc,
+  int (*xQueryFunc)(sqlite3_rtree_query_info*),
+  void *pContext,
+  void (*xDestructor)(void*)
+);
+
+
+/*
+** A pointer to a structure of the following type is passed as the 
+** argument to scored geometry callback registered using
+** sqlite3_rtree_query_callback().
+**
+** Note that the first 5 fields of this structure are identical to
+** sqlite3_rtree_geometry.  This structure is a subclass of
+** sqlite3_rtree_geometry.
+*/
+struct sqlite3_rtree_query_info {
+  void *pContext;                   /* pContext from when function registered */
+  int nParam;                       /* Number of function parameters */
+  sqlite3_rtree_dbl *aParam;        /* value of function parameters */
+  void *pUser;                      /* callback can use this, if desired */
+  void (*xDelUser)(void*);          /* function to free pUser */
+  sqlite3_rtree_dbl *aCoord;        /* Coordinates of node or entry to check */
+  unsigned int *anQueue;            /* Number of pending entries in the queue */
+  int nCoord;                       /* Number of coordinates */
+  int iLevel;                       /* Level of current node or entry */
+  int mxLevel;                      /* The largest iLevel value in the tree */
+  sqlite3_int64 iRowid;             /* Rowid for current entry */
+  sqlite3_rtree_dbl rParentScore;   /* Score of parent node */
+  int eParentWithin;                /* Visibility of parent node */
+  int eWithin;                      /* OUT: Visiblity */
+  sqlite3_rtree_dbl rScore;         /* OUT: Write the score here */
+};
+
+/*
+** Allowed values for sqlite3_rtree_query.eWithin and .eParentWithin.
+*/
+#define NOT_WITHIN       0   /* Object completely outside of query region */
+#define PARTLY_WITHIN    1   /* Object partially overlaps query region */
+#define FULLY_WITHIN     2   /* Object fully contained within query region */
 
 
 #ifdef __cplusplus
