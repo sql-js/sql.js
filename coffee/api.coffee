@@ -227,6 +227,7 @@ class Statement
 	'free': ->
 		@freemem()
 		res = sqlite3_finalize(@stmt) is SQLite.OK
+		delete @db.statements[@stmt]
 		@stmt = NULL
 		return res
 
@@ -240,7 +241,7 @@ class Database
 		if data? then FS.createDataFile '/', @filename, data, true, true
 		@handleError sqlite3_open @filename, apiTemp
 		@db = getValue(apiTemp, 'i32')
-		@statements = [] # A list of all prepared statements of the database
+		@statements = {} # A list of all prepared statements of the database
 
 	### Execute an SQL query, ignoring the rows it returns.
 
@@ -351,6 +352,7 @@ class Database
 		stmt = @['prepare'] sql, params
 		while stmt['step']()
 			callback stmt['getAsObject']()
+		stmt['free']()
 		if typeof done is 'function' then done()
 
 	### Prepare an SQL statement
@@ -366,7 +368,7 @@ class Database
 		if pStmt is NULL then throw 'Nothing to prepare'
 		stmt = new Statement pStmt, this
 		if params? then stmt.bind params
-		@statements.push stmt
+		@statements[pStmt] = stmt
 		return stmt
 
 	### Exports the contents of the database to a binary array
@@ -386,7 +388,7 @@ class Database
 	memory consumption will grow forever
 	###
 	'close': ->
-		stmt['free']() for stmt in @statements
+		stmt['free']() for _,stmt of @statements
 		@handleError sqlite3_close_v2 @db
 		FS.unlink '/' + @filename
 		@db = null
