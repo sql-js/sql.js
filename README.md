@@ -1,4 +1,7 @@
-# sql.js
+# SQLite compiled to javascript
+[![Build Status](https://travis-ci.org/lovasoa/sql.js.svg?branch=master)](http://travis-ci.org/lovasoa/sql.js)
+
+This is my fork of sql.js, by kripken. Try it online here: http://lovasoa.github.io/sql.js/GUI/
 
 sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
 no C bindings or node-gyp compilation here.
@@ -7,40 +10,174 @@ SQLite is public domain, sql.js is MIT licensed.
 
 ## Usage
 
-```coffeescript
-Sql = require 'node-sqlite-purejs'
-Sql.open 'db/development.sqlite', {}, (err, db) ->
-  throw err if err
-  db.exec '''
-  /* Demo DB */
-  CREATE TABLE employees( id          integer,  name    text,
-                          designation text,     manager integer,
-                          hired_on    date,     salary  integer,
-                          commission  float,    dept    integer);
+```javascript
+var sql = require('./js/sql-api.js');
+// or sql = window.SQL if you are in a browser
 
-  INSERT INTO employees VALUES (1,'JOHNSON','ADMIN',6,'12-17-1990',18000,NULL,4);
-  INSERT INTO employees VALUES (2,'HARDING','MANAGER',9,'02-02-1998',52000,300,3);
-  INSERT INTO employees VALUES (3,'TAFT','SALES I',2,'01-02-1996',25000,500,3);
-  INSERT INTO employees VALUES (4,'HOOVER','SALES I',2,'04-02-1990',27000,NULL,3);
-  INSERT INTO employees VALUES (5,'LINCOLN','TECH',6,'06-23-1994',22500,1400,4);
-  INSERT INTO employees VALUES (6,'GARFIELD','MANAGER',9,'05-01-1993',54000,NULL,4);
-  INSERT INTO employees VALUES (7,'POLK','TECH',6,'09-22-1997',25000,NULL,4);
-  INSERT INTO employees VALUES (8,'GRANT','ENGINEER',10,'03-30-1997',32000,NULL,2);
-  INSERT INTO employees VALUES (9,'JACKSON','CEO',NULL,'01-01-1990',75000,NULL,4);
-  INSERT INTO employees VALUES (10,'FILLMORE','MANAGER',9,'08-09-1994',56000,NULL,2);
-  INSERT INTO employees VALUES (11,'ADAMS','ENGINEER',10,'03-15-1996',34000,NULL,2);
-  INSERT INTO employees VALUES (12,'WASHINGTON','ADMIN',6,'04-16-1998',18000,NULL,4);
-  INSERT INTO employees VALUES (13,'MONROE','ENGINEER',10,'12-03-2000',30000,NULL,2);
-  INSERT INTO employees VALUES (14,'ROOSEVELT','CPA',9,'10-12-1995',35000,NULL,1);
-  '''
+// Create a database
+var db = new sql.Database();
+// NOTE: You can also use new sql.Database(data) where
+// data is an Uint8Array representing an SQLite database file
 
-  db.exec "SELECT * FROM employees WHERE designation = 'CEO';", (err, results) ->
-    assert.deepEqual [{"id":"9","name":"JACKSON","designation":"CEO","manager":"(null)","hired_on":"01-01-1990","salary":"75000","commission":"(null)","dept":"4"}], results
+// Execute some sql
+sqlstr = "CREATE TABLE hello (a int, b char);";
+sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
+sqlstr += "INSERT INTO hello VALUES (1, 'world');"
+db.run(sqlstr); // Run the query without returning anything
+
+var res = db.exec("SELECT * FROM hello");
+/*
+[
+	{columns:['a','b'], values:[[0,'hello'],[1,'world']]}
+]
+*/
+
+// Prepare an sql statement
+var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
+
+// Bind values to the parameters and fetch the results of the query
+var result = stmt.getAsObject({':aval' : 1, ':bval' : 'world'});
+console.log(result); // Will print {a:1, b:'world'}
+
+// Bind other values
+stmt.bind([0, 'hello']);
+while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
+
+// free the memory used by the statement
+stmt.free();
+// You can not use your statement anymore once it has been freed.
+// But not freeing your statements causes memory leaks. You don't want that.
+
+// Export the database to an Uint8Array containing the SQLite database file
+var binaryArray = db.export();
 ```
 
-see [test/test.coffee](https://github.com/mikesmullin/node-sqlite-purejs/blob/stable/test/test.coffee) for more examples.
+## Demo
+There is an online demo available here : http://lovasoa.github.io/sql.js/GUI
+
+## Exemples
+The test files provide up to date example of the use of the api.
+### Inside the browser
+#### Example **HTML** file:
+```html
+<script src='js/sql.js'></script>
+<script>
+    //Create the database
+    var db = new SQL.Database();
+    // Run a query without reading the results
+    db.run("CREATE TABLE test (col1, col2);");
+    // Insert two rows: (1,111) and (2,222)
+    db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
+
+    // Prepare a statement
+    var stmt = db.prepare("SELECT * FROM test WHERE a BETWEEN $start AND $end");
+    stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
+
+    // Bind new values
+    stmt.bind({$start:1, $end:2});
+    while(stmt.step()) { //
+        var row = stmt.getAsObject();
+        // [...] do something with the row of result
+    }
+</script>
+```
+
+#### Creating a database from a file choosen by the user
+`SQL.Database` constructor takes an array of integer representing a database file as an optional parameter.
+The following code uses an HTML input as the source for loading a database:
+```javascript
+dbFileElm.onchange = function() {
+	var f = dbFileElm.files[0];
+	var r = new FileReader();
+	r.onload = function() {
+		var Uints = new Uint8Array(r.result);
+		db = new SQL.Database(Uints);
+	}
+	r.readAsArrayBuffer(f);
+}
+```
+See : http://lovasoa.github.io/sql.js/GUI/gui.js
+
+### Use from node.js
+
+`sql.js` is [hosted on npm](https://www.npmjs.org/package/sql.js). To install it, you can simply run `npm install sql.js`.
+Alternatively, you can simply download the file `sql.js`, from the download link below.
+
+#### read a database from the disk:
+```javascript
+var fs = require('fs');
+var SQL = require('sql.js');
+var filebuffer = fs.readFileSync('test.sqlite');
+
+// Load the db
+var db = new SQL.Database(filebuffer);
+```
+
+#### write a database to the disk
+You need to convert the result of `db.export` to a buffer
+```javascript
+var fs = require("fs");
+// [...] (create the database)
+var data = db.export();
+var buffer = new Buffer(data);
+fs.writeFileSync("filename.sqlite", buffer);
+```
+
+See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
+
+### Use as web worker
+If you don't want to run CPU-intensive SQL queries in your main application thread,
+you can use the *more limited* WebWorker API.
+
+You will need to download `worker.sql.js`
+
+Example:
+```html
+<script>
+var worker = new Worker("js/worker.sql.js"); // You can find worker.sql.js in this repo
+worker.onmessage = function() {
+	console.log("Database opened");
+	worker.onmessage = function(event){
+		console.log(event.data); // The result of the query
+	};
+	worker.postMessage({
+		id: 2,
+		action: 'exec',
+		sql: 'SELECT * FROM test'
+	});
+};
+
+worker.onerror = function(e) {console.log("Worker error: ", e)};
+worker.postMessage({
+	id:1,
+	action:'open',
+	buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
+});
+</script>
+```
+
+See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
+
+## Documentation
+The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
+
+## Downloads
+ - You can download `sql.js` here : http://lovasoa.github.io/sql.js/js/sql.js
+ - And the Web Worker version: http://lovasoa.github.io/sql.js/js/worker.sql.js
+
+## Differences from the original sql.js
+ * Support for BLOBs
+ * Support for prepared statements
+ * Cleaner API
+ * More recent version of SQLite (3.8.4)
+ * Compiled to asm.js (should be faster, at least on firefox)
+ * Changed API. Results now have the form <code>[{'columns':[], values:[]}]</code>
+ * Improved GUI of the demo. It now has :
+   * syntax highlighting
+   * nice HTML tables to display results
+   * ability to load and save sqlite database files
 
 ## Related
 
-* [In-Browser/Client-Side Demo](http://kripken.github.io/sql.js/test/demo.html)
+* [In-Browser/Client-Side Demo](http://lovasoa.github.io/sql.js/GUI/)
 

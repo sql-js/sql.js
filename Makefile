@@ -1,20 +1,46 @@
 # Need $(EMSCRIPTEN), for example run with        emmake make
 
-EMCC=$(EMSCRIPTEN)/emcc -s RESERVED_FUNCTION_POINTERS=2 -O2 --closure 1 -s ASM_JS=0
-# -s INLINING_LIMIT=0
-CFLAGS=-DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
+EMSCRIPTEN?=/usr/bin
 
-all: js/sql.js test/benchmark.js test/benchmark
+EMCC=$(EMSCRIPTEN)/emcc
 
-js/sql.js: c/sqlite3.c
-	$(EMCC) $(CFLAGS) c/sqlite3.c c/main.c --pre-js js/pre.js --post-js js/post.js -o js/sql.js -s EXPORTED_FUNCTIONS="['_sqlite3_open', '_sqlite3_close', '_sqlite3_exec']"
+CFLAGS=-DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
 
-test/benchmark.js: c/sqlite3.c c/benchmark.c
-	$(EMCC) $(CFLAGS) c/sqlite3.c c/benchmark.c -o test/benchmark.js
+all: js/sql.js
 
-test/benchmark: c/benchmark.c
-	gcc $(CFLAGS) -pthread -O2 c/sqlite3.c c/benchmark.c -o test/benchmark -ldl
+debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 
+debug: js/sql-debug.js
+
+optimized: EMFLAGS= --closure 1 -O3 -s INLINING_LIMIT=50
+optimized: js/sql-optimized.js
+
+js/sql.js: optimized
+	cp js/sql-optimized.js js/sql.js
+
+js/sql%.js: js/shell-pre.js js/sql%-raw.js js/shell-post.js
+	cat $^ > $@
+
+js/sql%-raw.js: c/sqlite3.bc js/api.js exported_functions
+	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions c/sqlite3.bc --post-js js/api.js -o $@
+
+js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
+	coffee --bare --compile --join $@ --compile $^
+
+# Web worker API
+worker: js/worker.sql.js
+js/worker.js: coffee/worker.coffee
+	coffee --bare --compile --join $@ --compile $^
+
+js/worker.sql.js: js/sql.js js/worker.js
+	cat $^ > $@
+
+c/sqlite3.bc: c/sqlite3.c
+	# Generate llvm bitcode
+	$(EMCC) $(CFLAGS) c/sqlite3.c -o c/sqlite3.bc
+
+module.tar.gz: test package.json AUTHORS README.md js/sql.js
+	tar --create --gzip $^ > $@
 
 clean:
-	rm js/sql.js test/benchmark.js test/benchmark
+	rm -rf js/sql*.js js/api.js js/sql*-raw.js c/sqlite3.bc
 
