@@ -25,7 +25,8 @@ exports.test = function(sql, assert){
 									[{columns:['letter', 'code'], values:[['a',1],['b',2.2],['c',null]]}],
 									"Statement.run() should have added data to the database");
 
-	var stmt = db.prepare("select 5 as nbr, '粵語😄' as str, null as nothing;");
+	db.run("CREATE TABLE data (nbr, str, nothing); INSERT INTO data VALUES (5, '粵語😄', NULL);");
+	var stmt = db.prepare("SELECT * FROM data");
 	stmt.step(); // Run the statement
 	assert.deepEqual(stmt.getColumnNames(), ['nbr','str','nothing'], 'Statement.GetColumnNames()');
 	var res = stmt.getAsObject();
@@ -34,6 +35,10 @@ exports.test = function(sql, assert){
 	assert.strictEqual(res.nothing, null, "Read null");
 	assert.deepEqual(res, {nbr:5, str:'粵語😄', nothing:null}, "Statement.getAsObject()");
 	stmt.free();
+	
+	
+	var stmt = db.prepare("SELECT str FROM data WHERE str=?");
+	assert.deepEqual(stmt.getAsObject(['粵語😄']), {'str':'粵語😄'}, "UTF8 support in prepared statements");
 
 	// Prepare an sql statement
 	var stmt = db.prepare("SELECT * FROM alphabet WHERE code BETWEEN :start AND :end ORDER BY code");

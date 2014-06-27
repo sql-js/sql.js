@@ -159,7 +159,7 @@ class Statement
 	bindString: (string, pos = @pos++) ->
 		bytes = intArrayFromString(string)
 		@allocatedmem.push strptr = allocate bytes, 'i8', ALLOC_NORMAL
-		@db.handleError sqlite3_bind_text @stmt, pos, strptr, bytes.length, 0
+		@db.handleError sqlite3_bind_text @stmt, pos, strptr, bytes.length-1, 0
 		return true
 
 	# @nodoc
