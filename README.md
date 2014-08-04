@@ -11,7 +11,7 @@ SQLite is public domain, sql.js is MIT licensed.
 ## Usage
 
 ```javascript
-var sql = require('./js/sql-api.js');
+var sql = require('sql.js');
 // or sql = window.SQL if you are in a browser
 
 // Create a database
