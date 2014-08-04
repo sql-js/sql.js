@@ -70,7 +70,7 @@ The test files provide up to date example of the use of the api.
     db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
 
     // Prepare a statement
-    var stmt = db.prepare("SELECT * FROM test WHERE a BETWEEN $start AND $end");
+    var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
     stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
 
     // Bind new values
