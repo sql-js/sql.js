@@ -16,7 +16,6 @@ exports.test = function(sql, assert) {
   var dbCopy = new sql.Database(db.export());
   var newCount = dbCopy.prepare("SELECT COUNT(*) AS count FROM networklocation").getAsObject({}).count;
   assert.equal(newCount, count, "export and reimport copies all the data");
-  console.log(origCount, count, newCount);
 };
 
 if (module == require.main) {
