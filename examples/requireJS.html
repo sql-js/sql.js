@@ -1,0 +1,21 @@
+<meta charset="utf8" />
+<script src='http://requirejs.org/docs/release/2.1.14/minified/require.js'></script>
+
+<script>
+require.config({
+    baseUrl: '../js'
+});
+
+require(['sql'], function success (SQL){
+    if (typeof SQL !== 'object') {
+      document.body.style.backgroundColor = 'red';
+      alert("Failed to require sql.js through AMD");
+    } else {
+        document.body.style.backgroundColor = 'green';
+        alert("sql.js successfully loaded with AMD");
+      }
+  }, function error(err) {
+    console.log(err);
+    alert("Module load failed");
+  });
+</script>
