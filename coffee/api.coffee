@@ -1,9 +1,9 @@
 #@copyright Ophir LOJKINE
 
-apiTemp = Runtime.stackAlloc(4);
+apiTemp = Runtime.stackAlloc(4)
 
 # Constants are defined in api-data.coffee
-SQLite = {};
+SQLite = {}
 
 ### Represents an prepared statement.
 
@@ -374,7 +374,8 @@ class Database
 	### Exports the contents of the database to a binary array
 	@return [Uint8Array] An array of bytes of the SQLite3 database file
 	###
-	'export': -> new Uint8Array FS.root.contents[@filename].contents
+	'export': -> FS.readFile @filename, encoding:'binary'
+
 
 	### Close the database, and all associated prepared statements.
 
