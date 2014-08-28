@@ -5,7 +5,7 @@ total=0
 for f in $(dirname $0)/test_*.js
 do
 	total=$((total+1))
-	echo "Testing $f..."
+	echo -ne "Testing $f...\t"
 	node "$f" > /tmp/sqljstest
 	if [ $? = 0 ]
 	then
