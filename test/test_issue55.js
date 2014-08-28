@@ -1,14 +1,22 @@
 exports.test = function(sql, assert) {
-	// Create a database
-	var db = new sql.Database();
-  db.run("CREATE TABLE foobar (value)");
-  var expectedCount = 100;
-  for (var i=0; i<expectedCount; i++) {
-    db.run("INSERT INTO foobar VALUES ("+i+")");
-  }
+	var fs = require('fs');
+	var path = require('path');
+
+	var filebuffer = fs.readFileSync(path.join(__dirname, 'issue55.db'));
+
+	//Works
+	var db = new SQL.Database(filebuffer);
+
+  var origCount = db.prepare("SELECT COUNT(*) AS count FROM networklocation").getAsObject({}).count;
+
+  db.run("INSERT INTO networklocation (x, y, network_id, floor_id) VALUES (?, ?, ?, ?)", [123, 123, 1, 1]);
+  var count = db.prepare("SELECT COUNT(*) AS count FROM networklocation").getAsObject({}).count;
+  assert.equal(count, origCount + 1, "The row has been inserted");
+
   var dbCopy = new sql.Database(db.export());
-  var count = db.exec("SELECT COUNT(*) FROM foobar")[0].values[0][0];
-  assert.equal(count, expectedCount, "export and reimport copies all the data");
+  var newCount = dbCopy.prepare("SELECT COUNT(*) AS count FROM networklocation").getAsObject({}).count;
+  assert.equal(newCount, count, "export and reimport copies all the data");
+  console.log(origCount, count, newCount);
 };
 
 if (module == require.main) {
