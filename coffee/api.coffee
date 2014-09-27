@@ -374,8 +374,13 @@ class Database
 	### Exports the contents of the database to a binary array
 	@return [Uint8Array] An array of bytes of the SQLite3 database file
 	###
-	'export': -> FS.readFile @filename, encoding:'binary'
-
+	'export': ->
+		stmt['free']() for _,stmt of @statements
+		@handleError sqlite3_close_v2 @db
+		binaryDb = FS.readFile @filename, encoding:'binary'
+		@handleError sqlite3_open @filename, apiTemp
+		@db = getValue apiTemp, 'i32'
+		binaryDb
 
 	### Close the database, and all associated prepared statements.
 
