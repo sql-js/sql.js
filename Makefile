@@ -11,7 +11,7 @@ all: js/sql.js
 debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 
 debug: js/sql-debug.js
 
-optimized: EMFLAGS= --closure 1 -O3 -s INLINING_LIMIT=50
+optimized: EMFLAGS= --memory-init-file 0 --closure 1 -O3 -s INLINING_LIMIT=50
 optimized: js/sql-optimized.js
 
 js/sql.js: optimized
