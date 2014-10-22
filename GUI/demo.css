@@ -18,19 +18,23 @@ h1 {
 	margin: 0 0 30px;
 }
 
-button {
+.button {
+	color: #333;
 	background: linear-gradient(#eee, #ddd);
 	border: 1px solid #222;
 	border-radius: 3px;
 	padding: 7px;
+	margin-right: 5px;
 	transition: .3s;
+	font-family: ubuntu, sans-serif;
+	font-size: 1em;
 }
 
-button:active {
+.button:active {
 	background: linear-gradient(#ddd, #eee);
 }
 
-button:hover, button:focus {
+.button:hover, button:focus {
 	box-shadow: 0 0 2px #222;
 }
 
@@ -66,4 +70,8 @@ table {
 th, td {
 	border:1px solid #777;
 }
-  
+
+footer {
+	font-size:.8em;
+	color: #222;
+}

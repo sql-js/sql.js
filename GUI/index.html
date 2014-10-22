@@ -38,14 +38,14 @@ CREATE TABLE employees( id          integer,  name    text,
 
 SELECT designation,COUNT(*) AS nbr, (AVG(salary)) AS avg_salary FROM employees GROUP BY designation ORDER BY avg_salary DESC;
 SELECT name,hired_on FROM employees ORDER BY hired_on;</textarea>
-    <button id="execute">Execute</button>
-<br>
-<label>Load an SQLite database file: <input type='file' id='dbfile' ></label>
-<button id='savedb'>Save the db</button>
 
-	<div id="error" class="error"></div>
-Result:
-  <pre id="output"></pre>
+<button id="execute" class="button">Execute</button>
+<button id='savedb'  class="button">Save the db</button>
+<label class="button">Load an SQLite database file: <input type='file' id='dbfile' ></label>
+
+<div id="error" class="error"></div>
+
+<pre id="output">Results will be displayed here</pre>
 </main>
 
 <script src="codemirror/mode/sql/sql.js"></script>
