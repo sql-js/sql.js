@@ -1,5 +1,5 @@
 # SQLite compiled to javascript
-[![Build Status](https://travis-ci.org/lovasoa/sql.js.svg?branch=master)](http://travis-ci.org/lovasoa/sql.js)
+[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/lovasoa/sql.js)
 
 For the impatients, try the demo here: http://kripken.github.io/sql.js/GUI/
 
@@ -53,7 +53,7 @@ var binaryArray = db.export();
 ```
 
 ## Demo
-There is an online demo available here : http://lovasoa.github.io/sql.js/GUI
+There is an online demo available here : http://kripken.github.io/sql.js/GUI
 
 ## Exemples
 The test files provide up to date example of the use of the api.
@@ -96,7 +96,7 @@ dbFileElm.onchange = function() {
 	r.readAsArrayBuffer(f);
 }
 ```
-See : http://lovasoa.github.io/sql.js/GUI/gui.js
+See : http://kripken.github.io/sql.js/GUI/gui.js
 
 ### Use from node.js
 
@@ -162,8 +162,8 @@ See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
 The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
 
 ## Downloads
- - You can download `sql.js` here : http://lovasoa.github.io/sql.js/js/sql.js
- - And the Web Worker version: http://lovasoa.github.io/sql.js/js/worker.sql.js
+ - You can download `sql.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js
+ - And the Web Worker version: https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js
 
 ## Differences from the original sql.js
  * Support for BLOBs
