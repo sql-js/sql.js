@@ -59,6 +59,10 @@ h1 {
 	overflow:hidden;
 }
 
+#output {
+	overflow: auto;
+}
+
 table {
 	width:auto;
 	margin:auto;
