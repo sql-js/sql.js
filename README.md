@@ -1,5 +1,5 @@
 # SQLite compiled to javascript
-[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/lovasoa/sql.js)
+[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js)
 
 For the impatients, try the demo here: http://kripken.github.io/sql.js/GUI/
 
@@ -123,7 +123,7 @@ var buffer = new Buffer(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
-See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
+See : https://github.com/kripken/sql.js/blob/master/test/test_node_file.js
 
 ### Use as web worker
 If you don't want to run CPU-intensive SQL queries in your main application thread,
@@ -156,10 +156,10 @@ worker.postMessage({
 </script>
 ```
 
-See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
+See : https://github.com/kripken/sql.js/blob/master/test/test_worker.js
 
 ## Documentation
-The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
+The API is fully documented here : http://kripken.github.io/sql.js/documentation/
 
 ## Downloads
  - You can download `sql.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js
@@ -179,5 +179,5 @@ The API is fully documented here : http://lovasoa.github.io/sql.js/documentation
 
 ## Related
 
-* [In-Browser/Client-Side Demo](http://lovasoa.github.io/sql.js/GUI/)
+* [In-Browser/Client-Side Demo](http://kripken.github.io/sql.js/GUI/)
 
