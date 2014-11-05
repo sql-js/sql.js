@@ -55,7 +55,7 @@ var binaryArray = db.export();
 ## Demo
 There is an online demo available here : http://kripken.github.io/sql.js/GUI
 
-## Exemples
+## Examples
 The test files provide up to date example of the use of the api.
 ### Inside the browser
 #### Example **HTML** file:
