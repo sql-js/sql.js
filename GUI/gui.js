@@ -85,7 +85,11 @@ var editor = CodeMirror.fromTextArea(commandsElm, {
     smartIndent: true,
     lineNumbers: true,
     matchBrackets : true,
-    autofocus: true
+    autofocus: true,
+		extraKeys: {
+			"Ctrl-Enter": execEditorContents,
+			"Ctrl-S": savedb,
+		}
 });
 
 // Load a db from a file
