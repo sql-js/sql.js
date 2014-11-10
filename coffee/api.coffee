@@ -307,12 +307,25 @@ class Database
 	###
 	'exec': (sql) ->
 		if not @db then throw "Database closed"
+
+		stack = Runtime.stackSave()
+		# Store the SQL string in memory. The string will be consumed, one statement
+		# at a time, by sqlite3_prepare_v2_sqlptr.
+		# Allocate at most 4 bytes per UTF8 char, +1 for the trailing '\0'
+		nextSqlPtr = Runtime.stackAlloc(sql.length<<2 + 1)
+		writeStringToMemory sql, nextSqlPtr
+		# Used to store a pointer to the next SQL statement in the string
+		pzTail = Runtime.stackAlloc(4)
+
 		results = []
-		for sqlstr in sql.split ';'
-			try stmt = @['prepare'] sqlstr
-			catch err
-				if err is 'Nothing to prepare' then continue
-				else throw err
+		while getValue(nextSqlPtr,'i8') isnt NULL
+			setValue apiTemp, 0, 'i32'
+			setValue pzTail, 0, 'i32'
+			@handleError sqlite3_prepare_v2_sqlptr @db, nextSqlPtr, -1, apiTemp, pzTail
+			pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
+			nextSqlPtr = getValue pzTail, 'i32'
+			if pStmt is NULL then continue # Empty statement
+			stmt = new Statement pStmt, this
 			curresult = null
 			while stmt['step']()
 				if curresult is null
@@ -322,6 +335,7 @@ class Database
 					results.push curresult
 				curresult['values'].push stmt['get']()
 			stmt['free']()
+		Runtime.stackRestore stack
 		return results
 
 	### Execute an sql statement, and call a callback for each row of result.

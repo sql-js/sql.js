@@ -6,6 +6,9 @@ sqlite3_free = Module['cwrap'] 'sqlite3_free', '', ['number']
 # Prepared statements
 ## prepare
 sqlite3_prepare_v2 = Module['cwrap'] 'sqlite3_prepare_v2', 'number', ['number', 'string', 'number', 'number', 'number']
+# Version of sqlite3_prepare_v2 to which a pointer to a string that is already
+# in memory is passed.
+sqlite3_prepare_v2_sqlptr = Module['cwrap'] 'sqlite3_prepare_v2', 'number', ['number', 'number', 'number', 'number', 'number']
 ## Bind parameters
 
 #int sqlite3_bind_text(sqlite3_stmt*, int, const char*, int n, void(*)(void*));
