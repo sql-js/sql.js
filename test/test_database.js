@@ -47,13 +47,13 @@ exports.test = function(sql, assert, done) {
 			count++;
 			if (count === 1) assert.deepEqual(row, {a:1,b:'a'}, 'db.each returns the correct 1st row');
 			if (count === 2) assert.deepEqual(row, {a:2,b:'b'}, 'db.each returns the correct 2nd row');
-		}, function finished () {
+		}, function last () {
 			finished = true;
-			assert.ok(count === 2, "db.each returns the right number of rows");
-			done();
+			assert.strictEqual(count, 2, "db.each returns the right number of rows");
 		});
 		var timeout = setTimeout(function timeout(){
-			assert.ok(finished === true, "db.each should call its last callback after having returned the rows");
+			assert.strictEqual(finished, true,
+				"db.each should call its last callback after having returned the rows");
 			done();
 		}, 3000);
 };
