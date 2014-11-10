@@ -1,4 +1,4 @@
-exports.test = function(sql, assert, done) {
+exports.test = function(sql, assert) {
 	// Create a database
 	var db = new sql.Database();
 
@@ -23,20 +23,30 @@ exports.test = function(sql, assert, done) {
 "                        (new.ID, '2014-11-10');"+
 "                  END;"+
 "                  INSERT INTO COMPANY VALUES (73,'A',8,'',1200);"+
-"                  SELECT * FROM AUDIT;";
+"                  SELECT * FROM AUDIT;"+
+"                  INSERT INTO COMPANY VALUES (42,'B',8,'',1600);"+
+"                  SELECT EMP_ID FROM AUDIT ORDER BY EMP_ID";
 	var res = db.exec(sqlstr);
-	var expectedResult =  [{
+	var expectedResult =  [
+	{
 		columns : ['EMP_ID','ENTRY_DATE'],
 		values : [
 			[73, '2014-11-10']
 		 ]
-	}];
-	assert.deepEqual(res, expectedResult);
+	},
+	{
+		columns : ['EMP_ID'],
+		values : [
+			[42],[73]
+		 ]
+	}
+	];
+	assert.deepEqual(res, expectedResult,
+			"db.exec with a statement that contains a ';'");
 };
 
 if (module == require.main) {
 	var sql = require('../js/sql.js');
 	var assert = require('assert');
-	var done = function(){process.exit();}
-	exports.test(sql, assert, done);
+	exports.test(sql, assert);
 }
