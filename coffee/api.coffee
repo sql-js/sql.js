@@ -185,8 +185,8 @@ class Statement
 			when "string" then @bindString val, pos
 			when "number","boolean" then @bindNumber val+0, pos
 			when "object"
-				if val is null then return @bindNull pos
-				if val.length? then @bindBlob val, pos
+				if val is null then @bindNull pos
+				else if val.length? then @bindBlob val, pos
 				else throw "Wrong API use : tried to bind a value of an unknown type (#{val})."
 	### Bind names and values of an object to the named parameters of the statement
 	@param [Object]
