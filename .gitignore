@@ -1,2 +1,10 @@
 node_modules/
 *~
+
+# LLVM bitcode
+c/sqlite3.bc
+# Intermediary js files
+js/api.js
+js/sql-noopt-raw.js.map
+js/sql-optimized.js
+js/sql-raw.js.map
