@@ -1,18 +1,18 @@
 {
 	"name": "sql.js",
-	"version": "0.2.20",
+	"version": "0.2.21",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
 	"keywords": ["sql", "sqlite", "stand-alone", "relational", "database", "RDBMS", "data", "query", "statement", "emscripten", "asm", "asm.js"],
 	"license": "MIT",
 	"main": "./js/sql.js",
 	"scripts": { "test": "node test/all.js" },
-	"homepage": "http://github.com/lovasoa/sql.js",
+	"homepage": "http://github.com/kripken/sql.js",
 	"repository" :
 	{	"type" : "git",
-		"url" : "http://github.com/lovasoa/sql.js.git"
+		"url" : "http://github.com/kripken/sql.js.git"
 	},
 	"bugs": {
-		"url" : "https://github.com/lovasoa/sql.js/issues",
+		"url" : "https://github.com/kripken/sql.js/issues",
 		"email" : "pere.jobs@gmail.com"
 	},
 	"devDependencies": {
