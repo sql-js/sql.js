@@ -1,5 +1,6 @@
 #@copyright Ophir LOJKINE
 
+Runtime = Module['Runtime']
 apiTemp = Runtime.stackAlloc(4)
 
 # Constants are defined in api-data.coffee
