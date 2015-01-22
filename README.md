@@ -98,6 +98,24 @@ dbFileElm.onchange = function() {
 ```
 See : http://kripken.github.io/sql.js/GUI/gui.js
 
+#### Loading a database from a server
+
+```javascript
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/path/to/database.sqlite', true);
+xhr.responseType = 'arraybuffer';
+
+xhr.onload = function(e) {
+  var uInt8Array = new Uint8Array(this.response);
+  var db = new SQL.Database(uInt8Array);
+  var contents = db.exec("SELECT * FROM my_table");
+  // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
+};
+xhr.send();
+```
+See: https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server
+
+
 ### Use from node.js
 
 `sql.js` is [hosted on npm](https://www.npmjs.org/package/sql.js). To install it, you can simply run `npm install sql.js`.
