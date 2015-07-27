@@ -382,7 +382,7 @@ class Database
 		pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
 		if pStmt is NULL then throw 'Nothing to prepare'
 		stmt = new Statement pStmt, this
-		if params? then stmt.bind params
+		if params? then stmt['bind'] params
 		@statements[pStmt] = stmt
 		return stmt
 
