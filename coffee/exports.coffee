@@ -42,5 +42,8 @@ sqlite3_clear_bindings = Module['cwrap'] 'sqlite3_clear_bindings', 'number', ['n
 sqlite3_finalize = Module['cwrap'] 'sqlite3_finalize', 'number', ['number']
 
 # Export the API
-this['SQL'] = {'Database':Database}
+this['SQL'] = {
+  'Database':Database,
+  'Statement':Statement
+}
 Module[i] = this['SQL'][i] for i of this['SQL']
