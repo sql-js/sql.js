@@ -100,9 +100,7 @@ class Statement
 	getBlob: (pos = @pos++) ->
 		size = sqlite3_column_bytes @stmt, pos
 		ptr = sqlite3_column_blob @stmt, pos
-		result = new Uint8Array(size)
-		result[i] = HEAP8[ptr+i] for i in [0 ... size]
-		return @['parseBlob'](result)
+		return @['parseBlob'](new Uint8Array(HEAP8.buffer, ptr, size))
 
 	### Get one row of results of a statement.
 	If the first parameter is not provided, step must have been called before get.
