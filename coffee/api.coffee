@@ -89,7 +89,10 @@ class Statement
 	@param [Uint8Array] The original blob data
 	@return [Object] An object representing a blob.
 	###
-	'parseBlob': (x) -> x
+	'parseBlob': (x) ->
+		result = new Uint8Array(x.length)
+		result.set(x)
+		return result
 
 	# Internal methods to retrieve data from the results of a statement that has been executed
 	# @nodoc
