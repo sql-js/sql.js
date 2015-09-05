@@ -26,7 +26,7 @@ exports.test = function(sql, assert, done) {
 
 	// Export the database to an Uint8Array containing the SQLite database file
 	var binaryArray = db.export();
-	assert.strictEqual(String.fromCharCode.apply(null,binaryArray.slice(0,6)), 'SQLite',
+	assert.strictEqual(String.fromCharCode.apply(null,binaryArray.subarray(0,6)), 'SQLite',
 		      "The first 6 bytes of an SQLite database should form the word 'SQLite'");
 	db.close();
 
