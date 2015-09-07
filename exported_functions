@@ -22,5 +22,6 @@
  "_sqlite3_reset",
  "_sqlite3_clear_bindings",
  "_sqlite3_finalize",
- "_sqlite3_close_v2"
+ "_sqlite3_close_v2",
+ "_sqlite3_complete"
 ]

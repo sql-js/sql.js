@@ -41,6 +41,14 @@ sqlite3_clear_bindings = Module['cwrap'] 'sqlite3_clear_bindings', 'number', ['n
 # int sqlite3_finalize(sqlite3_stmt *pStmt);
 sqlite3_finalize = Module['cwrap'] 'sqlite3_finalize', 'number', ['number']
 
+## Helper methods
+# int sqlite3_complete(const char *sql);
+sqlite3_complete = Module['cwrap'] 'sqlite3_complete', 'number', ['string']
+
 # Export the API
-this['SQL'] = {'Database':Database}
+this['SQL'] = {
+  'Database':Database,
+  'Statement':Statement,
+  'isComplete': (x) -> (sqlite3_complete x) == 1
+}
 Module[i] = this['SQL'][i] for i of this['SQL']

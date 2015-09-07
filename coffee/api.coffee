@@ -83,6 +83,17 @@ class Statement
 			when SQLite.DONE then return false
 			else @db.handleError ret
 
+	### Preprocess a blob data (Uint8Array}. This method is currently no-op,
+	but users can override it (e.q. convery to blob urls) to avoid passing/storing
+	large data in memory.
+	@param [Uint8Array] The original blob data
+	@return [Object] An object representing a blob.
+	###
+	'parseBlob': (x) ->
+		result = new Uint8Array(x.length)
+		result.set(x)
+		return result
+
 	# Internal methods to retrieve data from the results of a statement that has been executed
 	# @nodoc
 	getNumber: (pos = @pos++) -> sqlite3_column_double @stmt, pos
@@ -92,9 +103,7 @@ class Statement
 	getBlob: (pos = @pos++) ->
 		size = sqlite3_column_bytes @stmt, pos
 		ptr = sqlite3_column_blob @stmt, pos
-		result = new Uint8Array(size)
-		result[i] = HEAP8[ptr+i] for i in [0 ... size]
-		return result
+		return @['parseBlob'](new Uint8Array(HEAP8.buffer, ptr, size))
 
 	### Get one row of results of a statement.
 	If the first parameter is not provided, step must have been called before get.
@@ -382,7 +391,7 @@ class Database
 		pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
 		if pStmt is NULL then throw 'Nothing to prepare'
 		stmt = new Statement pStmt, this
-		if params? then stmt.bind params
+		if params? then stmt['bind'] params
 		@statements[pStmt] = stmt
 		return stmt
 
