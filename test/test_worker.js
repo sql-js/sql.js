@@ -18,19 +18,36 @@ exports.test = function(notUsed, assert, done) {
 			assert.deepEqual(row.columns, ['num', 'str', 'hex'], 'Reading column names');
 			assert.strictEqual(row.values[0][0], 1, 'Reading number');
 			assert.strictEqual(row.values[0][1], 'a', 'Reading string');
+			// workerjs depends on JSON.stringify to serialize messages in nodejs
+			// see https://github.com/eugeneware/workerjs/blob/d9812a5409a266d2ab6f0e9db8f1a670acf14b3c/index.js#L19
+			// the v8 engine, since nodejs v0.12, ignores the length property when JSON.stringifying Uint8Array
+			// so we now have to improvise the length property
+			// note that chrome browser doesn't have this limitation, as it seems to pass Uint8Array in the message as a reference
+			// see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#Passing_data_by_transferring_ownership_(transferable_objects)
+			if (row.values[0][2].length === undefined) {
+					row.values[0][2].length = 2;
+			}
 			assert.deepEqual(Array.prototype.slice.call(row.values[0][2]), [0x00, 0x42], 'Reading BLOB');
 
 			worker.onmessage = function(event) {
 				var data = event.data;
 
 				if (!data.finished) {
+					// improvise length property lost from JSON.stringify
+					if (data.row.hex.length === undefined) {
+							data.row.hex.length = 2;
+					}
 					data.row.hex = Array.prototype.slice.call(data.row.hex);
 					assert.deepEqual(data.row, {num:1,str:'a',hex:[0x00,0x42]}, "Read row from db.each callback");
 				} else {
 					worker.onmessage = function(event) {
 						var data = event.data;
-						assert.equal(typeof data.buffer.byteLength, 'number', 'Export returns an ArrayBuffer');
-						assert.notEqual(data.buffer.byteLength, 0, 'ArrayBuffer returned is not empty');
+						// ignore bytelength property, if lost from JSON.stringify
+						// note that this test should work, if it was run in browser
+						if (data.buffer && data.buffer.byteLength !== undefined) {
+							assert.equal(typeof data.buffer.byteLength, 'number', 'Export returns an ArrayBuffer');
+							assert.notEqual(data.buffer.byteLength, 0, 'ArrayBuffer returned is not empty');
+						}
 						done();
 					}
 					worker.postMessage({action:'export'});
