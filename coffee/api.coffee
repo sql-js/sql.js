@@ -425,3 +425,50 @@ class Database
         else
             errmsg = sqlite3_errmsg @db
             throw new Error(errmsg)
+
+    ### Register a custom function with SQLite
+    @param name [String] the name of the function as referenced in SQL statements.
+    @param numParams [Number] the number of parameters the function expects.
+    @param func [Function] the actual function to be executed.
+    @param dbg_func [Function, optional] useful for breakpointing and testing the wrapper function.
+    ###
+    'create_function': (name, numParams, func, dbg_func=(->)) ->
+        wrapped_func = (cx, argc, argv) ->
+            # Debug function, useful for breakpointing if you need to debug this
+            dbg_func()
+
+            # Parse the args from sqlite into JS objects
+            args = []
+            for i in [0..argc]
+                value_ptr = getValue(argv+(4*i), 'i32')
+                value_type = sqlite3_value_type(value_ptr)
+                data_func = switch
+                    when value_type == 1 then sqlite3_value_int
+                    when value_type == 2 then sqlite3_value_double
+                    when value_type == 3 then sqlite3_value_text
+                    when value_type == 4 then (ptr) ->
+                        size = sqlite3_value_bytes(ptr)
+                        blob_ptr = sqlite3_value_blob(ptr)
+                        blob_arg = new Uint8Array(size)
+                        blob_arg[j] = HEAP8[blob_ptr+j] for j in [0 ... size]
+                        blob_arg
+                    else (ptr) -> null
+
+                arg = data_func(value_ptr)
+                args.push arg
+
+            # Invoke the user defined function with arguments from SQLite
+            result = func.apply(null, args)
+
+            # Return the result of the user defined function to SQLite
+            if not result
+                sqlite3_result_null cx
+            else
+                switch typeof(result)
+                    when 'number' then sqlite3_result_double(cx, result)
+                    when 'string' then sqlite3_result_text(cx, result, -1, -1)
+
+        # Generate a pointer to the wrapped, user defined function, and register with SQLite.
+        func_ptr = Runtime.addFunction(wrapped_func)
+        @handleError sqlite3_create_function_v2 @db, name, numParams, SQLite.UTF8, 0, func_ptr, 0, 0, 0
+        return @

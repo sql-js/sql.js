@@ -41,6 +41,18 @@ sqlite3_clear_bindings = Module['cwrap'] 'sqlite3_clear_bindings', 'number', ['n
 # int sqlite3_finalize(sqlite3_stmt *pStmt);
 sqlite3_finalize = Module['cwrap'] 'sqlite3_finalize', 'number', ['number']
 
+## Create custom functions
+sqlite3_create_function_v2 = Module['cwrap'] 'sqlite3_create_function_v2', 'number', ['number', 'string', 'number', 'number', 'number', 'number', 'number', 'number', 'number']
+sqlite3_value_type = Module['cwrap'] 'sqlite3_value_type', 'number', ['number']
+sqlite3_value_bytes = Module['cwrap'] 'sqlite3_value_bytes', 'number', ['number']
+sqlite3_value_text = Module['cwrap'] 'sqlite3_value_text', 'string', ['number']
+sqlite3_value_int = Module['cwrap'] 'sqlite3_value_int', 'number', ['number']
+sqlite3_value_blob = Module['cwrap'] 'sqlite3_value_blob', 'number', ['number']
+sqlite3_value_double = Module['cwrap'] 'sqlite3_value_double', 'number', ['number']
+sqlite3_result_double = Module['cwrap'] 'sqlite3_result_double', '', ['number', 'number']
+sqlite3_result_null = Module['cwrap'] 'sqlite3_result_null', '', ['number']
+sqlite3_result_text = Module['cwrap'] 'sqlite3_result_text', '', ['number', 'string', 'number', 'number']
+
 # Export the API
 this['SQL'] = {'Database':Database}
 Module[i] = this['SQL'][i] for i of this['SQL']

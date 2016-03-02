@@ -4,14 +4,15 @@ EMSCRIPTEN?=/usr/bin
 
 EMCC=$(EMSCRIPTEN)/emcc
 
-CFLAGS=-DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
+CFLAGS=-DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
 
 all: js/sql.js
 
-debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 
+# RESERVED_FUNCTION_POINTERS setting is used for registering custom functions
+debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=64
 debug: js/sql-debug.js
 
-optimized: EMFLAGS= --memory-init-file 0 --closure 1 -O3 -s INLINING_LIMIT=50
+optimized: EMFLAGS= --memory-init-file 0 --closure 1 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64
 optimized: js/sql-optimized.js
 
 js/sql.js: optimized
