@@ -18,13 +18,16 @@ exports.test = function(notUsed, assert, done) {
       assert.deepEqual(row.columns, ['num', 'str', 'hex'], 'Reading column names');
       assert.strictEqual(row.values[0][0], 1, 'Reading number');
       assert.strictEqual(row.values[0][1], 'a', 'Reading string');
-      assert.deepEqual(row.values[0][2], new Uint8Array([0x00, 0x42]), 'Reading BLOB');
+      assert.deepEqual(Array.from(row.values[0][2]), [0x00, 0x42], 'Reading BLOB');
 
       worker.onmessage = function(event) {
         var data = event.data;
 
         if (!data.finished) {
-          assert.deepEqual(data.row, {num:1,str:'a',hex:new Uint8Array([0x00, 0x42])}, "Read row from db.each callback");
+          data.row.hex = Array.from(data.row.hex);
+          assert.deepEqual(data.row,
+                           {num:1, str:'a', hex: [0x00, 0x42]},
+                           "Read row from db.each callback");
         } else {
           worker.onmessage = function(event, a) {
             var data = event.data;
@@ -64,6 +67,12 @@ exports.test = function(notUsed, assert, done) {
     assert.fail(new Error("Worker should answer in less than 3 seconds"));
     done();
   }, 3000);
+}
+
+if (!Array.from) {
+  Array.from = function(pseudoarray) {
+    return Array.prototype.slice.call(pseudoarray);
+  };
 }
 
 if (module == require.main) {
