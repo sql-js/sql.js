@@ -2,7 +2,7 @@
   var makePattern, surroundMatch;
 
   window.fuzzy = function(pattern, items, options) {
-    var addMatch, after, appendMatch, before, doHighlight, flags, hasTextBeforeSeparator, ignorecase, ignorespace, inner, isMatch, item, len, limit, matches, parts, post, postPart, postSep, postSepRegex, pre, prePart, preParts, preSep, preSepRegex, prependMatch, separate, separator, _i, _len;
+    var addMatch, after, appendMatch, before, doHighlight, flags, hasTextBeforeSeparator, i, ignorecase, ignorespace, inner, isMatch, item, len, len1, limit, matches, parts, post, postPart, postSep, postSepRegex, pre, prePart, preParts, preSep, preSepRegex, prependMatch, separate, separator;
     if (options == null) {
       options = {};
     }
@@ -57,8 +57,8 @@
       preSepRegex = false;
     }
     postSepRegex = new RegExp("^.*?" + (makePattern(postPart)) + ".*$", flags);
-    for (_i = 0, _len = items.length; _i < _len; _i++) {
-      item = items[_i];
+    for (i = 0, len1 = items.length; i < len1; i++) {
+      item = items[i];
       if (matches.length === limit) {
         break;
       }
@@ -101,11 +101,11 @@
   };
 
   makePattern = function(pattern) {
-    var c, chars, regex, _i, _len;
+    var c, chars, i, len1, regex;
     chars = pattern.split("");
     regex = [];
-    for (_i = 0, _len = chars.length; _i < _len; _i++) {
-      c = chars[_i];
+    for (i = 0, len1 = chars.length; i < len1; i++) {
+      c = chars[i];
       c = c === "\\" ? "\\\\" : c;
       regex.push("([" + c + "])");
     }
@@ -113,13 +113,13 @@
   };
 
   surroundMatch = function(string, pattern, pre, post, ignorecase) {
-    var c, done, nextChar, sameChar, _i, _len, _ref;
+    var c, done, i, len1, nextChar, ref, sameChar;
     done = "";
     pattern = pattern.split("");
     nextChar = pattern.shift();
-    _ref = string.split("");
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      c = _ref[_i];
+    ref = string.split("");
+    for (i = 0, len1 = ref.length; i < len1; i++) {
+      c = ref[i];
       if (nextChar) {
         sameChar = false;
         if (ignorecase && c.toLowerCase() === nextChar.toLowerCase()) {
@@ -11471,7 +11471,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     };
     window.indentTree = function(el, width) {
       return $(el).find('> ul').each(function() {
-        $(this).find('> li').css('padding-left', "" + width + "px");
+        $(this).find('> li').css('padding-left', width + "px");
         return window.indentTree($(this), width + 20);
       });
     };
@@ -11530,14 +11530,14 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 (function() {
   $(function() {
     $('#filecontents').each(function() {
-      var ancestors, depth, heading, i, index, level, list, nav, target, _i, _j, _len, _ref, _ref1;
+      var ancestors, depth, heading, i, index, j, k, len, level, list, nav, ref, ref1, target;
       nav = $('nav.toc');
       target = nav;
       level = 0;
       ancestors = [];
-      _ref = $('h2,h3,h4,h5,h6', this);
-      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
-        heading = _ref[index];
+      ref = $('h2,h3,h4,h5,h6', this);
+      for (index = j = 0, len = ref.length; j < len; index = ++j) {
+        heading = ref[index];
         heading = $(heading);
         heading.before($("<a name='toc_" + index + "'></a>"));
         depth = parseInt(heading.get(0).tagName.substring(1));
@@ -11548,7 +11548,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
           target = list;
           level = depth;
         } else if (depth < level) {
-          for (i = _j = 0, _ref1 = level - depth; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+          for (i = k = 0, ref1 = level - depth; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {
             target = ancestors.pop();
           }
           if (!target) {
@@ -11589,27 +11589,27 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       e.preventDefault();
       try {
         parent.frames.list.$('#search input').focus().select();
-      } catch (_error) {}
+      } catch (undefined) {}
       try {
         return $('#search input').focus().select();
-      } catch (_error) {}
+      } catch (undefined) {}
     });
     key('esc', function() {
       try {
         parent.frames.list.$('#search input').blur();
         parent.frames.main.$('#help').hide();
         parent.frames.main.$('#fuzzySearch').hide();
-      } catch (_error) {}
+      } catch (undefined) {}
       try {
         parent.$("#search .active").click();
         parent.$('#help').hide();
         parent.$('#fuzzySearch').hide();
-      } catch (_error) {}
+      } catch (undefined) {}
       try {
         $('#search input').blur();
         $('#help').hide();
         return $('#fuzzySearch').hide();
-      } catch (_error) {}
+      } catch (undefined) {}
     });
     key('l', function() {
       var body;
@@ -11638,12 +11638,13 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       return loadSearch('extra_list.html', 'extra_list_link');
     });
     key('h', function() {
+      var error;
       try {
         return parent.frames.main.$('#help').toggle();
-      } catch (_error) {
+      } catch (error) {
         try {
           return $('#help').toggle();
-        } catch (_error) {}
+        } catch (undefined) {}
       }
     });
     return key('t', function(e) {
@@ -11651,11 +11652,11 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       try {
         $('#fuzzySearch').toggle();
         $('#fuzzySearch input').focus().select();
-      } catch (_error) {}
+      } catch (undefined) {}
       try {
         parent.frames.main.$('#fuzzySearch').show();
         return parent.frames.main.$('#fuzzySearch input').focus().select();
-      } catch (_error) {}
+      } catch (undefined) {}
     });
   });
 
@@ -11665,7 +11666,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     $('#search_frame').hide();
     window.lastSearch = '';
     return $('#fuzzySearch input').keyup(function(event) {
-      var data, highlights, index, items, match, matches, path, resultList, text, _i, _len;
+      var data, highlights, index, items, j, len, match, matches, path, resultList, text;
       text = $(this).val();
       resultList = $('#fuzzySearch ol');
       if (event.keyCode === 13) {
@@ -11700,7 +11701,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
           post: '</span>',
           limit: 25
         });
-        for (index = _i = 0, _len = matches.length; _i < _len; index = ++_i) {
+        for (index = j = 0, len = matches.length; j < len; index = ++j) {
           match = matches[index];
           data = _.find(searchData, function(d) {
             return d.t === match;
@@ -11721,6 +11722,29 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
         return $('#fuzzySearch').height(45);
       }
     });
+  });
+
+}).call(this);
+(function() {
+  $(function() {
+    var parser, starter;
+    if ($('frameset').length > 0) {
+      parser = document.createElement('a');
+      parser.href = location.href;
+      starter = parser.hash.substr(1);
+      if (starter.length > 0) {
+        $('#content')[0].contentWindow.location.href = starter;
+      }
+      return $('#content').load(function() {
+        var hash;
+        hash = encodeURI(this.contentWindow.location.href);
+        if (history.pushState) {
+          return history.replaceState(null, document.title, '#' + hash);
+        } else {
+          return location.hash = hash;
+        }
+      });
+    }
   });
 
 }).call(this);

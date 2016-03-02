@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>sql.js documentation</title>
+  <title>CoffeeScript API Documentation</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,6 +11,10 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
+    <a href='../extra/README.md.html' title='Sql.js'>
+      Sql.js
+    </a>
+    &raquo;
     <a href='../alphabetical_index.html' title='Index'>
       Index
     </a>
@@ -26,7 +30,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>..&#47;coffee&#47;api.coffee</td>
+          <td>coffee&#47;api.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
@@ -176,16 +180,12 @@ where NNN is a number and VVV a string.</p>
   <p>Bind values to the parameters, after having reseted the statement</p><p>SQL statements can have parameters, named <em>&#39;?&#39;, &#39;?NNN&#39;, &#39;:VVV&#39;, &#39;@VVV&#39;, &#39;$VVV&#39;</em>,
 where NNN is a number and VVV a string.
 This function binds these parameters to the given values.</p><p><em>Warning</em>: &#39;:&#39;, &#39;@&#39;, and &#39;$&#39; are included in the parameters names</p><h2 id="binding-values-to-named-parameters">Binding values to named parameters</h2>
-<pre><code>var stmt = db.prepare(&quot;UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi&quot;);
-stmt.bind({$mini:10, $maxi:20, &#39;@newval&#39;:5});
-</code></pre><ul>
+<ul>
 <li>Create a statement that contains parameters like &#39;$VVV&#39;, &#39;:VVV&#39;, &#39;@VVV&#39;</li>
 <li>Call Statement.bind with an object as parameter</li>
 </ul>
 <h2 id="binding-values-to-parameters">Binding values to parameters</h2>
-<pre><code>var stmt = db.prepare(&quot;UPDATE test SET a=? WHERE id BETWEEN ? AND ?&quot;);
-stmt.bind([5, 10, 20]);
-</code></pre><ul>
+<ul>
 <li>Create a statement that contains parameters like &#39;?&#39;, &#39;?NNN&#39;</li>
 <li>Call Statement.bind with an array as parameter</li>
 </ul>
@@ -221,6 +221,19 @@ stmt.bind([5, 10, 20]);
 </tbody>
 </table>
 
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      Bind values to named parameters
+    </h4>
+    <pre><code class='coffeescript'>  var stmt = db.prepare(&quot;UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi&quot;);
+  stmt.bind({$mini:10, $maxi:20, &#39;@newval&#39;:5});</code></pre>
+    <h4>
+      Bind values to anonymous parameters
+    </h4>
+    <pre><code class='coffeescript'>  var stmt = db.prepare(&quot;UPDATE test SET a=? WHERE id BETWEEN ? AND ?&quot;);
+  stmt.bind([5, 10, 20]);</code></pre>
+  </div>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -314,9 +327,16 @@ that can be retrieved with <a href="#get-dynamic">Statement.get()</a> .</p>
     </p>
     <div class='docstring'>
   <p>Get one row of results of a statement.
-If the first parameter is not provided, step must have been called before get.</p><pre><code>var stmt = db.prepare(&quot;SELECT * FROM test&quot;);
-while (stmt.step()) console.log(stmt.get());
-</code></pre>
+If the first parameter is not provided, step must have been called before get.</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      Print all the rows of the table test to the console
+    </h4>
+    <pre><code class='coffeescript'>
+  var stmt = db.prepare(&quot;SELECT * FROM test&quot;);
+  while (stmt.step()) console.log(stmt.get());</code></pre>
+  </div>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -353,10 +373,17 @@ while (stmt.step()) console.log(stmt.get());
       <br>
     </p>
     <div class='docstring'>
-  <p>Get the list of column names of a row of result of a statement.</p><pre><code>var stmt = db.prepare(&quot;SELECT 5 AS nbr, x&#39;616200&#39; AS data, NULL AS nothing;&quot;);
-stmt.step(); // Execute the statement
-console.log(stmt.getColumnNames()); // Will print [&#39;nbr&#39;,&#39;data&#39;,&#39;nothing&#39;]
-</code></pre>
+  <p>Get the list of column names of a row of result of a statement.</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      
+    </h4>
+    <pre><code class='coffeescript'>
+  var stmt = db.prepare(&quot;SELECT 5 AS nbr, x&#39;616200&#39; AS data, NULL AS nothing;&quot;);
+  stmt.step(); &#47;&#47; Execute the statement
+  console.log(stmt.getColumnNames()); &#47;&#47; Will print [&#39;nbr&#39;,&#39;data&#39;,&#39;nothing&#39;]</code></pre>
+  </div>
 </div>
 <div class='tags'>
   <h3>Returns:</h3>
@@ -381,10 +408,17 @@ console.log(stmt.getColumnNames()); // Will print [&#39;nbr&#39;,&#39;data&#39;,
     </p>
     <div class='docstring'>
   <p>Get one row of result as a javascript object, associating column names with
-their value in the current row.</p><pre><code>var stmt = db.prepare(&quot;SELECT 5 AS nbr, x&#39;616200&#39; AS data, NULL AS nothing;&quot;);
-stmt.step(); // Execute the statement
-console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), nothing:null}
-</code></pre>
+their value in the current row.</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      
+    </h4>
+    <pre><code class='coffeescript'>
+  var stmt = db.prepare(&quot;SELECT 5 AS nbr, x&#39;616200&#39; AS data, NULL AS nothing;&quot;);
+  stmt.step(); &#47;&#47; Execute the statement
+  console.log(stmt.getAsObject()); &#47;&#47; Will print {nbr:5, data: Uint8Array([1,2,3]), nothing:null}</code></pre>
+  </div>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -500,11 +534,11 @@ It also clears all previous bindings, freeing the memory used by bound parameter
 </div>
     </div>
     <div id='footer'>
-  June 11, 14 23:01:16 by
+  By
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.8
+  2.1.0
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;

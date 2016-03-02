@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>sql.js documentation</title>
+  <title>CoffeeScript API Documentation</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,6 +11,10 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
+    <a href='../extra/README.md.html' title='Sql.js'>
+      Sql.js
+    </a>
+    &raquo;
     <a href='../alphabetical_index.html' title='Index'>
       Index
     </a>
@@ -26,7 +30,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>..&#47;coffee&#47;api.coffee</td>
+          <td>coffee&#47;api.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
@@ -107,6 +111,18 @@
     </span>
     <span class='desc'>
       Close the database, and all associated prepared statements. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#create_function-dynamic'>
+        #
+(void)
+<b>create_function</b><span>(name, numParams, func, dbg_func = (function() {}))</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Register a custom function with SQLite 
     </span>
   </li>
 </ul>
@@ -237,8 +253,8 @@ as the number of statements in your sql string (statements are separated by a se
 </table><p>We query it like that:</p><pre><code class="lang-javascript">var db = new SQL.Database();
 var res = db.exec(&quot;SELECT id FROM test; SELECT age,name FROM test;&quot;);
 </code></pre><p><code>res</code> is now :</p><pre><code class="lang-javascript">    [
-         {columns: [&#39;id&#39;], values:[[1],[2],[3]]},
-         {columns: [&#39;age&#39;,&#39;name&#39;], values:[[1,&#39;Ling&#39;],[18,&#39;Paul&#39;],[3,&#39;Markus&#39;]]}
+        {columns: [&#39;id&#39;], values:[[1],[2],[3]]},
+        {columns: [&#39;age&#39;,&#39;name&#39;], values:[[1,&#39;Ling&#39;],[18,&#39;Paul&#39;],[3,&#39;Markus&#39;]]}
     ]
 </code></pre>
 
@@ -287,9 +303,9 @@ to the query</p>
       Read values from a table
     </h4>
     <pre><code class='coffeescript'>  db.each(&quot;SELECT name,age FROM users WHERE age &gt;= $majority&quot;,
-  				{$majority:18},
-  				function(row){console.log(row.name + &quot; is a grown-up.&quot;)}
-  			);</code></pre>
+                  {$majority:18},
+                  function(row){console.log(row.name + &quot; is a grown-up.&quot;)}
+              );</code></pre>
   </div>
 </div>
 <div class='tags'>
@@ -313,7 +329,7 @@ to the query</p>
         )
       </span>
       &mdash;
-      <span class='desc'>(<em>optional</em>) Parameters to bind  </span>
+      <span class='desc'>(<em>optional</em>) Parameters to bind </span>
     </li>
     <li>
       <span class='name'>callback</span>
@@ -447,14 +463,70 @@ memory consumption will grow forever</p>
 <div class='tags'>
 </div>
   </div>
+  <div class='method_details'>
+    <p class='signature' id='create_function-dynamic'>
+      #
+(void)
+<b>create_function</b><span>(name, numParams, func, dbg_func = (function() {}))</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Register a custom function with SQLite</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>name</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the name of the function as referenced in SQL statements. </span>
+    </li>
+    <li>
+      <span class='name'>numParams</span>
+      <span class='type'>
+        (
+          <tt>Number</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the number of parameters the function expects. </span>
+    </li>
+    <li>
+      <span class='name'>func</span>
+      <span class='type'>
+        (
+          <tt>Function</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the actual function to be executed. </span>
+    </li>
+    <li>
+      <span class='name'>dbg_func</span>
+      <span class='type'>
+        (
+          <tt>Function, optional</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>useful for breakpointing and testing the wrapper function. </span>
+    </li>
+  </ul>
+</div>
+  </div>
 </div>
     </div>
     <div id='footer'>
-  June 11, 14 23:01:16 by
+  By
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.8
+  2.1.0
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;
