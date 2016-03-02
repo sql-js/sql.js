@@ -8,6 +8,9 @@ no C bindings or node-gyp compilation here.
 
 SQLite is public domain, sql.js is MIT licensed.
 
+## Documentation
+A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kripken.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
+
 ## Usage
 
 ```javascript
@@ -42,6 +45,15 @@ console.log(result); // Will print {a:1, b:'world'}
 // Bind other values
 stmt.bind([0, 'hello']);
 while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
+
+// You can also use javascript functions inside your SQL code
+// Create the js function you need
+// (Custom function can only return null, a string, or a number)
+function add(a, b) {return a+b;}
+// Specifies the SQL function's name, the number of it's arguments, and the js function to use
+db.create_function("add_js", 2, add);
+// Run a query in which the function is used
+db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));");
 
 // free the memory used by the statement
 stmt.free();
@@ -176,24 +188,9 @@ worker.postMessage({
 
 See : https://github.com/kripken/sql.js/blob/master/test/test_worker.js
 
-## Documentation
-The API is fully documented here : http://kripken.github.io/sql.js/documentation/
-
 ## Downloads
  - You can download `sql.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js
  - And the Web Worker version: https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js
-
-## Differences from the original sql.js
- * Support for BLOBs
- * Support for prepared statements
- * Cleaner API
- * More recent version of SQLite (3.8.4)
- * Compiled to asm.js (should be faster, at least on firefox)
- * Changed API. Results now have the form <code>[{'columns':[], values:[]}]</code>
- * Improved GUI of the demo. It now has :
-   * syntax highlighting
-   * nice HTML tables to display results
-   * ability to load and save sqlite database files
 
 ## Related
 
