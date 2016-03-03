@@ -25,12 +25,12 @@ js/sql%-raw.js: c/sqlite3.bc js/api.js exported_functions
 	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions c/sqlite3.bc --post-js js/api.js -o $@
 
 js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
-	coffee --bare --compile --join $@ --compile $^
+	cat $^ | coffee --bare --compile --stdio > $@
 
 # Web worker API
 worker: js/worker.sql.js
 js/worker.js: coffee/worker.coffee
-	coffee --bare --compile --join $@ --compile $^
+	cat $^ | coffee --bare --compile --stdio > $@
 
 js/worker.sql.js: js/sql.js js/worker.js
 	cat $^ > $@
