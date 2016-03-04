@@ -243,7 +243,7 @@ class Database
         if data? then FS.createDataFile '/', @filename, data, true, true
         @handleError sqlite3_open @filename, apiTemp
         @db = getValue(apiTemp, 'i32')
-        RegisterExtensionFunctions @db
+        RegisterExtensionFunctions(@db) if typeof(RegisterExtensionFunctions) == "function"
         @statements = {} # A list of all prepared statements of the database
 
     ### Execute an SQL query, ignoring the rows it returns.

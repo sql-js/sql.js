@@ -2,7 +2,9 @@ var Worker = require("workerjs");
 var path = require("path");
 
 exports.test = function(notUsed, assert, done) {
-  var worker = new Worker(path.join(__dirname, "../js/worker.sql.js"));
+  var target = process.argv[2];
+  var file = target ? "sql-"+target : "sql";
+  var worker = new Worker(path.join(__dirname, "../js/worker."+file+".js"));
   worker.onmessage = function(event) {
     var data = event.data;
     assert.strictEqual(data.id, 1, "Return the given id in the correct format");
