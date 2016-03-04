@@ -118,7 +118,7 @@
       <a href='#create_function-dynamic'>
         #
 (void)
-<b>create_function</b><span>(name, numParams, func, dbg_func = (function() {}))</span>
+<b>create_function</b><span>(name, func)</span>
       </a>
     </span>
     <span class='desc'>
@@ -467,11 +467,19 @@ memory consumption will grow forever</p>
     <p class='signature' id='create_function-dynamic'>
       #
 (void)
-<b>create_function</b><span>(name, numParams, func, dbg_func = (function() {}))</span>
+<b>create_function</b><span>(name, func)</span>
       <br>
     </p>
     <div class='docstring'>
   <p>Register a custom function with SQLite</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      Register a simple function
+    </h4>
+    <pre><code class='coffeescript'>  db.create_function(&quot;addOne&quot;, function(x) {return x+1;})
+  db.exec(&quot;SELECT addOne(1)&quot;) # 2</code></pre>
+  </div>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -487,16 +495,6 @@ memory consumption will grow forever</p>
       <span class='desc'>the name of the function as referenced in SQL statements. </span>
     </li>
     <li>
-      <span class='name'>numParams</span>
-      <span class='type'>
-        (
-          <tt>Number</tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>the number of parameters the function expects. </span>
-    </li>
-    <li>
       <span class='name'>func</span>
       <span class='type'>
         (
@@ -505,16 +503,6 @@ memory consumption will grow forever</p>
       </span>
       &mdash;
       <span class='desc'>the actual function to be executed. </span>
-    </li>
-    <li>
-      <span class='name'>dbg_func</span>
-      <span class='type'>
-        (
-          <tt>Function, optional</tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>useful for breakpointing and testing the wrapper function. </span>
     </li>
   </ul>
 </div>
