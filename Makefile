@@ -21,8 +21,8 @@ js/sql.js: optimized
 js/sql%.js: js/shell-pre.js js/sql%-raw.js js/shell-post.js
 	cat $^ > $@
 
-js/sql%-raw.js: c/sqlite3.bc js/api.js exported_functions
-	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions c/sqlite3.bc --post-js js/api.js -o $@
+js/sql%-raw.js: c/sqlite3.bc js/api.js exported_functions c/extension-functions.bc
+	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions c/extension-functions.bc c/sqlite3.bc --post-js js/api.js -o $@
 
 js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
 	coffee --bare --compile --join $@ --compile $^
@@ -43,5 +43,7 @@ module.tar.gz: test package.json AUTHORS README.md js/sql.js
 	tar --create --gzip $^ > $@
 
 clean:
-	rm -rf js/sql*.js js/api.js js/sql*-raw.js c/sqlite3.bc
+	rm -rf js/sql*.js js/api.js js/sql*-raw.js c/sqlite3.bc c/extension-functions.bc
 
+c/extension-functions.bc: c/extension-functions.c
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 c/extension-functions.c -o c/extension-functions.bc

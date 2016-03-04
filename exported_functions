@@ -30,7 +30,13 @@
  "_sqlite3_value_int", 
  "_sqlite3_value_blob",
  "_sqlite3_value_double",
+ "_sqlite3_value_int64",
  "_sqlite3_result_double",
  "_sqlite3_result_null",
- "_sqlite3_result_text"
+ "_sqlite3_result_text",
+ "_sqlite3_result_error",
+ "_sqlite3_result_int64",
+ "_sqlite3_malloc",
+ "_sqlite3_free",
+ "_RegisterExtensionFunctions"
 ]
