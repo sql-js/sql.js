@@ -6,7 +6,7 @@ EMCC=$(EMSCRIPTEN)/emcc
 
 CFLAGS=-DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
 
-all: js/sql.js
+all: js/sql.js js/sql-debug.js js/sql-worker.js
 
 # RESERVED_FUNCTION_POINTERS setting is used for registering custom functions
 debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=64
@@ -25,12 +25,12 @@ js/sql%-raw.js: c/sqlite3.bc js/api.js exported_functions c/extension-functions.
 	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions c/extension-functions.bc c/sqlite3.bc --post-js js/api.js -o $@
 
 js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
-	coffee --bare --compile --join $@ --compile $^
+	cat $^ | coffee --bare --compile --stdio > $@
 
 # Web worker API
 worker: js/worker.sql.js
 js/worker.js: coffee/worker.coffee
-	coffee --bare --compile --join $@ --compile $^
+	cat $^ | coffee --bare --compile --stdio > $@
 
 js/worker.sql.js: js/sql.js js/worker.js
 	cat $^ > $@

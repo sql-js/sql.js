@@ -48,12 +48,11 @@ while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
 
 // You can also use javascript functions inside your SQL code
 // Create the js function you need
-// (Custom function can only return null, a string, or a number)
 function add(a, b) {return a+b;}
 // Specifies the SQL function's name, the number of it's arguments, and the js function to use
-db.create_function("add_js", 2, add);
+db.create_function("add_js", add);
 // Run a query in which the function is used
-db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));");
+db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
 
 // free the memory used by the statement
 stmt.free();

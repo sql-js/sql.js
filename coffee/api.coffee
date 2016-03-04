@@ -428,16 +428,15 @@ class Database
             throw new Error(errmsg)
 
     ### Register a custom function with SQLite
+    @example Register a simple function
+        db.create_function("addOne", function(x) {return x+1;})
+        db.exec("SELECT addOne(1)") // = 2
+    
     @param name [String] the name of the function as referenced in SQL statements.
-    @param numParams [Number] the number of parameters the function expects.
     @param func [Function] the actual function to be executed.
-    @param dbg_func [Function, optional] useful for breakpointing and testing the wrapper function.
     ###
-    'create_function': (name, numParams, func, dbg_func=(->)) ->
+    'create_function': (name, func) ->
         wrapped_func = (cx, argc, argv) ->
-            # Debug function, useful for breakpointing if you need to debug this
-            dbg_func()
-
             # Parse the args from sqlite into JS objects
             args = []
             for i in [0..argc]
@@ -471,5 +470,5 @@ class Database
 
         # Generate a pointer to the wrapped, user defined function, and register with SQLite.
         func_ptr = Runtime.addFunction(wrapped_func)
-        @handleError sqlite3_create_function_v2 @db, name, numParams, SQLite.UTF8, 0, func_ptr, 0, 0, 0
+        @handleError sqlite3_create_function_v2 @db, name, func.length, SQLite.UTF8, 0, func_ptr, 0, 0, 0
         return @
