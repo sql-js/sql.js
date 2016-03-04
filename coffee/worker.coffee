@@ -40,7 +40,6 @@ if typeof importScripts is 'function' # Detect webworker context
                 try
                     postMessage result, [result]
                 catch err # Some browsers fail when trying to use transferable objects
-                    console.log(err)
                     postMessage result
             when 'close'
                 db?.close()
