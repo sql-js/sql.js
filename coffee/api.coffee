@@ -429,7 +429,7 @@ class Database
     ### Register a custom function with SQLite
     @example Register a simple function
         db.create_function("addOne", function(x) {return x+1;})
-        db.exec("SELECT addOne(1)") # 2
+        db.exec("SELECT addOne(1)") // = 2
     
     @param name [String] the name of the function as referenced in SQL statements.
     @param func [Function] the actual function to be executed.
