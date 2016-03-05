@@ -9,7 +9,6 @@ for (var i=0; i<files.length; i++) {
   var file = files[i];
   var m = /^test_(.+)\.js$/.exec(file);
   if (m !== null) {
-    if (target != "extension-functions" && m[0] == "test_extension_functions.js") { continue; }
 	var name = m[1];
 	var testModule = require("./" + file);
 	if (testModule.test) exports['test ' + name] = testModule.test.bind(null, sql);
