@@ -331,12 +331,12 @@ class Database
             stmt = new Statement pStmt, this
             curresult = null
             while stmt['step']()
-                if curresult is null
-                    curresult =
-                        'columns' : stmt['getColumnNames']()
-                        'values' : []
-                    results.push curresult
-                curresult['values'].push stmt['get']()
+              if curresult is null
+                curresult =
+                  'columns' : stmt['getColumnNames']()
+                  'values' : []
+                results.push curresult
+              curresult['values'].push stmt['get']()
             stmt['free']()
         Runtime.stackRestore stack
         return results
@@ -368,7 +368,7 @@ class Database
             params = undefined
         stmt = @['prepare'] sql, params
         while stmt['step']()
-            callback stmt['getAsObject']()
+          callback(stmt['getAsObject']())
         stmt['free']()
         if typeof done is 'function' then done()
 
@@ -427,6 +427,15 @@ class Database
             errmsg = sqlite3_errmsg @db
             throw new Error(errmsg)
 
+    ### Returns the number of rows modified, inserted or deleted by the
+    most recently completed INSERT, UPDATE or DELETE statement on the
+    database Executing any other type of SQL statement does not modify
+    the value returned by this function.
+    
+    @return [Number] the number of rows modified
+    ###
+    'getRowsModified': -> sqlite3_changes(@db)
+    
     ### Register a custom function with SQLite
     @example Register a simple function
         db.create_function("addOne", function(x) {return x+1;})

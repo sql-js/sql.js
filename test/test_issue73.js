@@ -1,9 +1,9 @@
 exports.test = function(sql, assert) {
-	// Create a database
-	var db = new sql.Database();
+    // Create a database
+    var db = new sql.Database();
 
-	// Execute some sql
-	sqlstr = "CREATE TABLE COMPANY("+
+    // Execute some sql
+    sqlstr = "CREATE TABLE COMPANY("+
 "                     ID INT PRIMARY KEY     NOT NULL,"+
 "                     NAME           TEXT    NOT NULL,"+
 "                     AGE            INT     NOT NULL,"+
@@ -26,27 +26,27 @@ exports.test = function(sql, assert) {
 "                  SELECT * FROM AUDIT;"+
 "                  INSERT INTO COMPANY VALUES (42,'B',8,'',1600);"+
 "                  SELECT EMP_ID FROM AUDIT ORDER BY EMP_ID";
-	var res = db.exec(sqlstr);
-	var expectedResult =  [
-	{
-		columns : ['EMP_ID','ENTRY_DATE'],
-		values : [
-			[73, '2014-11-10']
-		 ]
-	},
-	{
-		columns : ['EMP_ID'],
-		values : [
-			[42],[73]
-		 ]
-	}
-	];
-	assert.deepEqual(res, expectedResult,
-			"db.exec with a statement that contains a ';'");
+    var res = db.exec(sqlstr);
+    var expectedResult =  [
+    {
+        columns : ['EMP_ID','ENTRY_DATE'],
+        values : [
+            [73, '2014-11-10']
+         ]
+    },
+    {
+        columns : ['EMP_ID'],
+        values : [
+            [42],[73]
+         ]
+    }
+    ];
+    assert.deepEqual(res, expectedResult,
+            "db.exec with a statement that contains a ';'");
 };
 
 if (module == require.main) {
-	var sql = require('../js/sql.js');
-	var assert = require('assert');
-	exports.test(sql, assert);
+    var sql = require('../js/sql.js');
+    var assert = require('assert');
+    exports.test(sql, assert);
 }
