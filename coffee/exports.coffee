@@ -2,6 +2,7 @@ sqlite3_open = Module['cwrap'] 'sqlite3_open', 'number', ['string', 'number']
 sqlite3_close_v2 = Module['cwrap'] 'sqlite3_close_v2', 'number', ['number']
 sqlite3_exec = Module['cwrap'] 'sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']
 sqlite3_free = Module['cwrap'] 'sqlite3_free', '', ['number']
+sqlite3_changes = Module['cwrap'] 'sqlite3_changes', 'number', ['number']
 
 # Prepared statements
 ## prepare

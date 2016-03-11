@@ -41,17 +41,17 @@ exports.test = function(sql, assert) {
                 /table .+ already exists/,
                 "Trying to create a table with a name that is already used should throw an error");
 
-  stmt.run([2])
+  stmt.run([2]);
   assert.deepEqual(db.exec("SELECT a,b FROM test WHERE a=2"),
-                   [{columns:['a', 'b'],values:[[2, null]]}]
-                   , "Previous errors should not have spoiled the statement");
+                   [{columns:['a', 'b'],values:[[2, null]]}],
+                   "Previous errors should not have spoiled the statement");
 
   db.close();
 
   assert.throws(function(){
     stmt.run([3]);
   }, "Statements should'nt be able to execute after the database is closed");
-}
+};
 
 if (module == require.main) {
   var sql = require('../js/sql.js');
