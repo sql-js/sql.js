@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset='UTF-8'>
+  <title>CoffeeScript API Documentation</title>
+  <script src='../javascript/application.js'></script>
+  <script src='../javascript/search.js'></script>
+  <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
+</head>
+  <body>
+    <div id='base' data-path='../'></div>
+<div id='header'>
+  <div id='menu'>
+    <a href='../extra/README.md.html' title='Sql.js'>
+      Sql.js
+    </a>
+    &raquo;
+    <a href='../alphabetical_index.html' title='Index'>
+      Index
+    </a>
+    &raquo;
+    <span class='title'>README.md</span>
+  </div>
+</div>
+    <div id='content'>
+      <nav class='toc'>
+        <p class='title'>
+          <a class='hide_toc' href='#'>
+            <strong>Table of Contents</strong>
+          </a>
+          <small>
+            (<a class='float_toc' href='#'>left</a>)
+          </small>
+        </p>
+      </nav>
+      <div id='filecontents'>
+        <h1 id="sqlite-compiled-to-javascript">SQLite compiled to javascript</h1><p><a href="http://travis-ci.org/kripken/sql.js"><img src="https://travis-ci.org/kripken/sql.js.svg?branch=master" alt="Build Status"></a></p><p>For the impatients, try the demo here: <a href="http://kripken.github.io/sql.js/GUI/">http://kripken.github.io/sql.js/GUI/</a></p><p>sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
+no C bindings or node-gyp compilation here.</p><p>SQLite is public domain, sql.js is MIT licensed.</p><h2 id="documentation">Documentation</h2><p>A <a href="http://kripken.github.io/sql.js/documentation/#http://kripken.github.io/sql.js/documentation/class/Database.html">full documentation</a> generated from comments inside the source code, is available.</p><h2 id="usage">Usage</h2>
+<pre><code class="lang-javascript">var sql = require(&#39;sql.js&#39;);
+// or sql = window.SQL if you are in a browser
+
+// Create a database
+var db = new sql.Database();
+// NOTE: You can also use new sql.Database(data) where
+// data is an Uint8Array representing an SQLite database file
+
+// Execute some sql
+sqlstr = &quot;CREATE TABLE hello (a int, b char);&quot;;
+sqlstr += &quot;INSERT INTO hello VALUES (0, &#39;hello&#39;);&quot;
+sqlstr += &quot;INSERT INTO hello VALUES (1, &#39;world&#39;);&quot;
+db.run(sqlstr); // Run the query without returning anything
+
+var res = db.exec(&quot;SELECT * FROM hello&quot;);
+/*
+[
+    {columns:[&#39;a&#39;,&#39;b&#39;], values:[[0,&#39;hello&#39;],[1,&#39;world&#39;]]}
+]
+*/
+
+// Prepare an sql statement
+var stmt = db.prepare(&quot;SELECT * FROM hello WHERE a=:aval AND b=:bval&quot;);
+
+// Bind values to the parameters and fetch the results of the query
+var result = stmt.getAsObject({&#39;:aval&#39; : 1, &#39;:bval&#39; : &#39;world&#39;});
+console.log(result); // Will print {a:1, b:&#39;world&#39;}
+
+// Bind other values
+stmt.bind([0, &#39;hello&#39;]);
+while (stmt.step()) console.log(stmt.get()); // Will print [0, &#39;hello&#39;]
+
+// You can also use javascript functions inside your SQL code
+// Create the js function you need
+function add(a, b) {return a+b;}
+// Specifies the SQL function&#39;s name, the number of it&#39;s arguments, and the js function to use
+db.create_function(&quot;add_js&quot;, add);
+// Run a query in which the function is used
+db.run(&quot;INSERT INTO hello VALUES (add_js(7, 3), add_js(&#39;Hello &#39;, &#39;world&#39;));&quot;); // Inserts 10 and &#39;Hello world&#39;
+
+// free the memory used by the statement
+stmt.free();
+// You can not use your statement anymore once it has been freed.
+// But not freeing your statements causes memory leaks. You don&#39;t want that.
+
+// Export the database to an Uint8Array containing the SQLite database file
+var binaryArray = db.export();
+</code></pre>
+<h2 id="demo">Demo</h2><p>There is an online demo available here : <a href="http://kripken.github.io/sql.js/GUI">http://kripken.github.io/sql.js/GUI</a></p><h2 id="examples">Examples</h2><p>The test files provide up to date example of the use of the api.</p><h3 id="inside-the-browser">Inside the browser</h3>
+<h4 id="example-html-file-">Example <strong>HTML</strong> file:</h4>
+<pre><code class="lang-html">&lt;script src=&#39;js/sql.js&#39;&gt;&lt;/script&gt;
+&lt;script&gt;
+    //Create the database
+    var db = new SQL.Database();
+    // Run a query without reading the results
+    db.run(&quot;CREATE TABLE test (col1, col2);&quot;);
+    // Insert two rows: (1,111) and (2,222)
+    db.run(&quot;INSERT INTO test VALUES (?,?), (?,?)&quot;, [1,111,2,222]);
+
+    // Prepare a statement
+    var stmt = db.prepare(&quot;SELECT * FROM test WHERE col1 BETWEEN $start AND $end&quot;);
+    stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
+
+    // Bind new values
+    stmt.bind({$start:1, $end:2});
+    while(stmt.step()) { //
+        var row = stmt.getAsObject();
+        // [...] do something with the row of result
+    }
+&lt;/script&gt;
+</code></pre>
+<h4 id="creating-a-database-from-a-file-choosen-by-the-user">Creating a database from a file choosen by the user</h4><p><code>SQL.Database</code> constructor takes an array of integer representing a database file as an optional parameter.
+The following code uses an HTML input as the source for loading a database:</p><pre><code class="lang-javascript">dbFileElm.onchange = function() {
+    var f = dbFileElm.files[0];
+    var r = new FileReader();
+    r.onload = function() {
+        var Uints = new Uint8Array(r.result);
+        db = new SQL.Database(Uints);
+    }
+    r.readAsArrayBuffer(f);
+}
+</code></pre><p>See : <a href="http://kripken.github.io/sql.js/GUI/gui.js">http://kripken.github.io/sql.js/GUI/gui.js</a></p><h4 id="loading-a-database-from-a-server">Loading a database from a server</h4>
+<pre><code class="lang-javascript">var xhr = new XMLHttpRequest();
+xhr.open(&#39;GET&#39;, &#39;/path/to/database.sqlite&#39;, true);
+xhr.responseType = &#39;arraybuffer&#39;;
+
+xhr.onload = function(e) {
+  var uInt8Array = new Uint8Array(this.response);
+  var db = new SQL.Database(uInt8Array);
+  var contents = db.exec(&quot;SELECT * FROM my_table&quot;);
+  // contents is now [{columns:[&#39;col1&#39;,&#39;col2&#39;,...], values:[[first row], [second row], ...]}]
+};
+xhr.send();
+</code></pre><p>See: <a href="https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server">https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server</a></p><h3 id="use-from-node-js">Use from node.js</h3><p><code>sql.js</code> is <a href="https://www.npmjs.org/package/sql.js">hosted on npm</a>. To install it, you can simply run <code>npm install sql.js</code>.
+Alternatively, you can simply download the file <code>sql.js</code>, from the download link below.</p><h4 id="read-a-database-from-the-disk-">read a database from the disk:</h4>
+<pre><code class="lang-javascript">var fs = require(&#39;fs&#39;);
+var SQL = require(&#39;sql.js&#39;);
+var filebuffer = fs.readFileSync(&#39;test.sqlite&#39;);
+
+// Load the db
+var db = new SQL.Database(filebuffer);
+</code></pre>
+<h4 id="write-a-database-to-the-disk">write a database to the disk</h4><p>You need to convert the result of <code>db.export</code> to a buffer</p><pre><code class="lang-javascript">var fs = require(&quot;fs&quot;);
+// [...] (create the database)
+var data = db.export();
+var buffer = new Buffer(data);
+fs.writeFileSync(&quot;filename.sqlite&quot;, buffer);
+</code></pre><p>See : <a href="https://github.com/kripken/sql.js/blob/master/test/test_node_file.js">https://github.com/kripken/sql.js/blob/master/test/test_node_file.js</a></p><h3 id="use-as-web-worker">Use as web worker</h3><p>If you don&#39;t want to run CPU-intensive SQL queries in your main application thread,
+you can use the <em>more limited</em> WebWorker API.</p><p>You will need to download <code>worker.sql.js</code></p><p>Example:</p><pre><code class="lang-html">&lt;script&gt;
+var worker = new Worker(&quot;js/worker.sql.js&quot;); // You can find worker.sql.js in this repo
+worker.onmessage = function() {
+    console.log(&quot;Database opened&quot;);
+    worker.onmessage = function(event){
+        console.log(event.data); // The result of the query
+    };
+    worker.postMessage({
+        id: 2,
+        action: &#39;exec&#39;,
+        sql: &#39;SELECT * FROM test&#39;
+    });
+};
+
+worker.onerror = function(e) {console.log(&quot;Worker error: &quot;, e)};
+worker.postMessage({
+    id:1,
+    action:&#39;open&#39;,
+    buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
+});
+&lt;/script&gt;
+</code></pre><p>See : <a href="https://github.com/kripken/sql.js/blob/master/test/test_worker.js">https://github.com/kripken/sql.js/blob/master/test/test_worker.js</a></p><h2 id="downloads">Downloads</h2>
+<ul>
+<li>You can download <code>sql.js</code> here : <a href="https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js">https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js</a></li>
+<li>And the Web Worker version: <a href="https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js">https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js</a></li>
+</ul>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="http://kripken.github.io/sql.js/GUI/">In-Browser/Client-Side Demo</a></li>
+</ul>
+
+      </div>
+    </div>
+    <div id='footer'>
+  By
+  <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
+    Codo
+  </a>
+  2.1.0
+  &#10034;
+  Press H to see the keyboard shortcuts
+  &#10034;
+  <a href='http://twitter.com/netzpirat' target='_parent'>@netzpirat</a>
+  &#10034;
+  <a href='http://twitter.com/_inossidabile' target='_parent'>@_inossidabile</a>
+</div>
+<iframe id='search_frame'></iframe>
+<div id='fuzzySearch'>
+  <input type='text'>
+  <ol></ol>
+</div>
+<div id='help'>
+  <p>
+    Quickly fuzzy find classes, mixins, methods, file:
+  </p>
+  <ul>
+    <li>
+      <span>T</span>
+      Open fuzzy finder dialog
+    </li>
+  </ul>
+  <p>
+    Control the navigation frame:
+  </p>
+  <ul>
+    <li>
+      <span>L</span>
+      Toggle list view
+    </li>
+    <li>
+      <span>C</span>
+      Show class list
+    </li>
+    <li>
+      <span>I</span>
+      Show mixin list
+    </li>
+    <li>
+      <span>F</span>
+      Show file list
+    </li>
+    <li>
+      <span>M</span>
+      Show method list
+    </li>
+    <li>
+      <span>E</span>
+      Show extras list
+    </li>
+  </ul>
+  <p>
+    You can focus and blur the search input:
+  </p>
+  <ul>
+    <li>
+      <span>S</span>
+      Focus search input
+    </li>
+    <li>
+      <span>Esc</span>
+      Blur search input
+    </li>
+  </ul>
+</div>
+  </body>
+</html>

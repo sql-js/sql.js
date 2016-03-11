@@ -115,6 +115,20 @@
   </li>
   <li>
     <span class='signature'>
+      <a href='#getRowsModified-dynamic'>
+        #
+(Number)
+<b>getRowsModified</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      <p>Returns the number of rows modified, inserted or deleted by the most recently completed INSERT, UPDATE or DELETE statement on the
+database Executing any other type of SQL statement does not modify
+the value returned by this function.</p>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
       <a href='#create_function-dynamic'>
         #
 (void)
@@ -461,6 +475,33 @@ be used anymore.</p><p>Databases <strong>must</strong> be closed, when you&#39;r
 memory consumption will grow forever</p>
 </div>
 <div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getRowsModified-dynamic'>
+      #
+(Number)
+<b>getRowsModified</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Returns the number of rows modified, inserted or deleted by the
+most recently completed INSERT, UPDATE or DELETE statement on the
+database Executing any other type of SQL statement does not modify
+the value returned by this function.</p>
+</div>
+<div class='tags'>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>Number</tt>
+      )
+      &mdash;
+      <span class='desc'>the number of rows modified </span>
+    </li>
+  </ul>
 </div>
   </div>
   <div class='method_details'>
