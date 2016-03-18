@@ -190,6 +190,8 @@ See : https://github.com/kripken/sql.js/blob/master/test/test_worker.js
 ## Downloads
  - You can download `sql.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js
  - And the Web Worker version: https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js
+ - You can find a non minified or optimized version for debugging, `sql-debug.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql-debug.js
+ - If you see the message, `Cannot enlarge memory arrays`, try this version, `sql-memory-growth.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql-memory-growth.js
 
 ## Related
 
