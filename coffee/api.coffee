@@ -257,7 +257,7 @@ class Database
     @example Insert values in a table
         db.run("INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'});
 
-    @return [Database] The database object (usefull for method chaining)
+    @return [Database] The database object (useful for method chaining)
     ###
     'run' : (sql, params) ->
         if not @db then throw "Database closed"
@@ -353,7 +353,7 @@ class Database
     @param callback [Function(Object)] A function that will be called on each row of result
     @param done [Function] A function that will be called when all rows have been retrieved
 
-    @return [Database] The database object. Usefull for method chaining
+    @return [Database] The database object. Useful for method chaining
 
     @example Read values from a table
         db.each("SELECT name,age FROM users WHERE age >= $majority",
@@ -431,16 +431,16 @@ class Database
     most recently completed INSERT, UPDATE or DELETE statement on the
     database Executing any other type of SQL statement does not modify
     the value returned by this function.
-    
+
     @return [Number] the number of rows modified
     ###
     'getRowsModified': -> sqlite3_changes(@db)
-    
+
     ### Register a custom function with SQLite
     @example Register a simple function
         db.create_function("addOne", function(x) {return x+1;})
         db.exec("SELECT addOne(1)") // = 2
-    
+
     @param name [String] the name of the function as referenced in SQL statements.
     @param func [Function] the actual function to be executed.
     ###
