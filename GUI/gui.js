@@ -120,8 +120,15 @@ function savedb () {
 		toc("Exporting the database");
 		var arraybuff = event.data.buffer;
 		var blob = new Blob([arraybuff]);
-		var url = window.URL.createObjectURL(blob);
-		window.location = url;
+		var a = document.createElement("a");
+		a.href = window.URL.createObjectURL(blob);
+		a.download = "sql.db";
+		a.onclick = function() {
+			setTimeout(function() {
+				window.URL.revokeObjectURL(a.href);
+			}, 1500);
+		};
+		a.click();
 	};
 	tic();
 	worker.postMessage({action:'export'});
