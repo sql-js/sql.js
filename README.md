@@ -17,6 +17,10 @@ A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kri
 var sql = require('sql.js');
 // or sql = window.SQL if you are in a browser
 
+// in a browser, use the following callback before
+// performing any action, since it is async
+sql.onRuntimeInitialized = function() { ... }
+
 // Create a database
 var db = new sql.Database();
 // NOTE: You can also use new sql.Database(data) where
@@ -73,22 +77,24 @@ The test files provide up to date example of the use of the api.
 ```html
 <script src='js/sql.js'></script>
 <script>
-    //Create the database
-    var db = new SQL.Database();
-    // Run a query without reading the results
-    db.run("CREATE TABLE test (col1, col2);");
-    // Insert two rows: (1,111) and (2,222)
-    db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
+    SQL.onRuntimeInitialized = function() {
+        //Create the database
+        var db = new SQL.Database();
+        // Run a query without reading the results
+        db.run("CREATE TABLE test (col1, col2);");
+        // Insert two rows: (1,111) and (2,222)
+        db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
 
-    // Prepare a statement
-    var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
-    stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
+        // Prepare a statement
+        var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
+        stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
 
-    // Bind new values
-    stmt.bind({$start:1, $end:2});
-    while(stmt.step()) { //
-        var row = stmt.getAsObject();
-        // [...] do something with the row of result
+        // Bind new values
+        stmt.bind({$start:1, $end:2});
+        while(stmt.step()) { //
+            var row = stmt.getAsObject();
+            // [...] do something with the row of result
+        }
     }
 </script>
 ```
