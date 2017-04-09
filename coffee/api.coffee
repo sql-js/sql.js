@@ -315,8 +315,9 @@ class Database
         # Store the SQL string in memory. The string will be consumed, one statement
         # at a time, by sqlite3_prepare_v2_sqlptr.
         # Allocate at most 4 bytes per UTF8 char, +1 for the trailing '\0'
-        nextSqlPtr = Runtime.stackAlloc(sql.length<<2 + 1)
-        writeStringToMemory sql, nextSqlPtr
+        buflen = sql.length<<2 + 1
+        nextSqlPtr = Runtime.stackAlloc(buflen)
+        stringToUTF8 sql, nextSqlPtr, buflen
         # Used to store a pointer to the next SQL statement in the string
         pzTail = Runtime.stackAlloc(4)
 
