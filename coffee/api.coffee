@@ -448,7 +448,7 @@ class Database
         wrapped_func = (cx, argc, argv) ->
             # Parse the args from sqlite into JS objects
             args = []
-            for i in [0..argc]
+            for i in [0...argc]
                 value_ptr = getValue(argv+(4*i), 'i32')
                 value_type = sqlite3_value_type(value_ptr)
                 data_func = switch
