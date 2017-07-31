@@ -20,6 +20,13 @@ if typeof importScripts is 'function' # Detect webworker context
                 postMessage
                     'id' : data['id']
                     'results': db.exec data['sql']
+            when 'run'
+                if db is null then createDb()
+                if not data['sql'] then throw 'run: Missing query string'
+                if not data['params'] then throw 'run: Missing params'
+                postMessage
+                    'id' : data['id']
+                    'results': db.run data['sql'], data['params']                   
             when 'each'
                 if db is null then createDb()
                 callback = (row) -> postMessage
