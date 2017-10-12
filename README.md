@@ -98,7 +98,7 @@ The test files provide up to date example of the use of the api.
 `SQL.Database` constructor takes an array of integer representing a database file as an optional parameter.
 The following code uses an HTML input as the source for loading a database:
 ```javascript
-dbFileElm.onchange = function() {
+dbFileElm.onchange = () => {
   var f = dbFileElm.files[0];
   var r = new FileReader();
   r.onload = function() {
@@ -117,7 +117,7 @@ var xhr = new XMLHttpRequest();
 xhr.open('GET', '/path/to/database.sqlite', true);
 xhr.responseType = 'arraybuffer';
 
-xhr.onload = function(e) {
+xhr.onload = e => {
   var uInt8Array = new Uint8Array(this.response);
   var db = new SQL.Database(uInt8Array);
   var contents = db.exec("SELECT * FROM my_table");
@@ -165,9 +165,9 @@ Example:
 ```html
 <script>
   var worker = new Worker("js/worker.sql.js"); // You can find worker.sql.js in this repo
-  worker.onmessage = function() {
+  worker.onmessage = () => {
     console.log("Database opened");
-    worker.onmessage = function(event){
+    worker.onmessage = event => {
       console.log(event.data); // The result of the query
     };
 	
@@ -178,7 +178,7 @@ Example:
     });
   };
 
-  worker.onerror = function(e) {console.log("Worker error: ", e)};
+  worker.onerror = e => console.log("Worker error: ", e);
   worker.postMessage({
     id:1,
     action:'open',
