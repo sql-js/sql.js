@@ -1,5 +1,5 @@
 # SQLite compiled to javascript
-[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js)
+[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
 For the impatients, try the demo here: http://kripken.github.io/sql.js/GUI/
 
