@@ -42,6 +42,9 @@ if typeof importScripts is 'function' # Detect webworker context
                 catch err # Some browsers fail when trying to use transferable objects
                     postMessage result
             when 'close'
-                db?.close()
+                if db? 
+                    db.close()
+                    db = null;
+                return undefined
             else
                 throw new 'Invalid action : ' + data?['action']
