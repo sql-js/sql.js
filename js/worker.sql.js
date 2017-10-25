@@ -536,7 +536,13 @@ if (typeof importScripts === 'function') {
         }
         break;
       case 'close':
-        return db != null ? db.close() : void 0;
+        if (db != null) {
+          db.close();
+          return db = null;
+        }
+        else {
+            return void 0;
+        }
       default:
         throw new 'Invalid action : ' + (data != null ? data['action'] : void 0);
     }
