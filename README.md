@@ -1,17 +1,21 @@
 # SQLite compiled to javascript
-[![Build Status](https://travis-ci.org/lovasoa/sql.js.svg?branch=master)](http://travis-ci.org/lovasoa/sql.js)
+[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js)
 
 For the impatients, try the demo here: http://kripken.github.io/sql.js/GUI/
 
-sql.js is a port of SQLite to JavaScript, by compiling the SQLite C code with Emscripten.
-no C bindings or node-gyp compilation here.
+*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to JavaScript, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in memory](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [javascript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
+
+There is no C bindings or node-gyp compilation here, sql.js is a simple javascript file, that can be used like any traditional javascript library. If you are building a native application in javascript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to javascript](https://www.npmjs.com/package/sqlite3).
 
 SQLite is public domain, sql.js is MIT licensed.
+
+## Documentation
+A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kripken.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
 
 ## Usage
 
 ```javascript
-var sql = require('./js/sql-api.js');
+var sql = require('sql.js');
 // or sql = window.SQL if you are in a browser
 
 // Create a database
@@ -43,6 +47,14 @@ console.log(result); // Will print {a:1, b:'world'}
 stmt.bind([0, 'hello']);
 while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
 
+// You can also use javascript functions inside your SQL code
+// Create the js function you need
+function add(a, b) {return a+b;}
+// Specifies the SQL function's name, the number of it's arguments, and the js function to use
+db.create_function("add_js", add);
+// Run a query in which the function is used
+db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
+
 // free the memory used by the statement
 stmt.free();
 // You can not use your statement anymore once it has been freed.
@@ -53,9 +65,9 @@ var binaryArray = db.export();
 ```
 
 ## Demo
-There is an online demo available here : http://lovasoa.github.io/sql.js/GUI
+There is an online demo available here : http://kripken.github.io/sql.js/GUI
 
-## Exemples
+## Examples
 The test files provide up to date example of the use of the api.
 ### Inside the browser
 #### Example **HTML** file:
@@ -70,7 +82,7 @@ The test files provide up to date example of the use of the api.
     db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
 
     // Prepare a statement
-    var stmt = db.prepare("SELECT * FROM test WHERE a BETWEEN $start AND $end");
+    var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
     stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
 
     // Bind new values
@@ -96,7 +108,25 @@ dbFileElm.onchange = function() {
 	r.readAsArrayBuffer(f);
 }
 ```
-See : http://lovasoa.github.io/sql.js/GUI/gui.js
+See : http://kripken.github.io/sql.js/GUI/gui.js
+
+#### Loading a database from a server
+
+```javascript
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/path/to/database.sqlite', true);
+xhr.responseType = 'arraybuffer';
+
+xhr.onload = function(e) {
+  var uInt8Array = new Uint8Array(this.response);
+  var db = new SQL.Database(uInt8Array);
+  var contents = db.exec("SELECT * FROM my_table");
+  // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
+};
+xhr.send();
+```
+See: https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server
+
 
 ### Use from node.js
 
@@ -123,7 +153,7 @@ var buffer = new Buffer(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
-See : https://github.com/lovasoa/sql.js/blob/master/test/test_node_file.js
+See : https://github.com/kripken/sql.js/blob/master/test/test_node_file.js
 
 ### Use as web worker
 If you don't want to run CPU-intensive SQL queries in your main application thread,
@@ -156,28 +186,15 @@ worker.postMessage({
 </script>
 ```
 
-See : https://github.com/lovasoa/sql.js/blob/master/test/test_worker.js
-
-## Documentation
-The API is fully documented here : http://lovasoa.github.io/sql.js/documentation/
+See : https://github.com/kripken/sql.js/blob/master/test/test_worker.js
 
 ## Downloads
- - You can download `sql.js` here : http://lovasoa.github.io/sql.js/js/sql.js
- - And the Web Worker version: http://lovasoa.github.io/sql.js/js/worker.sql.js
-
-## Differences from the original sql.js
- * Support for BLOBs
- * Support for prepared statements
- * Cleaner API
- * More recent version of SQLite (3.8.4)
- * Compiled to asm.js (should be faster, at least on firefox)
- * Changed API. Results now have the form <code>[{'columns':[], values:[]}]</code>
- * Improved GUI of the demo. It now has :
-   * syntax highlighting
-   * nice HTML tables to display results
-   * ability to load and save sqlite database files
+ - You can download `sql.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js
+ - And the Web Worker version: https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js
+ - You can find a non minified or optimized version for debugging, `sql-debug.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql-debug.js
+ - If you see the message, `Cannot enlarge memory arrays`, try this version, `sql-memory-growth.js` here : https://raw.githubusercontent.com/kripken/sql.js/master/js/sql-memory-growth.js
 
 ## Related
 
-* [In-Browser/Client-Side Demo](http://lovasoa.github.io/sql.js/GUI/)
+* [In-Browser/Client-Side Demo](http://kripken.github.io/sql.js/GUI/)
 
