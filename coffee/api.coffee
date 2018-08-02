@@ -1,7 +1,6 @@
 #@copyright Ophir LOJKINE
 
-Runtime = Module['Runtime']
-apiTemp = Runtime.stackAlloc(4)
+apiTemp = stackAlloc(4)
 
 # Constants are defined in api-data.coffee
 SQLite = {}
@@ -311,7 +310,7 @@ class Database
     'exec': (sql) ->
         if not @db then throw "Database closed"
 
-        stack = Runtime.stackSave()
+        stack = stackSave()
         # Store the SQL string in memory. The string will be consumed, one statement
         # at a time, by sqlite3_prepare_v2_sqlptr.
         # Allocate at most 4 bytes per UTF8 char, +1 for the trailing '\0'
@@ -319,7 +318,7 @@ class Database
         nextSqlPtr = Runtime.stackAlloc(buflen)
         stringToUTF8 sql, nextSqlPtr, buflen
         # Used to store a pointer to the next SQL statement in the string
-        pzTail = Runtime.stackAlloc(4)
+        pzTail = stackAlloc(4)
 
         results = []
         while getValue(nextSqlPtr,'i8') isnt NULL
@@ -339,7 +338,7 @@ class Database
                 results.push curresult
               curresult['values'].push stmt['get']()
             stmt['free']()
-        Runtime.stackRestore stack
+        stackRestore stack
         return results
 
     ### Execute an sql statement, and call a callback for each row of result.
@@ -449,7 +448,7 @@ class Database
         wrapped_func = (cx, argc, argv) ->
             # Parse the args from sqlite into JS objects
             args = []
-            for i in [0..argc]
+            for i in [0...argc]
                 value_ptr = getValue(argv+(4*i), 'i32')
                 value_type = sqlite3_value_type(value_ptr)
                 data_func = switch
@@ -479,6 +478,6 @@ class Database
                     when 'string' then sqlite3_result_text(cx, result, -1, -1)
 
         # Generate a pointer to the wrapped, user defined function, and register with SQLite.
-        func_ptr = Runtime.addFunction(wrapped_func)
+        func_ptr = addFunction(wrapped_func)
         @handleError sqlite3_create_function_v2 @db, name, func.length, SQLite.UTF8, 0, func_ptr, 0, 0, 0
         return @
