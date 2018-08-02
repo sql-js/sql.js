@@ -74,23 +74,23 @@ The test files provide up to date example of the use of the api.
 ```html
 <script src='js/sql.js'></script>
 <script>
-    //Create the database
-    var db = new SQL.Database();
-    // Run a query without reading the results
-    db.run("CREATE TABLE test (col1, col2);");
-    // Insert two rows: (1,111) and (2,222)
-    db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
+  //Create the database
+  var db = new SQL.Database();
+  // Run a query without reading the results
+  db.run("CREATE TABLE test (col1, col2);");
+  // Insert two rows: (1,111) and (2,222)
+  db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
 
-    // Prepare a statement
-    var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
-    stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
+  // Prepare a statement
+  var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
+  stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
 
-    // Bind new values
-    stmt.bind({$start:1, $end:2});
-    while(stmt.step()) { //
-        var row = stmt.getAsObject();
-        // [...] do something with the row of result
-    }
+  // Bind new values
+  stmt.bind({$start:1, $end:2});
+  while(stmt.step()) { //
+    var row = stmt.getAsObject();
+    // [...] do something with the row of result
+  }
 </script>
 ```
 
@@ -98,14 +98,14 @@ The test files provide up to date example of the use of the api.
 `SQL.Database` constructor takes an array of integer representing a database file as an optional parameter.
 The following code uses an HTML input as the source for loading a database:
 ```javascript
-dbFileElm.onchange = function() {
-	var f = dbFileElm.files[0];
-	var r = new FileReader();
-	r.onload = function() {
-		var Uints = new Uint8Array(r.result);
-		db = new SQL.Database(Uints);
-	}
-	r.readAsArrayBuffer(f);
+dbFileElm.onchange = () => {
+  var f = dbFileElm.files[0];
+  var r = new FileReader();
+  r.onload = function() {
+    var Uints = new Uint8Array(r.result);
+    db = new SQL.Database(Uints);
+  }
+  r.readAsArrayBuffer(f);
 }
 ```
 See : http://kripken.github.io/sql.js/GUI/gui.js
@@ -117,7 +117,7 @@ var xhr = new XMLHttpRequest();
 xhr.open('GET', '/path/to/database.sqlite', true);
 xhr.responseType = 'arraybuffer';
 
-xhr.onload = function(e) {
+xhr.onload = e => {
   var uInt8Array = new Uint8Array(this.response);
   var db = new SQL.Database(uInt8Array);
   var contents = db.exec("SELECT * FROM my_table");
@@ -164,25 +164,26 @@ You will need to download `worker.sql.js`
 Example:
 ```html
 <script>
-var worker = new Worker("js/worker.sql.js"); // You can find worker.sql.js in this repo
-worker.onmessage = function() {
-	console.log("Database opened");
-	worker.onmessage = function(event){
-		console.log(event.data); // The result of the query
-	};
-	worker.postMessage({
-		id: 2,
-		action: 'exec',
-		sql: 'SELECT * FROM test'
-	});
-};
+  var worker = new Worker("js/worker.sql.js"); // You can find worker.sql.js in this repo
+  worker.onmessage = () => {
+    console.log("Database opened");
+    worker.onmessage = event => {
+      console.log(event.data); // The result of the query
+    };
+	
+    worker.postMessage({
+      id: 2,
+      action: 'exec',
+      sql: 'SELECT * FROM test'
+    });
+  };
 
-worker.onerror = function(e) {console.log("Worker error: ", e)};
-worker.postMessage({
-	id:1,
-	action:'open',
-	buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
-});
+  worker.onerror = e => console.log("Worker error: ", e);
+  worker.postMessage({
+    id:1,
+    action:'open',
+    buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
+  });
 </script>
 ```
 
