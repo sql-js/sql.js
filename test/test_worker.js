@@ -1,10 +1,21 @@
-var Worker = require("workerjs");
+
+// TODO: We could use the new Node 11 workers via
+// node --experimental-worker test/all.js 
+// Then we could: 
+//const { Worker } = require('worker_threads');
+// But it turns out that the worker_threads interface is just different enough not to work. 
+// Something like tiny-worker should be a wrapper around the node interface if it's available
+var Worker = require("tiny-worker");
 var path = require("path");
 
 exports.test = function(notUsed, assert, done) {
   var target = process.argv[2];
   var file = target ? "sql-"+target : "sql";
-  var worker = new Worker(path.join(__dirname, "../js/worker."+file+".js"));
+  // If we use tiny-worker, we need to pass in this new cwd as the root of the file being loaded:
+  var worker = new Worker(path.join(__dirname, "../js/worker."+file+".js"), null, { cwd: path.join(__dirname, "../js/") });
+  
+  // The following tests are continually overwriting worker.onmessage so that they 
+
   worker.onmessage = function(event) {
     var data = event.data;
     assert.strictEqual(data.id, 1, "Return the given id in the correct format");
@@ -58,6 +69,7 @@ exports.test = function(notUsed, assert, done) {
     });
   }
   worker.onerror = function (e) {
+    // This doesn't appear to get thrown if there is an eval error in the worker
     console.log("Threw error: ", e);
     assert.fail(new Error(e),null,"Sould not throw an error");
     done();

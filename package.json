@@ -2,22 +2,37 @@
 	"name": "sql.js",
 	"version": "0.4.0",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
-	"keywords": ["sql", "sqlite", "stand-alone", "relational", "database", "RDBMS", "data", "query", "statement", "emscripten", "asm", "asm.js"],
+	"keywords": [
+		"sql",
+		"sqlite",
+		"stand-alone",
+		"relational",
+		"database",
+		"RDBMS",
+		"data",
+		"query",
+		"statement",
+		"emscripten",
+		"asm",
+		"asm.js"
+	],
 	"license": "MIT",
 	"main": "./js/sql.js",
-	"scripts": { "test": "node test/all.js" },
+	"scripts": {
+		"test": "node test/all.js"
+	},
 	"homepage": "http://github.com/kripken/sql.js",
-	"repository" :
-	{	"type" : "git",
-		"url" : "http://github.com/kripken/sql.js.git"
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/kripken/sql.js.git"
 	},
 	"bugs": {
-		"url" : "https://github.com/kripken/sql.js/issues",
-		"email" : "pere.jobs@gmail.com"
+		"url": "https://github.com/kripken/sql.js/issues",
+		"email": "pere.jobs@gmail.com"
 	},
 	"devDependencies": {
-    "workerjs": ">=0.1",
-    "test": ">=0.6"
-  }
+		"test": ">=0.6",
+		"tiny-worker": "^2.1.2"
+	},
+	"dependencies": {}
 }
-
