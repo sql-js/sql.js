@@ -4,12 +4,14 @@ EMCC=emcc
 
 CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
 
+# When compiling to WASM, enabling memory-growth is not expected to make much of an impact, so we enable it for all builds
 EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
-	-s WASM=0 \
+	-s WASM=1 \
 	-s EXPORTED_FUNCTIONS=@exported_functions \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods
+	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods \
+	-s ALLOW_MEMORY_GROWTH=1
 
 # TODO: Closure?	
 EMFLAGS_OPTIMIZED= \
@@ -22,7 +24,7 @@ EMFLAGS_DEBUG = \
 
 BITCODE_FILES = c/sqlite3.bc c/extension-functions.bc
 
-all: js/sql.js js/sql-debug.js js/sql-memory-growth.js js/worker.sql.js js/worker.sql-debug.js
+all: js/sql.js js/sql-debug.js js/worker.sql.js js/worker.sql-debug.js
 
 # sql-debug.js
 js/sql-debug-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
@@ -36,14 +38,6 @@ js/sql-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_me
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
 
 js/sql.js: js/shell-pre.js js/sql-raw.js js/shell-post.js
-	cat $^ > $@
-
-
-# memory growth:
-js/sql-memory-growth-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
-
-js/sql-memory-growth.js: js/shell-pre.js js/sql-memory-growth-raw.js js/shell-post.js
 	cat $^ > $@
 
 # Web worker API
@@ -74,6 +68,6 @@ module.tar.gz: test package.json AUTHORS README.md js/sql.js
 	tar --create --gzip $^ > $@
 
 clean:
-	rm -rf js/sql.js js/api.js js/sql*-raw.js js/worker.sql.js js/worker.js js/worker.sql-debug.js js/sql-memory-growth.js c/sqlite3.bc c/extension-functions.bc
+	rm -rf js/sql.js js/api.js js/sql*-raw.js js/worker.sql.js js/worker.js js/worker.sql-debug.js c/sqlite3.bc c/extension-functions.bc
 
 
