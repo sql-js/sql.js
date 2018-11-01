@@ -4,34 +4,50 @@ EMCC=emcc
 
 CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
 
-all: js/sql.js debug js/worker.sql.js js/worker.sql-debug.js memory-growth
+EMFLAGS = \
+	--memory-init-file 0 \
+	-s RESERVED_FUNCTION_POINTERS=64 \
+	-s WASM=0 \
+	-s EXPORTED_FUNCTIONS=@exported_functions \
+	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods
 
-# RESERVED_FUNCTION_POINTERS setting is used for registering custom functions
-optimized: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=128 -s WASM=0
-optimized: js/sql-optimized.js
+# TODO: Closure?	
+EMFLAGS_OPTIMIZED= \
+	-s INLINING_LIMIT=50 \
+	-03
 
-memory-growth: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=128 -s ALLOW_MEMORY_GROWTH=1 -s WASM=0
-memory-growth: js/sql-memory-growth.js
+EMFLAGS_DEBUG = \
+	-s INLINING_LIMIT=10 \
+	-O1
 
-debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=128 -s WASM=0
-debug: js/sql-debug.js
+BITCODE_FILES = c/sqlite3.bc c/extension-functions.bc
 
-js/sql.js: optimized
-	cp js/sql-optimized.js js/sql.js
+all: js/sql.js js/sql-debug.js js/sql-memory-growth.js js/worker.sql.js js/worker.sql-debug.js
 
-js/sql%.js: js/shell-pre.js js/sql%-raw.js js/shell-post.js
+# sql-debug.js
+js/sql-debug-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
+
+js/sql-debug.js: js/shell-pre.js js/sql-debug-raw.js js/shell-post.js
 	cat $^ > $@
 
-js/sql%-raw.js: c/sqlite3.bc c/extension-functions.bc js/api.js exported_functions exported_runtime_methods
-	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions -s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods c/extension-functions.bc c/sqlite3.bc --pre-js js/api.js -o $@ ;\
+# sql.js
+js/sql-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
 
-js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
-	cat coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee | coffee --bare --compile --stdio > $@
-	cat coffee/output-pre.js $@ coffee/output-post.js > js/api-wrapped.js
-	mv js/api-wrapped.js $@
+js/sql.js: js/shell-pre.js js/sql-raw.js js/shell-post.js
+	cat $^ > $@
+
+
+# memory growth:
+js/sql-memory-growth-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
+
+js/sql-memory-growth.js: js/shell-pre.js js/sql-memory-growth-raw.js js/shell-post.js
+	cat $^ > $@
 
 # Web worker API
-worker: js/worker.sql.js
+worker: js/worker.sql.js js/worker.sql-debug.js
 js/worker.js: coffee/worker.coffee
 	cat $^ | coffee --bare --compile --stdio > $@
 
@@ -40,6 +56,12 @@ js/worker.sql.js: js/sql.js js/worker.js
 
 js/worker.sql-debug.js: js/sql-debug.js js/worker.js
 	cat $^ > $@
+
+
+js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
+	cat coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee | coffee --bare --compile --stdio > $@
+	cat coffee/output-pre.js $@ coffee/output-post.js > js/api-wrapped.js
+	mv js/api-wrapped.js $@
 
 c/sqlite3.bc: c/sqlite3.c
 	# Generate llvm bitcode
