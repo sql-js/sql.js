@@ -1,5 +1,4 @@
 # Note: Last tested with version 1.38.15 of Emscripten
-emcc (Emscripten gcc/clang-like replacemen
 
 EMCC=emcc
 
