@@ -5,13 +5,13 @@ CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=d
 all: js/sql.js debug js/worker.sql.js memory-growth
 
 # RESERVED_FUNCTION_POINTERS setting is used for registering custom functions
-optimized: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64
+optimized: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64 -s WASM=0
 optimized: js/sql-optimized.js
 
-memory-growth: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64 -s ALLOW_MEMORY_GROWTH=1
+memory-growth: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64 -s ALLOW_MEMORY_GROWTH=1 -s WASM=0
 memory-growth: js/sql-memory-growth.js
 
-debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=64
+debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=64 -s WASM=0
 debug: js/sql-debug.js
 
 js/sql.js: optimized
@@ -21,10 +21,12 @@ js/sql%.js: js/shell-pre.js js/sql%-raw.js js/shell-post.js
 	cat $^ > $@
 
 js/sql%-raw.js: c/sqlite3.bc c/extension-functions.bc js/api.js exported_functions
-	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions -s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods c/extension-functions.bc c/sqlite3.bc --post-js js/api.js -o $@ ;\
+	$(EMCC) $(EMFLAGS) -s EXPORTED_FUNCTIONS=@exported_functions -s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods c/extension-functions.bc c/sqlite3.bc --pre-js js/api.js -o $@ ;\
 
-js/api.js: coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee
-	cat $^ | coffee --bare --compile --stdio > $@
+js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
+	cat coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee | coffee --bare --compile --stdio > $@
+	cat coffee/output-pre.js $@ coffee/output-post.js > js/api-wrapped.js
+	mv js/api-wrapped.js $@
 
 # Web worker API
 worker: js/worker.sql.js

@@ -1,4 +1,10 @@
-return this['SQL'];
-})();
-if (typeof module !== 'undefined') module.exports = SQL;
-if (typeof define === 'function') define(SQL);
+ 
+  return Module;
+})(Module);
+
+if (typeof exports === 'object' && typeof module === 'object')
+    module.exports = Module;
+else if (typeof define === 'function' && define['amd'])
+    define([], function() { return Module; });
+else if (typeof exports === 'object')
+    exports["Module"] = Module;
