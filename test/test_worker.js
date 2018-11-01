@@ -1,14 +1,27 @@
 
-// TODO: We could use the new Node 11 workers via
+// TODO: Instead of using tiny-worker, we could use the new Node 11 workers via
 // node --experimental-worker test/all.js 
-// Then we could: 
-//const { Worker } = require('worker_threads');
+// Then we could do this:
+// const { Worker } = require('worker_threads');
 // But it turns out that the worker_threads interface is just different enough not to work. 
-// Something like tiny-worker should be a wrapper around the node interface if it's available
 var Worker = require("tiny-worker");
 var path = require("path");
 
+
 exports.test = function(notUsed, assert, done) {
+  
+  console.error("Warning: This test is 'expected' to fail because of the way emscripten detects ENVIRONMENT_IS_WORKER.");
+  // If it thinks it is running in a worker rather than Node, a few things fail. To fix it, in the code replace this:
+  //
+  //ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
+  //ENVIRONMENT_IS_NODE = typeof process === 'object' && typeof require === 'function' && !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_WORKER;
+  // 
+  // With this:
+  //
+  //ENVIRONMENT_IS_NODE = typeof process === 'object' && typeof require === 'function' && !ENVIRONMENT_IS_WEB;
+  //ENVIRONMENT_IS_WORKER = typeof importScripts === 'function' && !ENVIRONMENT_IS_NODE;
+  //
+
   var target = process.argv[2];
   var file = target ? "sql-"+target : "sql";
   // If we use tiny-worker, we need to pass in this new cwd as the root of the file being loaded:
