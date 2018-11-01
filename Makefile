@@ -1,3 +1,6 @@
+# Note: Last tested with version 1.38.15 of Emscripten
+emcc (Emscripten gcc/clang-like replacemen
+
 EMCC=emcc
 
 CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
