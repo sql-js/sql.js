@@ -5,18 +5,18 @@ var Module = (function(Module) {
     // If Module already exists, use it
     var Module = typeof Module !== 'undefined' ? Module : {};
     
-    var preRunHasRun = Module['preRunHasRun'] = new Promise(function(resolve){
-      // When Emscripted calls preRun, this can resolve
+    Module['preRunHasRun'] = new Promise(function(resolve){
       // TODO: Add on to any postRun objects already there
       Module['preRun'] = function(){
+        // When Emscripted calls preRun, this resolves
         resolve();
       }
     }.bind(this));
     
     var postRunHasRun = Module['postRunHasRun'] = new Promise(function(resolve){
-      // When Emscripted calls postRun, this can resolve
       // TODO: Add on to any postRun objects already there
       Module['postRun'] = function(){
+        // When Emscripted calls postRun, this resolves
         resolve();
       }
     }.bind(this));
@@ -34,4 +34,3 @@ var Module = (function(Module) {
   
     }.bind(this));
 
-    
