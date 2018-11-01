@@ -50,9 +50,12 @@ exports.test = function(sql, assert, done) {
   }, function last () {
     finished = true;
     assert.strictEqual(count, 2, "db.each returns the right number of rows");
+    // No need to wait for this timeout anymore
+    // In fact, if we do keep waiting for this, we'll get an error when it fires because we've already called done
+    clearTimeout(testTimeoutId);
     done();
   });
-  var timeout = setTimeout(function timeout(){
+  var testTimeoutId = setTimeout(function timeout(){
     assert.strictEqual(finished, true,
                        "db.each should call its last callback after having returned the rows");
     done();
