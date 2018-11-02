@@ -8,10 +8,12 @@ CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=d
 EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
-	-s WASM=1 \
 	-s EXPORTED_FUNCTIONS=@exported_functions \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods \
-	-s ALLOW_MEMORY_GROWTH=1
+	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods
+
+EMFLAGS_WASM = \
+	-s WASM=1 \
+	-s ALLOW_MEMORY_GROWTH=1 
 
 EMFLAGS_OPTIMIZED= \
 	-s INLINING_LIMIT=50 \
@@ -28,27 +30,46 @@ OUTPUT_WRAPPER_FILES = js/shell-pre.js js/shell-post.js
 all: optimized debug worker
 
 .PHONY: debug
-debug: js/sql-debug.js
+debug: js/sql-debug.js js/sql-wasm-debug.js
 
 js/sql-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(BITCODE_FILES) --pre-js js/api.js -o $@
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
+	mv $@ js/tmp-raw.js
+	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	rm js/tmp-raw.js
+
+js/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
 	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
 	rm js/tmp-raw.js
 
 
 .PHONY: optimized
-optimized: js/sql.js
+optimized: js/sql.js js/sql-wasm.js js/sql-memory-growth.js
 
 js/sql.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(BITCODE_FILES) --pre-js js/api.js -o $@
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
 	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
 	rm js/tmp-raw.js
 
+js/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js js/api.js -o $@
+	mv $@ js/tmp-raw.js
+	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	rm js/tmp-raw.js
+
+js/sql-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js js/api.js -o $@
+	mv $@ js/tmp-raw.js
+	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	rm js/tmp-raw.js
+
+
 # Web worker API
 .PHONY: worker
-worker: js/worker.sql.js js/worker.sql-debug.js
+worker: js/worker.sql.js js/worker.sql-debug.js js/worker.sql-wasm.js js/worker.sql-wasm-debug.js
 
 js/worker.js: coffee/worker.coffee
 	cat $^ | coffee --bare --compile --stdio > $@
@@ -57,6 +78,12 @@ js/worker.sql.js: js/sql.js js/worker.js
 	cat $^ > $@
 
 js/worker.sql-debug.js: js/sql-debug.js js/worker.js
+	cat $^ > $@
+
+js/worker.sql-wasm.js: js/sql-wasm.js js/worker.js
+	cat $^ > $@
+
+js/worker.sql-wasm-debug.js: js/sql-wasm-debug.js js/worker.js
 	cat $^ > $@
 
 js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
@@ -76,6 +103,6 @@ module.tar.gz: test package.json AUTHORS README.md js/sql.js
 
 .PHONY: clean
 clean:
-	rm -rf js/sql.js js/api.js js/sql*-raw.js js/worker.sql.js js/worker.js js/worker.sql-debug.js c/sqlite3.bc c/extension-functions.bc
+	rm -rf js/sql.js js/sql-memory-growth.js js/sql.wasm js/sql-debug.js js/sql-debug.wasm js/sql-wasm.js js/sql-wasm-debug.js js/api.js js/worker.js js/worker.sql.js js/worker.sql-debug.js js/worker.sql-wasm.js js/worker.sql-debug-wasm.js c/sqlite3.bc c/extension-functions.bc
 
 
