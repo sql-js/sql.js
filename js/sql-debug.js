@@ -2326,9 +2326,9 @@ function integrateWasmJS() {
 
   var method = 'native-wasm';
 
-  var wasmTextFile = 'sql-debug-raw.wast';
-  var wasmBinaryFile = 'sql-debug-raw.wasm';
-  var asmjsCodeFile = 'sql-debug-raw.temp.asm.js';
+  var wasmTextFile = 'sql-debug.wast';
+  var wasmBinaryFile = 'sql-debug.wasm';
+  var asmjsCodeFile = 'sql-debug.temp.asm.js';
 
   if (!isDataURI(wasmTextFile)) {
     wasmTextFile = locateFile(wasmTextFile);

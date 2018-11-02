@@ -13,35 +13,43 @@ EMFLAGS = \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods \
 	-s ALLOW_MEMORY_GROWTH=1
 
-# TODO: Closure?	
 EMFLAGS_OPTIMIZED= \
 	-s INLINING_LIMIT=50 \
-	-O3
+	-O3 \
+	--closure 1
 
 EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
 	-O1
 
 BITCODE_FILES = c/sqlite3.bc c/extension-functions.bc
+OUTPUT_WRAPPER_FILES = js/shell-pre.js js/shell-post.js
 
-all: js/sql.js js/sql-debug.js js/worker.sql.js js/worker.sql-debug.js
+all: optimized debug worker
 
-# sql-debug.js
-js/sql-debug-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
+.PHONY: debug
+debug: js/sql-debug.js
+
+js/sql-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(BITCODE_FILES) --pre-js js/api.js -o $@
+	mv $@ js/tmp-raw.js
+	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	rm js/tmp-raw.js
 
-js/sql-debug.js: js/shell-pre.js js/sql-debug-raw.js js/shell-post.js
-	cat $^ > $@
 
-# sql.js
-js/sql-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
+.PHONY: optimized
+optimized: js/sql.js
+
+js/sql.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(BITCODE_FILES) --pre-js js/api.js -o $@
-
-js/sql.js: js/shell-pre.js js/sql-raw.js js/shell-post.js
-	cat $^ > $@
+	mv $@ js/tmp-raw.js
+	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	rm js/tmp-raw.js
 
 # Web worker API
+.PHONY: worker
 worker: js/worker.sql.js js/worker.sql-debug.js
+
 js/worker.js: coffee/worker.coffee
 	cat $^ | coffee --bare --compile --stdio > $@
 
@@ -50,7 +58,6 @@ js/worker.sql.js: js/sql.js js/worker.js
 
 js/worker.sql-debug.js: js/sql-debug.js js/worker.js
 	cat $^ > $@
-
 
 js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
 	cat coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee | coffee --bare --compile --stdio > $@
@@ -67,6 +74,7 @@ c/extension-functions.bc: c/extension-functions.c
 module.tar.gz: test package.json AUTHORS README.md js/sql.js
 	tar --create --gzip $^ > $@
 
+.PHONY: clean
 clean:
 	rm -rf js/sql.js js/api.js js/sql*-raw.js js/worker.sql.js js/worker.js js/worker.sql-debug.js c/sqlite3.bc c/extension-functions.bc
 
