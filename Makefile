@@ -16,7 +16,7 @@ EMFLAGS = \
 # TODO: Closure?	
 EMFLAGS_OPTIMIZED= \
 	-s INLINING_LIMIT=50 \
-	-03
+	-O3
 
 EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
@@ -28,14 +28,14 @@ all: js/sql.js js/sql-debug.js js/worker.sql.js js/worker.sql-debug.js
 
 # sql-debug.js
 js/sql-debug-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(BITCODE_FILES) --pre-js js/api.js -o $@
 
 js/sql-debug.js: js/shell-pre.js js/sql-debug-raw.js js/shell-post.js
 	cat $^ > $@
 
 # sql.js
 js/sql-raw.js: $(BITCODE_FILES) js/api.js exported_functions exported_runtime_methods
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(BITCODE_FILES) --pre-js js/api.js -o $@ ;\
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(BITCODE_FILES) --pre-js js/api.js -o $@
 
 js/sql.js: js/shell-pre.js js/sql-raw.js js/shell-post.js
 	cat $^ > $@
