@@ -19,7 +19,9 @@
 	"license": "MIT",
 	"main": "./js/sql.js",
 	"scripts": {
-		"test": "node test/all.js"
+		"test": "node test/all.js",
+		"test-debug": "node test/all.js debug",
+		"test-memory-growth": "node test/all.js memory-growth"
 	},
 	"homepage": "http://github.com/kripken/sql.js",
 	"repository": {
