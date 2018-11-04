@@ -5,7 +5,7 @@ apiTemp = stackAlloc(4)
 # Constants are defined in api-data.coffee
 SQLite = {}
 
-### Represents an prepared statement.
+### Represents a prepared statement.
 
 Prepared statements allow you to have a template sql string,
 that you can execute multiple times with different parameters.
@@ -311,11 +311,14 @@ class Database
         if not @db then throw "Database closed"
 
         stack = stackSave()
+
         # Store the SQL string in memory. The string will be consumed, one statement
         # at a time, by sqlite3_prepare_v2_sqlptr.
-        # Allocate at most 4 bytes per UTF8 char, +1 for the trailing '\0'
-        nextSqlPtr = stackAlloc(sql.length<<2 + 1)
-        writeStringToMemory sql, nextSqlPtr
+        # Note that if we want to allocate as much memory as could _possibly_ be used, we can 
+        # we allocate bytes equal to 4* the number of chars in the sql string.
+        # It would be faster, but this is probably a premature optimization
+        nextSqlPtr = allocateUTF8OnStack(sql)
+
         # Used to store a pointer to the next SQL statement in the string
         pzTail = stackAlloc(4)
 
