@@ -68,7 +68,7 @@ apiTemp = stackAlloc(4);
 SQLite = {};
 
 
-/* Represents an prepared statement.
+/* Represents a prepared statement.
 
 Prepared statements allow you to have a template sql string,
 that you can execute multiple times with different parameters.
@@ -513,8 +513,7 @@ Database = (function() {
       throw "Database closed";
     }
     stack = stackSave();
-    nextSqlPtr = stackAlloc(sql.length << 2 + 1);
-    writeStringToMemory(sql, nextSqlPtr);
+    nextSqlPtr = allocateUTF8OnStack(sql);
     pzTail = stackAlloc(4);
     results = [];
     while (getValue(nextSqlPtr, 'i8') !== NULL) {
