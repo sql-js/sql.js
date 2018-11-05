@@ -20,9 +20,18 @@ exports.test = function(sql, assert) {
 };
 
 if (module == require.main) {
-  var sql = require('../js/sql.js');
-  var assert = require('assert');
-  var done = function(){process.exit();}
-
-  exports.test(sql, assert, done);
+	const target_file = process.argv[2];
+  const sql_loader = require('./load_sql_file');
+  sql_loader(target_file).then((sql)=>{
+    require('test').run({
+      'test issue 55': function(assert){
+        exports.test(sql, assert);
+      }
+    });
+  })
+  .catch((e)=>{
+    console.error(e);
+    assert.fail(e);
+  });
 }
+
