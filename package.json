@@ -19,8 +19,12 @@
 	"license": "MIT",
 	"main": "./js/sql.js",
 	"scripts": {
+		"test-all": "npm run test && npm run test-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-memory-growth",
 		"test": "node test/all.js",
-		"test-debug": "node test/all.js debug"
+		"test-debug": "node test/all.js debug",
+		"test-wasm": "node test/all.js wasm",
+		"test-wasm-debug": "node test/all.js wasm-debug",
+		"test-memory-growth": "node test/all.js memory-growth"
 	},
 	"homepage": "http://github.com/kripken/sql.js",
 	"repository": {
