@@ -5,13 +5,13 @@ CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=d
 all: js/sql.js debug js/worker.sql.js memory-growth
 
 # RESERVED_FUNCTION_POINTERS setting is used for registering custom functions
-optimized: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64
+optimized: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64 -s WASM=0
 optimized: js/sql-optimized.js
 
-memory-growth: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64 -s ALLOW_MEMORY_GROWTH=1
+memory-growth: EMFLAGS= --memory-init-file 0 -O3 -s INLINING_LIMIT=50 -s RESERVED_FUNCTION_POINTERS=64 -s ALLOW_MEMORY_GROWTH=1 -s WASM=0
 memory-growth: js/sql-memory-growth.js
 
-debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=64
+debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s RESERVED_FUNCTION_POINTERS=64 -s WASM=0
 debug: js/sql-debug.js
 
 js/sql.js: optimized
