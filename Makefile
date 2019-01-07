@@ -26,7 +26,7 @@ EMFLAGS_DEBUG = \
 	-O1
 
 BITCODE_FILES = c/sqlite3.bc c/extension-functions.bc
-OUTPUT_WRAPPER_FILES = js/shell-pre.js js/shell-post.js
+OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
 all: optimized debug worker
 
@@ -39,13 +39,13 @@ debug: js/sql-asm-debug.js js/sql-wasm-debug.js
 js/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
-	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	cat src/shell-pre.js js/tmp-raw.js src/shell-post.js > $@
 	rm js/tmp-raw.js
 
 js/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
-	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	cat src/shell-pre.js js/tmp-raw.js src/shell-post.js > $@
 	rm js/tmp-raw.js
 
 
@@ -55,19 +55,19 @@ optimized: js/sql-asm.js js/sql-wasm.js js/sql-asm-memory-growth.js
 js/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
-	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	cat src/shell-pre.js js/tmp-raw.js src/shell-post.js > $@
 	rm js/tmp-raw.js
 
 js/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
-	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	cat src/shell-pre.js js/tmp-raw.js src/shell-post.js > $@
 	rm js/tmp-raw.js
 
 js/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
-	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
+	cat src/shell-pre.js js/tmp-raw.js src/shell-post.js > $@
 	rm js/tmp-raw.js
 
 
@@ -75,7 +75,7 @@ js/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js 
 .PHONY: worker
 worker: js/worker.sql-asm.js js/worker.sql-asm-debug.js js/worker.sql-wasm.js js/worker.sql-wasm-debug.js
 
-js/worker.js: coffee/worker.coffee
+js/worker.js: src/worker.coffee
 	cat $^ | coffee --bare --compile --stdio > $@
 
 js/worker.sql-asm.js: js/sql-asm.js js/worker.js
@@ -91,9 +91,9 @@ js/worker.sql-wasm-debug.js: js/sql-wasm-debug.js js/worker.js
 	cat $^ > $@
 
 # TODO: Replace Coffeescript with Typescript or raw JS
-js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
-	cat coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee | coffee --bare --compile --stdio > $@
-	cat coffee/output-pre.js $@ coffee/output-post.js > js/api-wrapped.js
+js/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.coffee src/output-post.js
+	cat src/api.coffee src/exports.coffee src/api-data.coffee | coffee --bare --compile --stdio > $@
+	cat src/output-pre.js $@ src/output-post.js > js/api-wrapped.js
 	mv js/api-wrapped.js $@
 
 c/sqlite3.bc: c/sqlite3.c
