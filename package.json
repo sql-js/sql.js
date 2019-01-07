@@ -1,6 +1,6 @@
 {
 	"name": "sql.js",
-	"version": "0.4.0",
+	"version": "1.0.0",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
 	"keywords": [
 		"sql",
@@ -17,10 +17,12 @@
 		"asm.js"
 	],
 	"license": "MIT",
-	"main": "./js/sql.js",
+	"main": "./js/sql-wasm.js",
 	"scripts": {
-		"test-all": "npm run test && npm run test-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-memory-growth",
-		"test": "node test/all.js",
+		"build": "make",
+		"rebuild": "make clean && make",
+		"test-all": "npm run test-asm && npm run test-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-memory-growth",
+		"test-asm": "node test/all.js",
 		"test-debug": "node test/all.js debug",
 		"test-wasm": "node test/all.js wasm",
 		"test-wasm-debug": "node test/all.js wasm-debug",

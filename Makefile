@@ -9,7 +9,8 @@ EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s EXPORTED_FUNCTIONS=@exported_functions \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods
+	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods \
+	-s SINGLE_FILE=0
 
 EMFLAGS_WASM = \
 	-s WASM=1 \
@@ -28,6 +29,9 @@ BITCODE_FILES = c/sqlite3.bc c/extension-functions.bc
 OUTPUT_WRAPPER_FILES = js/shell-pre.js js/shell-post.js
 
 all: optimized debug worker
+
+# TODO: Emit a file showing which version of emcc and SQLite was used to compile the emitted output.
+# TODO: Make it easier to use a newer version of Sqlite.
 
 .PHONY: debug
 debug: js/sql-debug.js js/sql-wasm-debug.js
@@ -86,6 +90,7 @@ js/worker.sql-wasm.js: js/sql-wasm.js js/worker.js
 js/worker.sql-wasm-debug.js: js/sql-wasm-debug.js js/worker.js
 	cat $^ > $@
 
+# TODO: Replace Coffeescript with Typescript or raw JS
 js/api.js: coffee/output-pre.js coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee coffee/output-post.js
 	cat coffee/api.coffee coffee/exports.coffee coffee/api-data.coffee | coffee --bare --compile --stdio > $@
 	cat coffee/output-pre.js $@ coffee/output-post.js > js/api-wrapped.js
