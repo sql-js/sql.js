@@ -50,7 +50,7 @@ exports.test = function(sql, assert) {
 
   assert.throws(function(){
     stmt.run([3]);
-  }, "Statements should'nt be able to execute after the database is closed");
+  }, "Statements shouldn't be able to execute after the database is closed");
 };
 
 if (module == require.main) {
