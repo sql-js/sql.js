@@ -1,7 +1,7 @@
 module.exports = function(sqlLibraryType){
     var sqlLibraryType = process.argv[2];
     // Use sql-wasm.js by default
-    var sqlJsLib = sqlLibraryType ? "../js/sql-"+sqlLibraryType+".js" : "../js/sql-wasm.js";
+    var sqlJsLib = sqlLibraryType ? "../dist/sql-"+sqlLibraryType+".js" : "../dist/sql-wasm.js";
     begin = new Date();
     var initSqlJs = require(sqlJsLib);
     return initSqlJs().then((sql)=>{

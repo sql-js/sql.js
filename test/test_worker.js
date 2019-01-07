@@ -28,7 +28,7 @@ exports.test = function(notUsed, assert, done) {
   var target = process.argv[2];
   var file = target ? "sql-"+target : "sql";
   // If we use tiny-worker, we need to pass in this new cwd as the root of the file being loaded:
-  var worker = new Worker(path.join(__dirname, "../js/worker."+file+".js"), null, { cwd: path.join(__dirname, "../js/") });
+  var worker = new Worker(path.join(__dirname, "../dist/worker."+file+".js"), null, { cwd: path.join(__dirname, "../dist/") });
   
   // The following tests are continually overwriting worker.onmessage so that they 
 

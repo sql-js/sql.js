@@ -17,7 +17,7 @@
 		"asm.js"
 	],
 	"license": "MIT",
-	"main": "./js/sql-wasm.js",
+	"main": "./dist/sql-wasm.js",
 	"scripts": {
 		"build": "make",
 		"rebuild": "make clean && make",
