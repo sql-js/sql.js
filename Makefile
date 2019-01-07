@@ -50,8 +50,7 @@ js/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exporte
 
 
 .PHONY: optimized
-# TODO: sql-memory-growth.js should be renamed to be asm specific
-optimized: js/sql-asm.js js/sql-wasm.js js/sql-memory-growth.js
+optimized: js/sql-asm.js js/sql-wasm.js js/sql-asm-memory-growth.js
 
 js/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
@@ -65,7 +64,7 @@ js/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_func
 	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
 	rm js/tmp-raw.js
 
-js/sql-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
+js/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
 	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
@@ -74,13 +73,12 @@ js/sql-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js expo
 
 # Web worker API
 .PHONY: worker
-worker: js/worker.sql.js js/worker.sql-asm-debug.js js/worker.sql-wasm.js js/worker.sql-wasm-debug.js
+worker: js/worker.sql-asm.js js/worker.sql-asm-debug.js js/worker.sql-wasm.js js/worker.sql-wasm-debug.js
 
 js/worker.js: coffee/worker.coffee
 	cat $^ | coffee --bare --compile --stdio > $@
 
-# TODO: worker is currently asm rather than wasm
-js/worker.sql.js: js/sql-asm.js js/worker.js
+js/worker.sql-asm.js: js/sql-asm.js js/worker.js
 	cat $^ > $@
 
 js/worker.sql-asm-debug.js: js/sql-asm-debug.js js/worker.js
@@ -114,7 +112,7 @@ clean:
 	rm -f c/sqlite3.bc \
 		c/extension-functions.bc \
 		js/sql-asm.js \
-		js/sql-memory-growth.js \
+		js/sql-asm-memory-growth.js \
 		js/sql.wasm \
 		js/sql-asm-debug.js \
 		js/sql-debug.wasm \
@@ -124,9 +122,9 @@ clean:
 		js/sql-wasm-debug.wasm \
 		js/api.js \
 		js/worker.js \
-		js/worker.sql.js \
+		js/worker.sql-asm.js \
 		js/worker.sql-asm-debug.js \
 		js/worker.sql-wasm.js \
-		js/worker.sql-debug-wasm.js
+		js/worker.sql-wasm-debug.js
 
 
