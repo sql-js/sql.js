@@ -21,7 +21,7 @@ exports.test = function(sql, assert) {
 
 if (module == require.main) {
 	const target_file = process.argv[2];
-  const sql_loader = require('./load_sql_file');
+  const sql_loader = require('./load_sql_lib');
   sql_loader(target_file).then((sql)=>{
     require('test').run({
       'test issue 55': function(assert){

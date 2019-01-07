@@ -21,9 +21,9 @@
 	"scripts": {
 		"build": "make",
 		"rebuild": "make clean && make",
-		"test-all": "npm run test-asm && npm run test-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-memory-growth",
-		"test-asm": "node test/all.js",
-		"test-debug": "node test/all.js debug",
+		"test": "npm run test-asm && npm run test-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-memory-growth",
+		"test-asm": "node test/all.js asm",
+		"test-asm-debug": "node test/all.js asm-debug",
 		"test-wasm": "node test/all.js wasm",
 		"test-wasm-debug": "node test/all.js wasm-debug",
 		"test-memory-growth": "node test/all.js memory-growth"

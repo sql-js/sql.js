@@ -34,9 +34,9 @@ all: optimized debug worker
 # TODO: Make it easier to use a newer version of Sqlite.
 
 .PHONY: debug
-debug: js/sql-debug.js js/sql-wasm-debug.js
+debug: js/sql-asm-debug.js js/sql-wasm-debug.js
 
-js/sql-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
+js/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
 	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
@@ -50,9 +50,10 @@ js/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exporte
 
 
 .PHONY: optimized
-optimized: js/sql.js js/sql-wasm.js js/sql-memory-growth.js
+# TODO: sql-memory-growth.js should be renamed to be asm specific
+optimized: js/sql-asm.js js/sql-wasm.js js/sql-memory-growth.js
 
-js/sql.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
+js/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js exported_functions exported_runtime_methods 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js js/api.js -o $@
 	mv $@ js/tmp-raw.js
 	cat js/shell-pre.js js/tmp-raw.js js/shell-post.js > $@
@@ -73,15 +74,16 @@ js/sql-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) js/api.js expo
 
 # Web worker API
 .PHONY: worker
-worker: js/worker.sql.js js/worker.sql-debug.js js/worker.sql-wasm.js js/worker.sql-wasm-debug.js
+worker: js/worker.sql.js js/worker.sql-asm-debug.js js/worker.sql-wasm.js js/worker.sql-wasm-debug.js
 
 js/worker.js: coffee/worker.coffee
 	cat $^ | coffee --bare --compile --stdio > $@
 
-js/worker.sql.js: js/sql.js js/worker.js
+# TODO: worker is currently asm rather than wasm
+js/worker.sql.js: js/sql-asm.js js/worker.js
 	cat $^ > $@
 
-js/worker.sql-debug.js: js/sql-debug.js js/worker.js
+js/worker.sql-asm-debug.js: js/sql-asm-debug.js js/worker.js
 	cat $^ > $@
 
 js/worker.sql-wasm.js: js/sql-wasm.js js/worker.js
@@ -103,11 +105,28 @@ c/sqlite3.bc: c/sqlite3.c
 c/extension-functions.bc: c/extension-functions.c
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 c/extension-functions.c -o c/extension-functions.bc
 
-module.tar.gz: test package.json AUTHORS README.md js/sql.js
-	tar --create --gzip $^ > $@
+# TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
+# module.tar.gz: test package.json AUTHORS README.md js/sql-asm.js
+# 	tar --create --gzip $^ > $@
 
 .PHONY: clean
 clean:
-	rm -rf js/sql.js js/sql-memory-growth.js js/sql.wasm js/sql-debug.js js/sql-debug.wasm js/sql-wasm.js js/sql-wasm-debug.js js/api.js js/worker.js js/worker.sql.js js/worker.sql-debug.js js/worker.sql-wasm.js js/worker.sql-debug-wasm.js c/sqlite3.bc c/extension-functions.bc
+	rm -f c/sqlite3.bc \
+		c/extension-functions.bc \
+		js/sql-asm.js \
+		js/sql-memory-growth.js \
+		js/sql.wasm \
+		js/sql-asm-debug.js \
+		js/sql-debug.wasm \
+		js/sql-wasm.js \
+		js/sql-wasm.wasm \
+		js/sql-wasm-debug.js \
+		js/sql-wasm-debug.wasm \
+		js/api.js \
+		js/worker.js \
+		js/worker.sql.js \
+		js/worker.sql-asm-debug.js \
+		js/worker.sql-wasm.js \
+		js/worker.sql-debug-wasm.js
 
 
