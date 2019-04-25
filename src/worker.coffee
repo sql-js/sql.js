@@ -5,7 +5,7 @@ if typeof importScripts is 'function' # Detect webworker context
         if db? then db.close()
         db = new SQL.Database data
 
-    sqlModuleReady = Module['ready']
+    sqlModuleReady = initSqlJs();
     self.onmessage = (event) ->
         sqlModuleReady.then ->
             data  = event['data']

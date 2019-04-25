@@ -238,7 +238,7 @@ if (typeof importScripts === 'function') {
     }
     return db = new SQL.Database(data);
   };
-  sqlModuleReady = Module['ready'];
+  sqlModuleReady = initSqlJs();
   self.onmessage = function(event) {
     return sqlModuleReady.then(function() {
       var buff, callback, data, done, err, result;
