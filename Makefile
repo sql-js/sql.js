@@ -10,12 +10,15 @@ EMCC=emcc
 CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
 
 # When compiling to WASM, enabling memory-growth is not expected to make much of an impact, so we enable it for all builds
+# Since tihs is a library and not a standalone executable, we don't want to catch unhandled Node process exceptions
+# So, we do : `NODEJS_CATCH_EXIT=0`, which fixes issue: https://github.com/kripken/sql.js/issues/173 and https://github.com/kripken/sql.js/issues/262
 EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s EXPORTED_FUNCTIONS=@exported_functions \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exported_runtime_methods \
-	-s SINGLE_FILE=0
+	-s SINGLE_FILE=0 \
+	-s NODEJS_CATCH_EXIT=0
 
 EMFLAGS_WASM = \
 	-s WASM=1 \
