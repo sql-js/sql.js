@@ -2,15 +2,16 @@
 // TODO: Instead of using tiny-worker, we could use the new Node 11 workers via
 // node --experimental-worker test/all.js 
 // Then we could do this:
-// const { Worker } = require('worker_threads');
+//const { Worker } = require('worker_threads');
 // But it turns out that the worker_threads interface is just different enough not to work. 
 var Worker = require("tiny-worker");
 var path = require("path");
 
-
 exports.test = function(notUsed, assert, done) {
   
-  console.error("Skipping: This test is 'expected' to fail because of the way emscripten detects ENVIRONMENT_IS_WORKER.");
+  // We keep running into issues trying to simulate the worker environment.
+  // We really need headless testing of some sort
+  console.error("Skipping: This test is 'expected' to fail because tiny-worker and workerjs don't simulate the environment well enough");
   done();
   return;
 
@@ -26,9 +27,10 @@ exports.test = function(notUsed, assert, done) {
   //
 
   var target = process.argv[2];
-  var file = target ? "sql-"+target : "sql";
+  var file = target ? "sql-"+target : "sql-wasm";
   // If we use tiny-worker, we need to pass in this new cwd as the root of the file being loaded:
-  var worker = new Worker(path.join(__dirname, "../dist/worker."+file+".js"), null, { cwd: path.join(__dirname, "../dist/") });
+  const filename = "../dist/worker."+file+".js";
+  var worker = new Worker(path.join(__dirname, filename), null, { cwd: path.join(__dirname, "../dist/") });
   
   // The following tests are continually overwriting worker.onmessage so that they 
 
@@ -105,17 +107,12 @@ if (!Array.from) {
 }
 
 if (module == require.main) {
-	const target_file = process.argv[2];
-  const sql_loader = require('./load_sql_lib');
-  sql_loader(target_file).then((sql)=>{
-    require('test').run({
-      'test worker': function(assert, done){
-        exports.test(sql, assert, done);
-      }
-    });
-  })
-  .catch((e)=>{
-    console.error(e);
-    assert.fail(e);
+  process.on('unhandledRejection', r => console.log(r));
+
+  require('test').run({
+    'test worker': function(assert, done){
+      exports.test(null, assert, done);
+    }
   });
+
 }

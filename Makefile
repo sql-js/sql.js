@@ -1,4 +1,4 @@
-# Note: Last tested with version 1.38.15 of Emscripten
+# Note: Last built with version 1.38.30 of Emscripten
 
 # TODO: Emit a file showing which version of emcc and SQLite was used to compile the emitted output.
 # TODO: Make it easier to use a newer version of Sqlite.
@@ -41,13 +41,13 @@ all: optimized debug worker
 .PHONY: debug
 debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
 
-dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exported_functions exported_runtime_methods 
+dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exported_functions exported_runtime_methods
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exported_functions exported_runtime_methods 
+dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exported_functions exported_runtime_methods
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
@@ -93,6 +93,24 @@ dist/worker.sql-wasm.js: dist/sql-wasm.js out/worker.js
 
 dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
 	cat $^ > $@
+
+# Building it this way gets us a wrapper that _knows_ it's in worker mode, which is nice.
+# However, since we can't tell emcc that we don't need the wasm generated, and just want the wrapper, we have to pay to have the .wasm generated
+# even though we would have already generated it with our sql-wasm.js target above.
+# This would be made easier if this is implemented: https://github.com/emscripten-core/emscripten/issues/8506
+# dist/worker.sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js exported_functions exported_runtime_methods dist/sql-wasm-debug.wasm
+# 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s ENVIRONMENT=worker -s $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm.js
+# 	mv out/sql-wasm.js out/tmp-raw.js
+# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
+# 	#mv out/sql-wasm.wasm dist/sql-wasm.wasm
+# 	rm out/tmp-raw.js
+
+# dist/worker.sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js exported_functions exported_runtime_methods dist/sql-wasm-debug.wasm
+# 	$(EMCC) -s ENVIRONMENT=worker $(EMFLAGS) $(EMFLAGS_DEBUG) -s ENVIRONMENT=worker -s WASM_BINARY_FILE=sql-wasm-foo.debug $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm-debug.js
+# 	mv out/sql-wasm-debug.js out/tmp-raw.js
+# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
+# 	#mv out/sql-wasm-debug.wasm dist/sql-wasm-debug.wasm
+# 	rm out/tmp-raw.js
 
 out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.coffee src/output-post.js
 	cat src/api.coffee src/exports.coffee src/api-data.coffee | coffee --bare --compile --stdio > $@

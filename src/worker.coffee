@@ -1,3 +1,5 @@
+# Since this is only included in web worker builds, I'm not sure if we need to detect this.
+# In fact, it seems like we might want to throw an error if importScripts isn't available.
 if typeof importScripts is 'function' # Detect webworker context
     db = null
 
