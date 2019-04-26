@@ -270,9 +270,9 @@ Statement = (function() {
   @return [Array<String>] The names of the columns
   @example
   
-      var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS nothing;");
+      var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
       stmt.step(); // Execute the statement
-      console.log(stmt.getColumnNames()); // Will print ['nbr','data','nothing']
+      console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
    */
 
   Statement.prototype['getColumnNames'] = function() {
@@ -293,9 +293,9 @@ Statement = (function() {
   
   @example
   
-      var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS nothing;");
+      var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
       stmt.step(); // Execute the statement
-      console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), nothing:null}
+      console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
    */
 
   Statement.prototype['getAsObject'] = function(params) {
@@ -2099,11 +2099,11 @@ function updateGlobalBufferViews() {
 
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 50688,
+    STACK_BASE = 60384,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 5293568,
-    DYNAMIC_BASE = 5293568,
-    DYNAMICTOP_PTR = 50432;
+    STACK_MAX = 5303264,
+    DYNAMIC_BASE = 5303264,
+    DYNAMICTOP_PTR = 60128;
 
 
 
@@ -2489,7 +2489,7 @@ var ASM_CONSTS = [];
 
 
 
-// STATICTOP = STATIC_BASE + 49664;
+// STATICTOP = STATIC_BASE + 59360;
 /* global initializers */  __ATINIT__.push({ func: function() { ___emscripten_environ_constructor() } });
 
 
@@ -2500,7 +2500,7 @@ var ASM_CONSTS = [];
 
 
 /* no memory initializer */
-var tempDoublePtr = 50672
+var tempDoublePtr = 60368
 
 function copyTempFloat(ptr) { // functions, because inlining this code increases code size too much
   HEAP8[tempDoublePtr] = HEAP8[ptr];
@@ -3840,11 +3840,11 @@ function copyTempDouble(ptr) {
           return position;
         }}};
   
-  var _stdin=50448;
+  var _stdin=60144;
   
-  var _stdout=50464;
+  var _stdout=60160;
   
-  var _stderr=50480;var FS={root:null,mounts:[],devices:{},streams:[],nextInode:1,nameTable:null,currentPath:"/",initialized:false,ignorePermissions:true,trackingDelegate:{},tracking:{openFlags:{READ:1,WRITE:2}},ErrnoError:null,genericErrors:{},filesystems:null,syncFSRequests:0,handleFSError:function (e) {
+  var _stderr=60176;var FS={root:null,mounts:[],devices:{},streams:[],nextInode:1,nameTable:null,currentPath:"/",initialized:false,ignorePermissions:true,trackingDelegate:{},tracking:{openFlags:{READ:1,WRITE:2}},ErrnoError:null,genericErrors:{},filesystems:null,syncFSRequests:0,handleFSError:function (e) {
         if (!(e instanceof FS.ErrnoError)) throw e + ' : ' + stackTrace();
         return ___setErrNo(e.errno);
       },lookupPath:function (path, opts) {
@@ -6127,10 +6127,10 @@ function copyTempDouble(ptr) {
     }
 
   
-  var ___tm_current=50528;
+  var ___tm_current=60224;
   
   
-  var ___tm_timezone=(stringToUTF8("GMT", 50576, 4), 50576);
+  var ___tm_timezone=(stringToUTF8("GMT", 60272, 4), 60272);
   
   function _tzset() {
       // TODO: Use (malleable) environment variables instead of system settings.

@@ -1,9 +1,19 @@
 # Note: Last built with version 1.38.30 of Emscripten
 
 # TODO: Emit a file showing which version of emcc and SQLite was used to compile the emitted output.
-# TODO: Make it easier to use a newer version of Sqlite.
 # TODO: Create a release on Github with these compiled assets rather than checking them in
 # TODO: Consider creating different files based on browser vs module usage: https://github.com/vuejs/vue/tree/dev/dist
+
+# I got this handy makefile syntax from : https://github.com/mandel59/sqlite-wasm (MIT License) Credited in LICENSE
+# To use another version of Sqlite, visit https://www.sqlite.org/download.html and copy the appropriate values here:
+SQLITE_AMALGAMATION = sqlite-amalgamation-3280000
+SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2019/sqlite-amalgamation-3280000.zip
+SQLITE_AMALGAMATION_ZIP_SHA1 = eb82fcc95104c8e2d9550ab023c1054b9cc40a76
+
+# Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated 
+EXTENSION_FUNCTIONS = extension-functions.c
+EXTENSION_FUNCTIONS_URL = https://www.sqlite.org/contrib/download/extension-functions.c?get=25
+EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
 
 EMCC=emcc
 
@@ -117,19 +127,61 @@ out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.cof
 	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
 	mv out/api-wrapped.js $@
 
-out/sqlite3.bc: sqlite/sqlite3.c
+out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	# Generate llvm bitcode
-	$(EMCC) $(CFLAGS) sqlite/sqlite3.c -o out/sqlite3.bc
+	$(EMCC) $(CFLAGS) sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
 
-out/extension-functions.bc: sqlite/extension-functions.c
-	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite/extension-functions.c -o out/extension-functions.bc
+out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
 # 	tar --create --gzip $^ > $@
 
-.PHONY: clean
-clean:
-	rm -f out/* dist/*	
+## cache
 
+.PHONY: clean-cache
+clean-cache:
+	rm -rf cache
+
+cache/$(SQLITE_AMALGAMATION).zip:
+	mkdir -p cache
+	curl -LsSf '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
+
+cache/$(EXTENSION_FUNCTIONS):
+	mkdir -p cache
+	curl -LsSf '$(EXTENSION_FUNCTIONS_URL)' -o $@
+
+## sqlite-src
+
+.PHONY: clean-sqlite-src
+clean-sqlite-src:
+	rm -rf sqlite
+
+.PHONY: sqlite-src
+sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(EXTENSION_FUNCTIONS)
+
+sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip
+	mkdir -p sqlite-src
+	echo '$(SQLITE_AMALGAMATION_ZIP_SHA1)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
+	sha1sum -c cache/check.txt
+	rm -rf $@
+	unzip 'cache/$(SQLITE_AMALGAMATION).zip' -d sqlite-src/
+	touch $@
+
+sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNCTIONS)
+	mkdir -p sqlite-src
+	echo '$(EXTENSION_FUNCTIONS_SHA1)  ./cache/$(EXTENSION_FUNCTIONS)' > cache/check.txt
+	sha1sum -c cache/check.txt
+	cp 'cache/$(EXTENSION_FUNCTIONS)' $@
+
+
+.PHONY: clean 
+clean: 
+	rm -rf out/* dist/*	
+
+.PHONY: clean-all
+clean-all: 
+	rm -f out/* dist/* cache/*
+	rm -rf sqlite-src/
 

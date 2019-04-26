@@ -1,7 +1,7 @@
 # SQLite compiled to javascript
 [![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
-For the impatients, try the demo here: http://kripken.github.io/sql.js/GUI/
+For the impatients, try the demo here: http://kripken.github.io/sql.js/examples/GUI
 
 *sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in memory](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [javascript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
@@ -10,6 +10,11 @@ There are no C bindings or node-gyp compilation here, sql.js is a simple javascr
 SQLite is public domain, sql.js is MIT licensed.
 
 Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatability.
+
+## Version of binaries
+Sql.js was last built with:
+Emscripten version 1.38.30 (2019-04-16) [Release History](https://emscripten.org/docs/introducing_emscripten/release_notes.html)
+SqlLite version: 3.28.0 (2019-04-16) [Release History](https://www.sqlite.org/changes.html)
 
 ## Documentation
 A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kripken.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
@@ -219,7 +224,7 @@ This library includes both WebAssembly and asm.js versions of Sqlite. (WebAssemb
 
 ## Upgrading from 0.x to 1.x
 
-Version 1.0 of sql.js introduces a number of breaking changes due primarily to the fact that WebAssembly must be loaded asynchronously, whereas asm.js was able to be loaded synchronously. 
+Version 1.0 of sql.js must be loaded asynchronously, whereas asm.js was able to be loaded synchronously. 
 
 So in the past, you would:
 ```html
@@ -255,9 +260,7 @@ initSqlJs().then(function(SQL){
 });
 ```
 
-
-
-
+`NOTHING` is now a reserved word in SQLite, whereas previously it was not. This could cause errors like `Error: near "nothing": syntax error`
 
 ### Downloading/Using: ###
 Although asm.js files were distributed as a single Javascript file, WebAssembly libraries are most efficiently distributed as a pair of files, the `.js`  loader and the `.wasm` file, like [dist/sql-wasm.js]([dist/sql-wasm.js]) and [dist/sql-wasm.wasm]([dist/sql-wasm.wasm]). The `.js` file is reponsible for wrapping/loading the `.wasm` file. 

@@ -119,9 +119,9 @@ class Statement
     @return [Array<String>] The names of the columns
     @example
 
-        var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS nothing;");
+        var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
         stmt.step(); // Execute the statement
-        console.log(stmt.getColumnNames()); // Will print ['nbr','data','nothing']
+        console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
     ###
     'getColumnNames' : () ->
             sqlite3_column_name @stmt, i for i in [0 ... sqlite3_data_count(@stmt)]
@@ -134,9 +134,9 @@ class Statement
 
     @example
 
-        var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS nothing;");
+        var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
         stmt.step(); // Execute the statement
-        console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), nothing:null}
+        console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
     ###
     'getAsObject': (params) ->
         values = @['get'] params
