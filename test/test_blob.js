@@ -2,8 +2,6 @@ exports.test = function(SQL, assert){
 	var db = new SQL.Database();
 	db.exec("CREATE TABLE test (data); INSERT INTO test VALUES (x'6162ff'),(x'00')"); // Insert binary data. This is invalid UTF8 on purpose
 
-
-	console.log("Testing writing BLOBs");
 	var stmt = db.prepare("INSERT INTO test VALUES (?)");
 	var bigArray = new Uint8Array(1e6);
 	bigArray[500] = 0x42
@@ -33,7 +31,16 @@ exports.test = function(SQL, assert){
 };
 
 if (module == require.main) {
-	var sql = require('../js/sql.js');
-	var assert = require("assert");
-	exports.test(sql, assert);
+	const target_file = process.argv[2];
+	const sql_loader = require('./load_sql_lib');
+	sql_loader(target_file).then((sql)=>{
+		require('test').run({
+			'test blob': function(assert){
+				exports.test(sql, assert);
+			}
+		});
+	})
+	.catch((e)=>{
+		console.error(e);
+	});
 }
