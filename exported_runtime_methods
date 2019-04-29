@@ -1,7 +1,0 @@
-[
-"cwrap",
-"stackAlloc",
-"stackSave",
-"stackRestore"
-]
-

@@ -10,7 +10,17 @@ exports.test = function(sql, assert) {
 };
 
 if (module == require.main) {
-	var sql = require('../js/sql.js');
-	var assert = require('assert');
-	exports.test(sql, assert);
+	const target_file = process.argv[2];
+  const sql_loader = require('./load_sql_lib');
+  sql_loader(target_file).then((sql)=>{
+    require('test').run({
+      'test issue 76': function(assert){
+        exports.test(sql, assert);
+      }
+    });
+  })
+  .catch((e)=>{
+    console.error(e);
+    assert.fail(e);
+  });
 }
