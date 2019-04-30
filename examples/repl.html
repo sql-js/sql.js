@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+	<!--Simple Read eval print loop for SQL-->
+	<head>
+		<meta charset="utf8">
+		<title>SQL REPL</title>
+		<script src="../js/sql.js"></script>
+	</head>
+	<body>
+	<input type='text' id='input' placeholder="ENTER SOME SQL" size='50'
+		value="CREATE TABLE test(val);INSERT INTO test VALUES (666); SELECT * FROM test">
+	<button id='submit'>Execute</button>
+	<pre id='result'></pre>
+	<pre id='error'></pre>
+	<script>
+
+//Open a blank database
+var db = new SQL.Database();
+
+document.getElementById('submit').onclick = function(){
+	var sql = document.getElementById('input').value;
+	var result = '', error='';
+	try {result = db.exec(sql);}
+	catch(e) {error = e;}
+	document.getElementById('result').innerHTML = JSON.stringify(result, null, '  ');
+	document.getElementById('error').innerHTML = error;
+};
+	</script>
+	</body>
