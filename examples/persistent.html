@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf8">
 	<title>Persistent sqlite</title>
-	<script src="/dist/sql-wasm.js"></script>
+	<script src="../dist/sql-wasm.js"></script>
 </head>
 <body>
 	<p>You have seen this page <span id="views">0</span> times.</p>
@@ -11,6 +11,7 @@
 		You have been here on the following dates: <ol id="dates"></ol>
 	</div>
 	<script>
+  var baseUrl = '../dist/';
 
 	function toBinArray (str) {
 		var l = str.length,

@@ -1,11 +1,11 @@
 <meta charset="utf8" />
 <html>
-  <script src='/dist/sql-wasm-debug.js'></script>
+  <script src='../../dist/sql-wasm-debug.js'></script>
   <script>
     config = { 
       locateFile: (filename, prefix) => {
         console.log(`prefix is : ${prefix}`);
-        return `/dist/${filename}`;
+        return `../../dist/${filename}`;
       }
     }
     // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
