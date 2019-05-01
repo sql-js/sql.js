@@ -22,7 +22,7 @@ A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kri
 ## Usage
 
 ```javascript
-var initSqlJs = require('sql-wasm.js');
+var initSqlJs = require('sql.js');
 // or if you are in a browser:
 //var initSqlJs = window.initSqlJs;
 
@@ -237,7 +237,7 @@ So in the past, you would:
 or:
 ```javascript
 var SQL = require('sql.js');
-var db = new QL.Database();
+var db = new SQL.Database();
 //...
 ```
 
