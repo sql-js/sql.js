@@ -121,6 +121,7 @@ function savedb() {
 		var arraybuff = event.data.buffer;
 		var blob = new Blob([arraybuff]);
 		var a = document.createElement("a");
+		document.body.appendChild(a);
 		a.href = window.URL.createObjectURL(blob);
 		a.download = "sql.db";
 		a.onclick = function () {
