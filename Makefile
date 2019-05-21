@@ -8,12 +8,17 @@
 # To use another version of Sqlite, visit https://www.sqlite.org/download.html and copy the appropriate values here:
 SQLITE_AMALGAMATION = sqlite-amalgamation-3280000
 SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2019/sqlite-amalgamation-3280000.zip
-SQLITE_AMALGAMATION_ZIP_SHA1 = eb82fcc95104c8e2d9550ab023c1054b9cc40a76
+SQLITE_AMALGAMATION_ZIP_SHA512 = 6a2b9c0accd286b09d7e077393a627e22112ef11c76ff6a5896f5ff1a11eb62a8b2700f5a99eebda82df63b3968814ca460582aa4619852f96a899d2f59b9f8d
+SQLITE_EXTENSION_HEADERS = sqlite3ext.h
+
+SQLEET_AMALGAMATION = sqleet-v0.28.0
+SQLEET_AMALGAMATION_ZIP_URL = https://github.com/resilar/sqleet/releases/download/v0.28.0/sqleet-v0.28.0-amalgamation.zip
+SQLEET_AMALGAMATION_ZIP_SHA512 = 9da111ddf1f54730d4f12c8605cd0daed22f2930fc641cbeec67245762fafa4512af04ed0ffcbe49f8575d935874d052890e791684ecf539fdf979e4b858b7e9
 
 # Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated 
 EXTENSION_FUNCTIONS = extension-functions.c
 EXTENSION_FUNCTIONS_URL = https://www.sqlite.org/contrib/download/extension-functions.c?get=25
-EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
+EXTENSION_FUNCTIONS_SHA512 = 15d0d2b81ddc70b3ea9a268cc717e115031db1539024944ddce76ca9f1896467fa52e754ff8e18a40d9e8e26930c97531d5cd3140b7c128584aaa5e2cd16fb90
 
 EMCC=emcc
 
@@ -43,7 +48,7 @@ EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
 	-O1
 
-BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
+BITCODE_FILES = out/sqlite.bc out/extension-functions.bc
 OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
 all: optimized debug worker
@@ -127,12 +132,12 @@ out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.cof
 	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
 	mv out/api-wrapped.js $@
 
-out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
+out/sqlite.bc: sqlite-src/$(SQLEET_AMALGAMATION)
 	# Generate llvm bitcode
-	$(EMCC) $(CFLAGS) sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
+	$(EMCC) $(CFLAGS) sqlite-src/$(SQLEET_AMALGAMATION)/sqleet.c -o $@
 
-out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
-	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+out/extension-functions.bc: sqlite-src/$(SQLEET_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLEET_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
@@ -148,6 +153,10 @@ cache/$(SQLITE_AMALGAMATION).zip:
 	mkdir -p cache
 	curl -LsSf '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
 
+cache/$(SQLEET_AMALGAMATION).zip:
+	mkdir -p cache
+	curl -LsSf '$(SQLEET_AMALGAMATION_ZIP_URL)' -o $@
+
 cache/$(EXTENSION_FUNCTIONS):
 	mkdir -p cache
 	curl -LsSf '$(EXTENSION_FUNCTIONS_URL)' -o $@
@@ -159,22 +168,29 @@ clean-sqlite-src:
 	rm -rf sqlite
 
 .PHONY: sqlite-src
-sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(EXTENSION_FUNCTIONS)
+sqlite-src: sqlite-src/$(SQLITE_EXTENSION_HEADERS) sqlite-src/$(SQLEET_AMALGAMATION) sqlite-src/$(EXTENSION_FUNCTIONS)
 
-sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip
+sqlite-src/$(SQLEET_AMALGAMATION): cache/$(SQLEET_AMALGAMATION).zip
 	mkdir -p sqlite-src
-	echo '$(SQLITE_AMALGAMATION_ZIP_SHA1)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
-	sha1sum -c cache/check.txt
+	echo '$(SQLEET_AMALGAMATION_ZIP_SHA512)  ./cache/$(SQLEET_AMALGAMATION).zip' > cache/check.txt
+	shasum -a 512 -c cache/check.txt
 	rm -rf $@
-	unzip 'cache/$(SQLITE_AMALGAMATION).zip' -d sqlite-src/
+	unzip 'cache/$(SQLEET_AMALGAMATION).zip' -d sqlite-src/
 	touch $@
 
-sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNCTIONS)
+sqlite-src/$(SQLEET_AMALGAMATION)/$(SQLITE_EXTENSION_HEADERS): cache/$(SQLITE_AMALGAMATION).zip
 	mkdir -p sqlite-src
-	echo '$(EXTENSION_FUNCTIONS_SHA1)  ./cache/$(EXTENSION_FUNCTIONS)' > cache/check.txt
-	sha1sum -c cache/check.txt
-	cp 'cache/$(EXTENSION_FUNCTIONS)' $@
+	echo '$(SQLITE_AMALGAMATION_ZIP_SHA512)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
+	shasum -a 512 -c cache/check.txt
+	unzip 'cache/$(SQLITE_AMALGAMATION).zip' -d cache/
+	sed -i '' 's/sqlite3.h/sqleet.h/g' 'cache/$(SQLITE_AMALGAMATION)/sqlite3ext.h'
+	cp 'cache/$(SQLITE_AMALGAMATION)/sqlite3ext.h' $@
 
+sqlite-src/$(SQLEET_AMALGAMATION)/$(EXTENSION_FUNCTIONS): sqlite-src/$(SQLEET_AMALGAMATION)/$(SQLITE_EXTENSION_HEADERS) cache/$(EXTENSION_FUNCTIONS)
+	mkdir -p sqlite-src
+	echo '$(EXTENSION_FUNCTIONS_SHA512)  ./cache/$(EXTENSION_FUNCTIONS)' > cache/check.txt
+	shasum -a 512 -c cache/check.txt
+	cp 'cache/$(EXTENSION_FUNCTIONS)' $@
 
 .PHONY: clean 
 clean: 
@@ -182,6 +198,6 @@ clean:
 
 .PHONY: clean-all
 clean-all: 
-	rm -f out/* dist/* cache/*
+	rm -rf out/* dist/* cache/*
 	rm -rf sqlite-src/
 
