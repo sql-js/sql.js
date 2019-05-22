@@ -1,11 +1,11 @@
-# SQLite compiled to javascript
+# SQLite compiled to JavaScript
 [![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
 For the impatients, try the demo here: http://kripken.github.io/sql.js/examples/GUI
 
-*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in memory](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [javascript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
+*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in memory](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
-There are no C bindings or node-gyp compilation here, sql.js is a simple javascript file, that can be used like any traditional javascript library. If you are building a native application in javascript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to javascript](https://www.npmjs.com/package/sqlite3).
+There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3).
 
 SQLite is public domain, sql.js is MIT licensed.
 
@@ -24,9 +24,9 @@ A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kri
 ```javascript
 var initSqlJs = require('sql.js');
 // or if you are in a browser:
-//var initSqlJs = window.initSqlJs;
+// var initSqlJs = window.initSqlJs;
 
-initSqlJs().then(function(SQL){
+initSqlJs().then(SQL => {
 
   // Create a database
   var db = new SQL.Database();
@@ -57,7 +57,7 @@ initSqlJs().then(function(SQL){
   stmt.bind([0, 'hello']);
   while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
 
-  // You can also use javascript functions inside your SQL code
+  // You can also use JavaScript functions inside your SQL code
   // Create the js function you need
   function add(a, b) {return a+b;}
   // Specifies the SQL function's name, the number of it's arguments, and the js function to use
@@ -89,7 +89,7 @@ The test files provide up to date example of the use of the api.
   <script src='/dist/sql-wasm.js'></script>
   <script>
     config = {
-      locateFile: url => `/dist/${filename}` 
+      locateFile: filename => `/dist/${filename}` 
     }
     // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
     // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
@@ -220,7 +220,7 @@ See [examples/GUI/gui.js](examples/GUI/gui.js) for a full working example.
 
 ## Flavors/versions Targets/Downloads
 
-This library includes both WebAssembly and asm.js versions of Sqlite. (WebAssembly is the newer, preferred way to compile to Javascript, and has superceded asm.js. It produces smaller, faster code.) Asm.js versions are included for compatibility.
+This library includes both WebAssembly and asm.js versions of Sqlite. (WebAssembly is the newer, preferred way to compile to JavaScript, and has superceded asm.js. It produces smaller, faster code.) Asm.js versions are included for compatibility.
 
 ## Upgrading from 0.x to 1.x
 
