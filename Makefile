@@ -48,7 +48,7 @@ EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
 	-O1
 
-BITCODE_FILES = out/sqlite.bc out/extension-functions.bc
+BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
 OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
 all: optimized debug worker
@@ -132,7 +132,7 @@ out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.cof
 	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
 	mv out/api-wrapped.js $@
 
-out/sqlite.bc: sqlite-src/$(SQLEET_AMALGAMATION)
+out/sqlite3.bc: sqlite-src/$(SQLEET_AMALGAMATION)
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) sqlite-src/$(SQLEET_AMALGAMATION)/sqleet.c -o $@
 
