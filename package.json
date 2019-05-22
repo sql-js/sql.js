@@ -1,5 +1,5 @@
 {
-	"name": "sqleet.js",
+	"name": "sql.js",
 	"version": "1.0.0",
 	"description": "sqleet library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
 	"keywords": [

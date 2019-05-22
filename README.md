@@ -305,4 +305,4 @@ yarn && yarn run rebuild
 
 #### Run demo server
 
-`cd ./sqleet.js/examples/GUI/ && php -S localhost:8000 && open http://localhost:8000`
+`cd examples && python ./start_local_server.py`
