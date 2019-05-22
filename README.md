@@ -1,7 +1,7 @@
 # SQLite compiled to javascript
 [![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
-For the impatients, try the demo here: http://kripken.github.io/sql.js/examples/GUI
+For the impatients, try the demo here: http://pwnsdx.github.io/sqleer.js/examples/GUI
 
 *sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in memory](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [javascript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
@@ -276,8 +276,33 @@ Although asm.js files were distributed as a single Javascript file, WebAssembly 
  - `sql-asm-debug.js` : The _Debug_ asm.js version of Sql.js. Use this for local development.
  - `worker.*` - Web Worker versions of the above libraries. More limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for a good example of this.
 
-## Compiling
+## Compiling & Installation
 
-- Install the EMSDK, [as described here](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
-- Run `npm run rebuild`
 
+#### Install emsdk
+
+```
+brew install python2 && brew link python2
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+# Change ECMASCRIPT5 to ECMASCRIPT6 in emscripten/1.x/tools/shared.py
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+cd ..
+```
+
+
+#### Compile sqleet.js
+
+```
+cd sqleet.js
+brew cask install java
+brew install coffeescript
+yarn && yarn run rebuild
+```
+
+
+#### Run demo server
+
+`cd ./sqleet.js/examples/GUI/ && php -S localhost:8000 && open http://localhost:8000`
