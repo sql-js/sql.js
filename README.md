@@ -1,4 +1,4 @@
-# SQLite compiled to javascript
+# sqleet compiled to javascript
 [![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
 For the impatients, try the demo here: http://pwnsdx.github.io/sqleet.js/examples/GUI
