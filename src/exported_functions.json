@@ -1,5 +1,5 @@
 [
-"_RegisterExtensionFunctions"
+"_RegisterExtensionFunctions",
 "_free",
 "_malloc",
 "_sqlite3_bind_blob",
@@ -35,5 +35,5 @@
 "_sqlite3_value_double",
 "_sqlite3_value_int",
 "_sqlite3_value_text",
-"_sqlite3_value_type",
+"_sqlite3_value_type"
 ]
