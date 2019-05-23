@@ -33,6 +33,10 @@ initSqlJs().then(function(SQL){
   // NOTE: You can also use new SQL.Database(data) where
   // data is an Uint8Array representing an SQLite database file
 
+  // Set the encryption key
+  db.key('supersecurepassword');
+  // rekey is possible by using db.rekey('ultrasecurepassword');
+
   // Execute some sql
   sqlstr = "CREATE TABLE hello (a int, b char);";
   sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
