@@ -418,7 +418,7 @@ class Database
         FS.unlink '/' + @filename
         @db = null
 
-    # Implements key and rekey functions from the sqleet 
+    # Implements key and rekey functions from sqleet 
     'key' : (encryptionkey) ->
         if not @db then throw "Database closed"
         @handleError sqlite3_key @db, encryptionkey
