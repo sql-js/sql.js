@@ -53,6 +53,8 @@ sqlite3_value_double = Module['cwrap'] 'sqlite3_value_double', 'number', ['numbe
 sqlite3_result_double = Module['cwrap'] 'sqlite3_result_double', '', ['number', 'number']
 sqlite3_result_null = Module['cwrap'] 'sqlite3_result_null', '', ['number']
 sqlite3_result_text = Module['cwrap'] 'sqlite3_result_text', '', ['number', 'string', 'number', 'number']
+sqlite3_key = Module['cwrap'] 'sqlite3_key', 'number', ['number', 'string']
+sqlite3_rekey = Module['cwrap'] 'sqlite3_rekey', 'number', ['number', 'string']
 RegisterExtensionFunctions = Module['cwrap'] 'RegisterExtensionFunctions', 'number', ['number']
 
 # Export the API
