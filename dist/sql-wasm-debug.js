@@ -6676,6 +6676,7 @@ var _sqlite3_key = Module["_sqlite3_key"] = function() {  return Module["asm"]["
 var _sqlite3_open = Module["_sqlite3_open"] = function() {  return Module["asm"]["_sqlite3_open"].apply(null, arguments) };
 var _sqlite3_prepare_v2 = Module["_sqlite3_prepare_v2"] = function() {  return Module["asm"]["_sqlite3_prepare_v2"].apply(null, arguments) };
 var _sqlite3_rekey = Module["_sqlite3_rekey"] = function() {  return Module["asm"]["_sqlite3_rekey"].apply(null, arguments) };
+var _sqlite3_reset = Module["_sqlite3_reset"] = function() {  return Module["asm"]["_sqlite3_reset"].apply(null, arguments) };
 var _sqlite3_result_double = Module["_sqlite3_result_double"] = function() {  return Module["asm"]["_sqlite3_result_double"].apply(null, arguments) };
 var _sqlite3_result_null = Module["_sqlite3_result_null"] = function() {  return Module["asm"]["_sqlite3_result_null"].apply(null, arguments) };
 var _sqlite3_result_text = Module["_sqlite3_result_text"] = function() {  return Module["asm"]["_sqlite3_result_text"].apply(null, arguments) };
