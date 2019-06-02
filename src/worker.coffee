@@ -14,7 +14,13 @@ if typeof importScripts is 'function' # Detect webworker context
             switch data?['action']
                 when 'open'
                     buff = data['buffer']
-                    createDb (if buff then new Uint8Array(buff) else undefined)
+                    url = data['url']
+                    if buff
+                        createDb (new Uint8Array(buff))
+                    else if url
+                        createDb url
+                    else
+                        createDb undefined
                     postMessage
                         'id': data['id']
                         'ready': true
