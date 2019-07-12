@@ -244,6 +244,7 @@ class Database
         @db = getValue(apiTemp, 'i32')
         RegisterExtensionFunctions(@db)
         @statements = {} # A list of all prepared statements of the database
+        @functions = [] # A list of all user function (created by create_function call) of the database
 
     ### Execute an SQL query, ignoring the rows it returns.
 
@@ -395,6 +396,7 @@ class Database
     ###
     'export': ->
         stmt['free']() for _,stmt of @statements
+        removeFunction(func) for func in @functions
         @handleError sqlite3_close_v2 @db
         binaryDb = FS.readFile @filename, encoding:'binary'
         @handleError sqlite3_open @filename, apiTemp
@@ -414,6 +416,7 @@ class Database
     ###
     'close': ->
         stmt['free']() for _,stmt of @statements
+        removeFunction(func) for func in @functions
         @handleError sqlite3_close_v2 @db
         FS.unlink '/' + @filename
         @db = null
@@ -481,5 +484,6 @@ class Database
 
         # Generate a pointer to the wrapped, user defined function, and register with SQLite.
         func_ptr = addFunction(wrapped_func)
+        @functions.push(func_ptr);
         @handleError sqlite3_create_function_v2 @db, name, func.length, SQLite.UTF8, 0, func_ptr, 0, 0, 0
         return @
