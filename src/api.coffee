@@ -244,7 +244,7 @@ class Database
         @db = getValue(apiTemp, 'i32')
         RegisterExtensionFunctions(@db)
         @statements = {} # A list of all prepared statements of the database
-        @functions = [] # A list of all user function (created by create_function call) of the database
+        @functions = {} # A list of all user function of the database (created by create_function call)
 
     ### Execute an SQL query, ignoring the rows it returns.
 
@@ -396,7 +396,8 @@ class Database
     ###
     'export': ->
         stmt['free']() for _,stmt of @statements
-        removeFunction(func) for func in @functions
+        removeFunction(func) for _,func of @functions
+        @functions={}
         @handleError sqlite3_close_v2 @db
         binaryDb = FS.readFile @filename, encoding:'binary'
         @handleError sqlite3_open @filename, apiTemp
@@ -416,7 +417,8 @@ class Database
     ###
     'close': ->
         stmt['free']() for _,stmt of @statements
-        removeFunction(func) for func in @functions
+        removeFunction(func) for _,func of @functions
+        @functions={}
         @handleError sqlite3_close_v2 @db
         FS.unlink '/' + @filename
         @db = null
@@ -481,9 +483,11 @@ class Database
                 switch typeof(result)
                     when 'number' then sqlite3_result_double(cx, result)
                     when 'string' then sqlite3_result_text(cx, result, -1, -1)
-
+        if(name of @functions)
+          removeFunction(@functions[name])
+          delete @functions[name]
         # Generate a pointer to the wrapped, user defined function, and register with SQLite.
         func_ptr = addFunction(wrapped_func)
-        @functions.push(func_ptr);
+        @functions[name]=func_ptr
         @handleError sqlite3_create_function_v2 @db, name, func.length, SQLite.UTF8, 0, func_ptr, 0, 0, 0
         return @
