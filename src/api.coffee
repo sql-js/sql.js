@@ -459,7 +459,7 @@ class Database
                 value_ptr = getValue(argv+(4*i), 'i32')
                 value_type = sqlite3_value_type(value_ptr)
                 data_func = switch
-                    when value_type == 1 then sqlite3_value_int
+                    when value_type == 1 then sqlite3_value_double
                     when value_type == 2 then sqlite3_value_double
                     when value_type == 3 then sqlite3_value_text
                     when value_type == 4 then (ptr) ->
@@ -474,15 +474,26 @@ class Database
                 args.push arg
 
             # Invoke the user defined function with arguments from SQLite
-            result = func.apply(null, args)
+            try
+              result = func.apply(null, args)
+            catch error
+              sqlite3_result_error(cx,error,-1)
+              return
 
-            # Return the result of the user defined function to SQLite
-            if not result
-                sqlite3_result_null cx
-            else
-                switch typeof(result)
-                    when 'number' then sqlite3_result_double(cx, result)
-                    when 'string' then sqlite3_result_text(cx, result, -1, -1)
+            # Return the result of the user defined function to SQLite            
+            switch typeof(result)
+                when 'boolean' then sqlite3_result_int(cx,if result then 1 else 0)
+                when 'number' then sqlite3_result_double(cx, result)
+                when 'string' then sqlite3_result_text(cx, result, -1, -1)
+                when 'object'
+                  if result is null then sqlite3_result_null cx
+                  else if result.length?
+                    blobptr = allocate result, 'i8', ALLOC_NORMAL
+                    sqlite3_result_blob(cx, blobptr,result.length, -1)
+                    _free blobptr
+                  else sqlite3_result_error(cx,"Wrong API use : tried to return a value of an unknown type (#{result}).",-1)
+                else sqlite3_result_null cx
+            return
         if(name of @functions)
           removeFunction(@functions[name])
           delete @functions[name]
