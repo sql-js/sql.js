@@ -2,11 +2,10 @@
 <html>
 <script src='../dist/sql-wasm-debug.js'></script>
 <script>
-  const log = (text) => document.getElementById('output').insertAdjacentHTML('beforeend', `<p>${text}</p>`);
+  const log = (text) => document.getElementById('output').insertAdjacentHTML('beforeend', `${text}<br />`);
 
   config = {
     locateFile: (filename, prefix) => {
-      log(`prefix is : ${prefix}`);
       return `../dist/${filename}`;
     }
   }
