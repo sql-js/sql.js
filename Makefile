@@ -11,8 +11,8 @@ SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2019/sqlite-amalgamation-32
 SQLITE_AMALGAMATION_ZIP_SHA512 = 6a2b9c0accd286b09d7e077393a627e22112ef11c76ff6a5896f5ff1a11eb62a8b2700f5a99eebda82df63b3968814ca460582aa4619852f96a899d2f59b9f8d
 SQLITE_EXTENSION_HEADERS = sqlite3ext.h
 
-SQLEET_AMALGAMATION = sqleet-v0.28.0
-SQLEET_AMALGAMATION_ZIP_URL = https://github.com/resilar/sqleet/releases/download/v0.28.0/sqleet-v0.28.0-amalgamation.zip
+SQLEET_AMALGAMATION = sqleet-v0.29.0
+SQLEET_AMALGAMATION_ZIP_URL = https://github.com/resilar/sqleet/releases/download/v0.29.0/sqleet-v0.29.0-amalgamation.zip
 SQLEET_AMALGAMATION_ZIP_SHA512 = 9da111ddf1f54730d4f12c8605cd0daed22f2930fc641cbeec67245762fafa4512af04ed0ffcbe49f8575d935874d052890e791684ecf539fdf979e4b858b7e9
 
 # Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated 
