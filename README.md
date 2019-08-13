@@ -1,18 +1,18 @@
 # sqleet compiled to javascript
-[![Build Status](https://travis-ci.org/kripken/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
+[![Build Status](https://travis-ci.org/pwnsdx/sql.js.svg?branch=master)](http://travis-ci.org/kripken/sql.js) [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
 For the impatients, try the demo here: http://pwnsdx.github.io/sqleet.js/examples/GUI
 
-*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in memory](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
+*sqleet.js* is a port of sql.js which is based on [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](http://kripken.github.io/emscripten-site/docs/introducing_emscripten/about_emscripten.html). It uses a [virtual database file stored in on disk using IndexedDB](https://kripken.github.io/emscripten-site/docs/porting/files/file_systems_overview.html), and thus **persist the changes** made to the database. You can also **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
 There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3).
 
 SQLite is public domain, sql.js is MIT licensed.
 
-Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
+sqleet.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
 
 ## Version of binaries
-Sql.js was last built with:
+sqleet.js was last built with:
 Emscripten version 1.38.30 (2019-04-16) [Release History](https://emscripten.org/docs/introducing_emscripten/release_notes.html)
 SqlLite version: 3.28.0 (2019-04-16) [Release History](https://www.sqlite.org/changes.html)
 
@@ -26,10 +26,11 @@ var initSqlJs = require('sql.js');
 // or if you are in a browser:
 // var initSqlJs = window.initSqlJs;
 
-initSqlJs().then(SQL => {
+initSqlJs().then(async (SQL) => {
 
   // Create a database
   var db = new SQL.Database();
+  await db.mount();
   // NOTE: You can also use new SQL.Database(data) where
   // data is an Uint8Array representing an SQLite database file
 
@@ -76,6 +77,9 @@ initSqlJs().then(SQL => {
 
   // Export the database to an Uint8Array containing the SQLite database file
   var binaryArray = db.export();
+
+  // Save what happened in IndexedDB
+  await db.saveChanges();
 });
 
 ```
@@ -273,11 +277,11 @@ Although asm.js files were distributed as a single Javascript file, WebAssembly 
 
 
 ## Versions of sql.js included in `dist/`
- - `sql-wasm.js` : The Web Assembly version of Sql.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
- - `sql-wasm-debug.js` : The Web Assembly, Debug version of Sql.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.
- - `sql-asm.js` : The older asm.js version of Sql.js. Slower and larger. Provided for compatibility reasons.
+ - `sql-wasm.js` : The Web Assembly version of sqleet.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
+ - `sql-wasm-debug.js` : The Web Assembly, Debug version of sqleet.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.
+ - `sql-asm.js` : The older asm.js version of sqleet.js. Slower and larger. Provided for compatibility reasons.
  - `sql-asm-memory-growth.js` : Asm.js doesn't allow for memory to grow by default, because it is slower and de-optimizes. If you are using sql-asm.js and you see this error (`Cannot enlarge memory arrays`), use this file.
- - `sql-asm-debug.js` : The _Debug_ asm.js version of Sql.js. Use this for local development.
+ - `sql-asm-debug.js` : The _Debug_ asm.js version of sqleet.js. Use this for local development.
  - `worker.*` - Web Worker versions of the above libraries. More limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for a good example of this.
 
 ## Compiling & Installation

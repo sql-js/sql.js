@@ -234,17 +234,37 @@ class Statement
 
 # Represents an SQLite database
 class Database
-    # Open a new database either by creating a new one or opening an existing one,
-    # stored in the byte array passed in first argument
-    # @param data [Array<Integer>] An array of bytes representing an SQLite database file
-    constructor: (data) ->
-        @filename = 'dbfile_' + (0xffffffff*Math.random()>>>0)
-        if data? then FS.createDataFile '/', @filename, data, true, true
-        @handleError sqlite3_open @filename, apiTemp
-        @db = getValue(apiTemp, 'i32')
-        RegisterExtensionFunctions(@db)
-        @statements = {} # A list of all prepared statements of the database
-        @functions = {} # A list of all user function of the database (created by create_function call)
+    # @param identifier [string] Name of the database
+    constructor: (data, identifier = 'default') ->
+        @data = data
+        @identifier = identifier
+
+    ### Mount the database
+    ###
+    'mount' : () -> 
+        return new Promise (resolve, reject) =>
+            FS.mkdir '/IDBFS'
+            FS.mount IDBFS, {}, '/IDBFS'
+            FS.syncfs true, (err) =>
+                if err then return reject(err)
+                @filename = 'IDBFS/' + @identifier + '.db'
+                @handleError sqlite3_open @filename, apiTemp
+                @db = getValue(apiTemp, 'i32')
+                RegisterExtensionFunctions(@db)
+                @statements = {} # A list of all prepared statements of the database
+                @functions = {} # A list of all user function of the database (created by create_function call)
+                resolve()
+            ;
+
+    ### Persist data on disk
+    ###
+    'saveChanges': () ->
+        return new Promise (resolve, reject) =>
+            FS.syncfs false, (err) =>
+                if err then return reject(err)
+                resolve()
+            ;
+
 
     ### Execute an SQL query, ignoring the rows it returns.
 
@@ -420,8 +440,16 @@ class Database
         removeFunction(func) for _,func of @functions
         @functions={}
         @handleError sqlite3_close_v2 @db
-        FS.unlink '/' + @filename
         @db = null
+
+    ### Delete the database
+    
+    Same as close but also remove the database from IndexedDB
+
+    ###
+    'wipe': ->
+        @close()
+        FS.unlink '/' + @filename
 
     # Implements key and rekey functions from sqleet 
     'key' : (encryptionkey) ->
