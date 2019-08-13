@@ -243,11 +243,11 @@ class Database
     ###
     'mount' : () -> 
         return new Promise (resolve, reject) =>
-            FS.mkdir '/IDBFS'
-            FS.mount IDBFS, {}, '/IDBFS'
+            FS.mkdir '/sqleet'
+            FS.mount IDBFS, {}, '/sqleet'
             FS.syncfs true, (err) =>
                 if err then return reject(err)
-                @filename = 'IDBFS/' + @identifier + '.db'
+                @filename = 'sqleet/' + @identifier + '.db'
                 @handleError sqlite3_open @filename, apiTemp
                 @db = getValue(apiTemp, 'i32')
                 RegisterExtensionFunctions(@db)

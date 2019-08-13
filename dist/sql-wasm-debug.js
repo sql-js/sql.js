@@ -429,34 +429,44 @@ Statement = class Statement {
 
 // Represents an SQLite database
 Database = class Database {
-  // Open a new database either by creating a new one or opening an existing one,
-  // stored in the byte array passed in first argument
-  // @param data [Array<Integer>] An array of bytes representing an SQLite database file
-  constructor(data) {
-    this.filename = 'dbfile_' + (0xffffffff * Math.random() >>> 0);
-    if (data != null) {
-      FS.createDataFile('/', this.filename, data, true, true);
-    }
-    this.handleError(sqlite3_open(this.filename, apiTemp));
-    this.db = getValue(apiTemp, 'i32');
-    RegisterExtensionFunctions(this.db);
-    this.statements = {}; // A list of all prepared statements of the database
-    this.functions = {}; // A list of all user function of the database (created by create_function call)
+  // @param identifier [string] Name of the database
+  constructor(data, identifier = 'default') {
+    this.data = data;
+    this.identifier = identifier;
   }
 
-  /* Execute an SQL query, ignoring the rows it returns.
-
-  @param sql [String] a string containing some SQL text to execute
-  @param params [Array] (*optional*) When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed.
-
-  If you use the params argument, you **cannot** provide an sql string that contains several
-  queries (separated by ';')
-
-  @example Insert values in a table
-  db.run("INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'});
-
-  @return [Database] The database object (useful for method chaining)
+  /* Mount the database
   */
+  ['mount']() {
+    return new Promise((resolve, reject) => {
+      FS.mkdir('/sqleet');
+      FS.mount(IDBFS, {}, '/sqleet');
+      return FS.syncfs(true, (err) => {
+        if (err) {
+          return reject(err);
+        }
+        this.filename = 'sqleet/' + this.identifier + '.db';
+        this.handleError(sqlite3_open(this.filename, apiTemp));
+        this.db = getValue(apiTemp, 'i32');
+        RegisterExtensionFunctions(this.db);
+        this.statements = {}; // A list of all prepared statements of the database
+        this.functions = {}; // A list of all user function of the database (created by create_function call)
+        return resolve();
+      });
+    });
+  }
+
+  ['saveChanges']() {
+    return new Promise((resolve, reject) => {
+      return FS.syncfs(false, (err) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve();
+      });
+    });
+  }
+
   ['run'](sql, params) {
     var stmt;
     if (!this.db) {
@@ -661,8 +671,17 @@ Database = class Database {
     }
     this.functions = {};
     this.handleError(sqlite3_close_v2(this.db));
-    FS.unlink('/' + this.filename);
     return this.db = null;
+  }
+
+  /* Delete the database
+
+  Same as close but also remove the database from IndexedDB
+
+  */
+  ['wipe']() {
+    this.close();
+    return FS.unlink('/' + this.filename);
   }
 
   // Implements key and rekey functions from sqleet 
