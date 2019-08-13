@@ -50,6 +50,87 @@ exports.test = function(SQL, assert){
   db.create_function("addOne", function (x) { return x + 1;} );
   result = db.exec("SELECT addOne(1);");
   assert.equal(result[0]["values"][0][0], 2, "Accepts anonymous functions");
+ 
+  // Test api support of different sqlite types and special values
+  db.create_function("identityFunction", function (x) { return x;} );
+  var verbose=false;
+  function canHandle(testData)
+  {
+    let result={};
+    let ok=true;
+    let sql_value=("sql_value" in testData)?testData.sql_value:(""+testData.value);
+    function simpleEqual(a, b) {return a===b;}
+    let value_equal=("equal" in testData)?testData.equal:simpleEqual;
+    db.create_function("CheckTestValue", function (x) {return value_equal(testData.value,x)?12345:5678;});
+    db.create_function("GetTestValue", function () {return testData.value; });  
+    // Check sqlite to js value conversion
+    result = db.exec("SELECT CheckTestValue("+sql_value+")==12345"); 
+    if(result[0]["values"][0][0]!=1)
+    {
+      if(verbose)
+        assert.ok(false, "Can accept "+testData.info);
+      ok=false;
+    }
+    // Check js to sqlite value conversion
+    result = db.exec("SELECT GetTestValue()");
+    if(!value_equal(result[0]["values"][0][0],testData.value))
+    {
+      if(verbose)
+        assert.ok(false, "Can return "+testData.info);
+      ok=false;
+    } 
+    // Check sqlite to sqlite value conversion (identityFunction(x)==x)
+    if(sql_value!=="null")
+    {
+      result = db.exec("SELECT identityFunction("+sql_value+")="+sql_value); 
+    }else
+    {
+      result = db.exec("SELECT identityFunction("+sql_value+") is null"); 
+    }
+    if(result[0]["values"][0][0]!=1)
+    {
+      if(verbose)
+        assert.ok(false, "Can pass "+testData.info);
+      ok=false;
+    } 
+    return ok;
+  }
+  
+  function numberEqual(a, b) {
+      return (+a)===(+b);
+  }
+  
+  function blobEqual(a, b) {
+      if(((typeof a)!="object")||(!a)||((typeof b)!="object")||(!b)) return false;
+      if (a.byteLength !== b.byteLength) return false;
+      return a.every((val, i) => val === b[i]);
+  }
+  
+  [
+    {info:"null",value:null}, // sqlite special value null
+    {info:"false",value:false,sql_value:"0",equal:numberEqual}, // sqlite special value (==false)
+    {info:"true", value:true,sql_value:"1",equal:numberEqual}, // sqlite special value (==true)
+    {info:"integer 0",value:0}, // sqlite special value (==false)
+    {info:"integer 1",value:1}, // sqlite special value (==true)
+    {info:"integer -1",value:-1},
+    {info:"long integer 5e+9",value:5000000000}, // int64
+    {info:"long integer -5e+9",value:-5000000000}, // negative int64
+    {info:"double",value:0.5},
+    {info:"string",value:"Test",sql_value:"'Test'"},
+    {info:"empty string",value:"",sql_value:"''"},
+    {info:"unicode string",value:"\uC7B8",sql_value:"CAST(x'EC9EB8' AS TEXT)"}, // unicode-hex: C7B8 utf8-hex: EC9EB8
+    {info:"blob",value:new Uint8Array([0xC7,0xB8]),sql_value:"x'C7B8'",equal:blobEqual},
+    {info:"empty blob",value:new Uint8Array([]),sql_value:"x''",equal:blobEqual}
+  ].forEach(function(testData)
+  {
+    assert.ok(canHandle(testData),"Can handle "+testData.info);
+  });
+   
+  db.create_function("throwFunction", function () { throw "internal exception"; return 5;} );    
+  assert.throws(function(){db.exec("SELECT throwFunction()");},/internal exception/, "Can handle internal exceptions");
+  
+  db.create_function("customeObjectFunction", function () { return {test:123};} );    
+  assert.throws(function(){db.exec("SELECT customeObjectFunction()");},/Wrong API use/, "Reports wrong API use");
 
   db.close();
 };

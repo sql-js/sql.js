@@ -36,5 +36,9 @@
 "_sqlite3_result_text",
 "_sqlite3_key",
 "_sqlite3_rekey",
+"_sqlite3_result_blob",
+"_sqlite3_result_int",
+"_sqlite3_result_int64",
+"_sqlite3_result_error",
 "_RegisterExtensionFunctions"
 ]
