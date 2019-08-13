@@ -2,9 +2,11 @@
 <html>
 <script src='../dist/sql-wasm-debug.js'></script>
 <script>
+  const log = (text) => document.getElementById('output').insertAdjacentHTML('beforeend', `<p>${text}</p>`);
+
   config = {
     locateFile: (filename, prefix) => {
-      console.log(`prefix is : ${prefix}`);
+      log(`prefix is : ${prefix}`);
       return `../dist/${filename}`;
     }
   }
@@ -15,6 +17,9 @@
     //Create the database
     const db = new SQL.Database();
     await db.mount();
+
+    db.run('PRAGMA `encoding`="UTF-8";');
+    db.run('PRAGMA `key`="supersecurepassword";');
 
     // beforeunload event catch when the page is about to change
     window.addEventListener("beforeunload", async (event) => {
@@ -34,17 +39,18 @@
     // Results will increment as the page gets reloaded
     while (stmt.step()) { 
       var row = stmt.getAsObject();
-      console.log('Here is a row: ' + JSON.stringify(row));
+      log('Found a row: ' + JSON.stringify(row));
     }
 
-    console.log('Persisting changes...');
+    log('Persisting changes...');
     //await db.saveChanges();
-    console.log('Changes persisted');
+    log('Changes persisted');
   });
 </script>
 
 <body>
-  Output is in Javascript console
+  <p>Javascript output:</p>
+  <p id="output"></p>
 </body>
 
 </html>

@@ -7,7 +7,7 @@ For the impatients, try the demo here: http://pwnsdx.github.io/sqleet.js/example
 
 There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3).
 
-SQLite is public domain, sql.js is MIT licensed.
+SQLite is public domain, sqleet.js and sql.js is MIT licensed.
 
 sqleet.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
 
@@ -23,20 +23,17 @@ A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kri
 
 ```javascript
 var initSqlJs = require('sql.js');
-// or if you are in a browser:
-// var initSqlJs = window.initSqlJs;
 
 initSqlJs().then(async (SQL) => {
-
   // Create a database
-  var db = new SQL.Database();
+  var db = new SQL.Database('default');
   await db.mount();
-  // NOTE: You can also use new SQL.Database(data) where
-  // data is an Uint8Array representing an SQLite database file
 
   // Set the encryption key
-  db.key('supersecurepassword');
-  // rekey is possible by using db.rekey('ultrasecurepassword');
+  db.run('PRAGMA `encoding`="UTF-8";');
+  db.run('PRAGMA `key`="supersecurepassword";');
+  // Rekey is possible by using
+  // db.rekey('ultrasecurepassword');
 
   // Execute some sql
   sqlstr = "CREATE TABLE hello (a int, b char);";

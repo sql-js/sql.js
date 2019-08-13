@@ -241,7 +241,7 @@ class Database
 
     ### Mount the database
     ###
-    'mount' : () -> 
+    'mount': () -> 
         return new Promise (resolve, reject) =>
             FS.mkdir '/sqleet'
             FS.mount IDBFS, {}, '/sqleet'
@@ -259,6 +259,7 @@ class Database
     ### Persist data on disk
     ###
     'saveChanges': () ->
+        if not @db then throw "Database closed"
         return new Promise (resolve, reject) =>
             FS.syncfs false, (err) =>
                 if err then return reject(err)
@@ -452,9 +453,6 @@ class Database
         FS.unlink '/' + @filename
 
     # Implements key and rekey functions from sqleet 
-    'key' : (encryptionkey) ->
-        if not @db then throw "Database closed"
-        @handleError sqlite3_key @db, encryptionkey
     'rekey' : (encryptionkey) ->
         if not @db then throw "Database closed"
         @handleError sqlite3_rekey @db, encryptionkey

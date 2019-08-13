@@ -457,6 +457,9 @@ Database = class Database {
   }
 
   ['saveChanges']() {
+    if (!this.db) {
+      throw "Database closed";
+    }
     return new Promise((resolve, reject) => {
       return FS.syncfs(false, (err) => {
         if (err) {
@@ -685,13 +688,6 @@ Database = class Database {
   }
 
   // Implements key and rekey functions from sqleet 
-  ['key'](encryptionkey) {
-    if (!this.db) {
-      throw "Database closed";
-    }
-    return this.handleError(sqlite3_key(this.db, encryptionkey));
-  }
-
   ['rekey'](encryptionkey) {
     if (!this.db) {
       throw "Database closed";
@@ -826,6 +822,10 @@ sqlite3_free = Module['cwrap']('sqlite3_free', '', ['number']);
 
 sqlite3_changes = Module['cwrap']('sqlite3_changes', 'number', ['number']);
 
+sqlite3_key = Module['cwrap']('sqlite3_key', 'number', ['number', 'string', 'number']);
+
+sqlite3_rekey = Module['cwrap']('sqlite3_rekey', 'number', ['number', 'string', 'number']);
+
 // Prepared statements
 //# prepare
 sqlite3_prepare_v2 = Module['cwrap']('sqlite3_prepare_v2', 'number', ['number', 'string', 'number', 'number', 'number']);
@@ -901,10 +901,6 @@ sqlite3_result_double = Module['cwrap']('sqlite3_result_double', '', ['number', 
 sqlite3_result_null = Module['cwrap']('sqlite3_result_null', '', ['number']);
 
 sqlite3_result_text = Module['cwrap']('sqlite3_result_text', '', ['number', 'string', 'number', 'number']);
-
-sqlite3_key = Module['cwrap']('sqlite3_key', 'number', ['number', 'string']);
-
-sqlite3_rekey = Module['cwrap']('sqlite3_rekey', 'number', ['number', 'string']);
 
 sqlite3_result_blob = Module['cwrap']('sqlite3_result_blob', '', ['number', 'number', 'number', 'number']);
 
