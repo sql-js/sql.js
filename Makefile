@@ -13,7 +13,7 @@ SQLITE_EXTENSION_HEADERS = sqlite3ext.h
 
 SQLEET_AMALGAMATION = sqleet-v0.29.0
 SQLEET_AMALGAMATION_ZIP_URL = https://github.com/resilar/sqleet/releases/download/v0.29.0/sqleet-v0.29.0-amalgamation.zip
-SQLEET_AMALGAMATION_ZIP_SHA512 = 9da111ddf1f54730d4f12c8605cd0daed22f2930fc641cbeec67245762fafa4512af04ed0ffcbe49f8575d935874d052890e791684ecf539fdf979e4b858b7e9
+SQLEET_AMALGAMATION_ZIP_SHA512 = 3783b4c995e89e8151642fcb5b6d43b57b3f835ee3d0e83be9b3de480da3ce3f8b73debc1d45681031d855b6f294044b87f1f830178a182c62742483ee73eee9
 
 # Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated 
 EXTENSION_FUNCTIONS = extension-functions.c
