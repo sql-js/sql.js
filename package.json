@@ -21,6 +21,7 @@
 	"main": "./dist/sql-wasm.js",
 	"scripts": {
 		"build": "make clean && webpack && make && cd build && node shell.js",
+		"build-then-run-server": "npm run build && cd examples && python ./start_local_server.py",
 		"test": "npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
 		"test-asm": "node test/all.js asm",
 		"test-asm-debug": "node test/all.js asm-debug",
@@ -47,7 +48,6 @@
 	"dependencies": {
 		"@types/emscripten": "^1.38.0",
 		"@types/node": "^12.7.1",
-		"webpack": "^4.39.2",
-		"wrapper-webpack-plugin": "^2.1.0"
+		"webpack": "^4.39.2"
 	}
 }

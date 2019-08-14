@@ -1,5 +1,6 @@
-import { SQLite, NULL, __range__ } from "./Helper";
-import { sqlite3_clear_bindings, sqlite3_reset, sqlite3_finalize, sqlite3_step, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, sqlite3_data_count, sqlite3_column_name, sqlite3_bind_text, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_type } from "./lib/sqlite3";
+import { SQLite, NULL, __range__ } from './Helper';
+import { sqlite3_clear_bindings, sqlite3_reset, sqlite3_finalize, sqlite3_step, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, sqlite3_data_count, sqlite3_column_name, sqlite3_bind_text, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_type } from './lib/sqlite3';
+import Database from './Database';
   
 /* Represents a prepared statement.
 
@@ -17,14 +18,14 @@ closed too and become unusable.
 */
 export class Statement {
     stmt: any;
-    db: any;
-    pos: number;
+    db: Database;
+    pos: number = 0;
     allocatedmem: any[];
 
     // Statements can't be created by the API user, only by Database::prepare
     // @private
     // @nodoc
-    constructor(stmt: any, db: any) {
+    constructor(stmt: number, db: Database) {
       this.stmt = stmt;
       this.db = db;
       this.pos = 1; // Index of the leftmost parameter is 1
@@ -41,14 +42,14 @@ export class Statement {
   
       *# Binding values to named parameters
       @example Bind values to named parameters
-          var stmt = db.prepare("UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi");
+          var stmt = db.prepare('UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi');
           stmt.bind({$mini:10, $maxi:20, '@newval':5});
       - Create a statement that contains parameters like '$VVV', ':VVV', '@VVV'
       - Call Statement.bind with an object as parameter
   
       *# Binding values to parameters
       @example Bind values to anonymous parameters
-          var stmt = db.prepare("UPDATE test SET a=? WHERE id BETWEEN ? AND ?");
+          var stmt = db.prepare('UPDATE test SET a=? WHERE id BETWEEN ? AND ?');
           stmt.bind([5, 10, 20]);
        - Create a statement that contains parameters like '?', '?NNN'
        - Call Statement.bind with an array as parameter
@@ -70,7 +71,7 @@ export class Statement {
       */
     bind(values: any) {
       if (!this.stmt) {
-        throw "Statement closed";
+        throw new Error('Statement closed');
       }
       this.reset();
       if (Array.isArray(values)) {
@@ -87,12 +88,12 @@ export class Statement {
       @throw [String] SQLite Error
       */
     step() {
-      let ret;
       if (!this.stmt) {
-        throw "Statement closed";
+        throw new Error('Statement closed');
       }
       this.pos = 1;
-      switch ((ret = sqlite3_step(this.stmt))) {
+      const ret = sqlite3_step(this.stmt);
+      switch (ret) {
         case SQLite.ROW:
           return true;
         case SQLite.DONE:
@@ -137,20 +138,21 @@ export class Statement {
   
       @example Print all the rows of the table test to the console
   
-          var stmt = db.prepare("SELECT * FROM test");
+          var stmt = db.prepare('SELECT * FROM test');
           while (stmt.step()) console.log(stmt.get());
       */
-    get(params?) {
+    get(params: any[] | {} | null = null): any[] {
       // Get all fields
       if (params != null) {
-        this.bind(params) && this.step();
+        this.bind(params);
+        this.step();
       }
 
       const result: any = [];
-      for (
-        let field = 0, end = sqlite3_data_count(this.stmt), asc = 0 <= end; asc ? field < end : field > end; asc ? field++ : field--
-      ) {
-        switch (sqlite3_column_type(this.stmt, field)) {
+      for (let field = 0, i = 0, ref = sqlite3_data_count(this.stmt); (0 <= ref ? i < ref : i > ref); field = 0 <= ref ? ++i : --i) {
+        const value = sqlite3_column_type(this.stmt, field);
+        console.log('new value', value)
+        switch (value) {
           case SQLite.INTEGER:
           case SQLite.FLOAT:
             result.push(this.getNumber(field));
@@ -163,8 +165,10 @@ export class Statement {
             break;
           default:
             result.push(null);
+            break;
         }
       }
+
       return result;
     }
   
@@ -172,7 +176,7 @@ export class Statement {
       @return [Array<String>] The names of the columns
       @example
   
-          var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
+          var stmt = db.prepare('SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;');
           stmt.step(); // Execute the statement
           console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
       */
@@ -190,7 +194,7 @@ export class Statement {
   
       @example
   
-        const stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
+        const stmt = db.prepare('SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;');
         stmt.step(); // Execute the statement
         console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
       */
@@ -221,12 +225,12 @@ export class Statement {
     // @private
     // @nodoc
     bindString(string, pos) {
-      let strptr;
-      if (pos == null) {
-        pos = this.pos++;
+      if (!pos) {
+        pos = this.pos = this.pos++;
       }
       const bytes = Module.intArrayFromString(string);
-      this.allocatedmem.push((strptr = Module.allocate(bytes, "i8", Module.ALLOC_NORMAL)));
+      const strptr = Module.allocate(bytes, 'i8', Module.ALLOC_NORMAL);
+      this.allocatedmem.push(strptr);
       this.db.handleError(
         sqlite3_bind_text(this.stmt, pos, strptr, bytes.length - 1, 0)
       );
@@ -235,11 +239,11 @@ export class Statement {
   
     // @nodoc
     bindBlob(array: any, pos: any) {
-      let blobptr: any;
       if (pos == null) {
         pos = this.pos++;
       }
-      this.allocatedmem.push((blobptr = Module.allocate(array, "i8", Module.ALLOC_NORMAL)));
+      let blobptr = Module.allocate(array, 'i8', Module.ALLOC_NORMAL);
+      this.allocatedmem.push(blobptr);
       this.db.handleError(
         sqlite3_bind_blob(this.stmt, pos, blobptr, array.length, 0)
       );
@@ -268,26 +272,26 @@ export class Statement {
     // Call bindNumber or bindString appropriatly
     // @private
     // @nodoc
-    bindValue(val: any, pos) {
+    bindValue(value: any, pos: number) {
       if (pos == null) {
         pos = this.pos++;
       }
-      switch (typeof val) {
-        case "string":
-          return this.bindString(val, pos);
-        case "number":
-          return this.bindNumber(val, pos);
-        case "boolean":
-          return this.bindNumber(val ? 1 : 0, pos);
-        case "object":
-          if (val === null) {
+      switch (typeof value) {
+        case 'string':
+          return this.bindString(value, pos);
+        case 'number':
+          return this.bindNumber(value, pos);
+        case 'boolean':
+          return this.bindNumber(value ? 1 : 0, pos);
+        case 'object':
+          if (value === null) {
             return this.bindNull(pos);
-          } else if (val.length != null) {
-            return this.bindBlob(val, pos);
+          } else if (value.length != null) {
+            return this.bindBlob(value, pos);
           }
       }
 
-      throw `Wrong API use: tried to bind a value of an unknown type (${val}).`;
+      throw new Error(`Wrong API use: tried to bind a value of an unknown type (${value}).`);
     }
     /* Bind names and values of an object to the named parameters of the statement
       @param [Object]

@@ -1,17 +1,23 @@
-import { SQLite, NULL } from "./Helper";
-import { Statement } from "./Statement";
-import { sqlite3_open, sqlite3_exec, sqlite3_prepare_v2_sqlptr, sqlite3_prepare_v2, sqlite3_close_v2, sqlite3_errmsg, sqlite3_changes, sqlite3_value_type, sqlite3_value_double, sqlite3_value_text, sqlite3_value_bytes, sqlite3_value_blob, sqlite3_result_error, sqlite3_result_int, sqlite3_result_double, sqlite3_result_text, sqlite3_result_null, sqlite3_result_blob, sqlite3_create_function_v2, RegisterExtensionFunctions } from "./lib/sqlite3";
+import { SQLite, NULL } from './Helper';
+import { Statement } from './Statement';
+import { sqlite3_open, sqlite3_exec, sqlite3_prepare_v2_sqlptr, sqlite3_prepare_v2, sqlite3_close_v2, sqlite3_errmsg, sqlite3_changes, sqlite3_value_type, sqlite3_value_double, sqlite3_value_text, sqlite3_value_bytes, sqlite3_value_blob, sqlite3_result_error, sqlite3_result_int, sqlite3_result_double, sqlite3_result_text, sqlite3_result_null, sqlite3_result_blob, sqlite3_create_function_v2, RegisterExtensionFunctions } from './lib/sqlite3';
 
 const apiTemp = stackAlloc(4);
 
 // Represents an SQLite database
 export default class Database {
-  data: any;
-  identifier: any;
-  db: any;
-  filename?: string;
-  statements: {} = {};
-  functions: {} = {};
+  private data: any;
+  private identifier: any;
+  private db: any;
+  private filename?: string;
+
+  // A list of all prepared statements of the database
+  public statements: {} = {};
+
+  // A list of all user function of the database (created by create_function call)
+  private functions: {} = {};
+
+  private static readonly mountName = '/sqleet';
 
   constructor(data: any, identifier: string = 'default') {
     this.data = data;
@@ -22,25 +28,26 @@ export default class Database {
    */
   public mount(): Promise<void> {
     return new Promise((resolve: () => void, reject: (arg0: any) => void) => {
-      FS.mkdir("/sqleet");
-      FS.mount(IDBFS, {}, "/sqleet");
+      FS.mkdir(Database.mountName);
+      FS.mount(IDBFS, {}, Database.mountName);
+
       return FS.syncfs(true, (err: any) => {
         if (err) {
           return reject(err);
         }
-        this.filename = "sqleet/" + this.identifier + ".db";
+
+        this.filename = `${Database.mountName}/${this.identifier}.db`;
         this.handleError(sqlite3_open(this.filename, apiTemp));
-        this.db = Module.getValue(apiTemp, "i32");
+        this.db = Module.getValue(apiTemp, 'i32');
+
         RegisterExtensionFunctions(this.db);
-        this.statements = {}; // A list of all prepared statements of the database
-        this.functions = {}; // A list of all user function of the database (created by create_function call)
+
         return resolve();
       });
     });
   }
 
-  /* Persist data on disk
-   */
+  // Persist data on disk
   public saveChanges(): Promise<void> {
     if (!this.db) {
       throw new Error('Database closed');
@@ -57,29 +64,23 @@ export default class Database {
 
   /* Execute an SQL query, ignoring the rows it returns.
 
-    @param sql [String] a string containing some SQL text to execute
-    @param params [Array] (*optional*) When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed.
-
     If you use the params argument, you **cannot** provide an sql string that contains several
     queries (separated by ';')
 
     @example Insert values in a table
-        db.run("INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'});
-
-    @return [Database] The database object (useful for method chaining)
+        db.run('INSERT INTO test VALUES (:age, :name)', {':age':18, ':name':'John'});
     */
-  public run(sql: any, params: any) {
+  public run(query: string, params: any[]): void {
     if (!this.db) {
       throw new Error('Database closed');
     }
     if (params) {
-      const stmt = this.prepare(sql, params);
+      const stmt = this.prepare(query, params);
       stmt.step();
       stmt.free();
     } else {
-      this.handleError(sqlite3_exec(this.db, sql, 0, 0, apiTemp));
+      this.handleError(sqlite3_exec(this.db, query, 0, 0, apiTemp));
     }
-    return this;
   }
 
   /* Execute an SQL query, and returns the result.
@@ -107,7 +108,7 @@ export default class Database {
     We query it like that:
     ```javascript
     var db = new SQL.Database();
-    var res = db.exec("SELECT id FROM test; SELECT age,name FROM test;");
+    var res = db.exec('SELECT id FROM test; SELECT age,name FROM test;');
     ```
 
     `res` is now :
@@ -139,14 +140,14 @@ export default class Database {
     const pzTail = stackAlloc(4);
 
     const results: any[] = [];
-    while (Module.getValue(nextSqlPtr, "i8") !== NULL) {
-      Module.setValue(apiTemp, 0, "i32");
-      Module.setValue(pzTail, 0, "i32");
+    while (Module.getValue(nextSqlPtr, 'i8') !== NULL) {
+      Module.setValue(apiTemp, 0, 'i32');
+      Module.setValue(pzTail, 0, 'i32');
       this.handleError(
         sqlite3_prepare_v2_sqlptr(this.db, nextSqlPtr, -1, apiTemp, pzTail)
       );
-      const pStmt = Module.getValue(apiTemp, "i32"); //  pointer to a statement, or null
-      nextSqlPtr = Module.getValue(pzTail, "i32");
+      const pStmt = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
+      nextSqlPtr = Module.getValue(pzTail, 'i32');
 
       if (pStmt === NULL) {
         continue; // Empty statement
@@ -186,71 +187,66 @@ export default class Database {
     @return [Database] The database object. Useful for method chaining
 
     @example Read values from a table
-        db.each("SELECT name,age FROM users WHERE age >= $majority",
+        db.each('SELECT name,age FROM users WHERE age >= $majority',
                         {$majority:18},
-                        function(row){console.log(row.name + " is a grown-up.")}
+                        function(row){console.log(row.name + ' is a grown-up.')}
                     );
     */
   public each(sql: any, params: any, callback: (arg0?: {}) => void, done: () => void) {
-    if (typeof params === "function") {
+    if (typeof params === 'function') {
       done = () => callback();
       callback = params;
       params = undefined;
     }
+
     const stmt = this.prepare(sql, params);
     while (stmt.step()) {
       callback(stmt.getAsObject());
     }
     stmt.free();
-    if (typeof done === "function") {
+
+    if (typeof done === 'function') {
       return done();
     }
   }
 
-  /* Prepare an SQL statement*/
+  // Prepare an SQL statement
   public prepare(query: string, params: any[]): Statement {
     Module.setValue(apiTemp, 0, 'i32');
     this.handleError(sqlite3_prepare_v2(this.db, query, -1, apiTemp, NULL));
-    const pStmt = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
-    console.log('pStmt', pStmt)
+
+    // Pointer to a statement, or null
+    const pStmt = Module.getValue(apiTemp, 'i32');
+
     if (pStmt === NULL) {
-      throw new Error("Nothing to prepare");
+      throw new Error('Nothing to prepare');
     }
+
     const stmt = new Statement(pStmt, this);
     if (!params) {
       stmt.bind(params);
     }
+
     this.statements[pStmt] = stmt;
-    console.log('this.statements[pStmt]', this.statements[pStmt])
+
     return stmt;
   }
 
   /* Exports the contents of the database to a binary array
     @return [Uint8Array] An array of bytes of the SQLite3 database file
     */
-  public export(): Uint8Array {
-    for (let _statement in this.statements) {
-      const stmt = this.statements[_statement];
-      stmt.free();
-    }
-    for (let _function in this.functions) {
-      const func = this.functions[_function];
-      removeFunction(func);
-    }
-
-    this.functions = {};
-    this.handleError(sqlite3_close_v2(this.db));
+  public async export(): Promise<Uint8Array> {
+    this.close();
 
     if (!this.filename) {
-      throw "Filename not available, did you used mount()?";
+      throw new Error('Filename not available, did you used mount()?');
     }
-
     const binaryDb = FS.readFile(this.filename, {
-      encoding: "binary"
+      encoding: 'binary'
     }) as Uint8Array;
 
-    this.handleError(sqlite3_open(this.filename, apiTemp));
-    this.db = Module.getValue(apiTemp, "i32");
+    await this.mount();
+    
     return binaryDb;
   }
 
@@ -266,17 +262,20 @@ export default class Database {
     memory consumption will grow forever
     */
   public close(): void {
-    let _;
-    for (_ in this.statements) {
-      const stmt = this.statements[_];
-      stmt["free"]();
+    for (let _statement in this.statements) {
+      const stmt = this.statements[_statement];
+      stmt.free();
     }
-    for (_ in this.functions) {
-      const func = this.functions[_];
+    for (let _function in this.functions) {
+      const func = this.functions[_function];
       removeFunction(func);
     }
+
     this.functions = {};
+    this.statements = {};
+    
     this.handleError(sqlite3_close_v2(this.db));
+
     this.db = null;
   }
 
@@ -285,11 +284,14 @@ export default class Database {
   */
   wipe(): void {
     this.close();
-    FS.unlink("/" + this.filename);
+    if (!this.filename) {
+      throw new Error('Filename not available, did you used mount()?');
+    }
+    FS.unlink(this.filename);
   }
 
   // Analyze a result code, return null if no error occured, and throw an error with a descriptive message otherwise
-  handleError(returnCode: any) {
+  handleError(returnCode: SQLite) {
     if (returnCode === SQLite.OK) {
       return null;
     } else {
@@ -311,8 +313,8 @@ export default class Database {
 
   /* Register a custom function with SQLite
     @example Register a simple function
-        db.create_function("addOne", function(x) {return x+1;})
-        db.exec("SELECT addOne(1)") // = 2
+        db.create_function('addOne', function(x) {return x+1;})
+        db.exec('SELECT addOne(1)') // = 2
 
     @param name [String] the name of the function as referenced in SQL statements.
     @param func [Function] the actual function to be executed.
@@ -325,7 +327,7 @@ export default class Database {
       for (
         let i = 0, end = argc, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--
       ) {
-        const value_ptr = Module.getValue(argv + 4 * i, "i32");
+        const value_ptr = Module.getValue(argv + 4 * i, 'i32');
         var value_type = sqlite3_value_type(value_ptr);
         const data_func = (() => {
           switch (false) {
@@ -366,20 +368,20 @@ export default class Database {
 
       // Return the result of the user defined function to SQLite
       switch (typeof result) {
-        case "boolean":
+        case 'boolean':
           sqlite3_result_int(cx, result ? 1 : 0);
           break;
-        case "number":
+        case 'number':
           sqlite3_result_double(cx, result);
           break;
-        case "string":
+        case 'string':
           sqlite3_result_text(cx, result, -1, -1);
           break;
-        case "object":
+        case 'object':
           if (result === null) {
             sqlite3_result_null(cx);
           } else if (result.length != null) {
-            const blobptr = Module.allocate(result, "i8", Module.ALLOC_NORMAL);
+            const blobptr = Module.allocate(result, 'i8', Module.ALLOC_NORMAL);
             sqlite3_result_blob(cx, blobptr, result.length, -1);
             Module._free(blobptr);
           } else {

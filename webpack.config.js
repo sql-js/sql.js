@@ -1,5 +1,4 @@
 const path = require('path');
-const WrapperPlugin = require('wrapper-webpack-plugin');
 
 module.exports = {
   mode: 'development',

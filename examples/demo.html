@@ -23,7 +23,7 @@
     console.log('Database mounted');
 
     db.run('PRAGMA `encoding`="UTF-8";');
-    db.run('PRAGMA `key`="supersecurepassword";');
+    //db.run('PRAGMA `key`="supersecurepassword";');
 
     // beforeunload event catch when the page is about to change
     window.addEventListener("beforeunload", async (event) => {
@@ -38,7 +38,7 @@
     //db.run(`INSERT INTO test VALUES (${Math.random()},${Math.random()}), (${Math.random()},${Math.random()})`);
 
     // Prepare a statement
-    var stmt = db.prepare("SELECT * FROM test WHERE col1");
+    /*var stmt = db.prepare("SELECT * FROM test");
     console.log(stmt)
     log(stmt.getAsObject());
     console.log(stmt)
@@ -47,7 +47,7 @@
     while (stmt.step()) {
       var row = stmt.getAsObject();
       log('Found a row: ' + JSON.stringify(row));
-    }
+    }*/
   };
 
   main();
