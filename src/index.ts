@@ -8,14 +8,15 @@ for (const configName in moduleConfig) {
 }
 
 const originalOnAbortFunction = Module["onAbort"];
-Module["onAbort"] = function (errorThatCausedAbort) {
+Module["onAbort"] = (errorThatCausedAbort) => {
   reject(new Error(errorThatCausedAbort));
   if (originalOnAbortFunction) {
     originalOnAbortFunction(errorThatCausedAbort);
   }
 };
 
-Module['onRuntimeInitialized'] = async () => {
+Module['postRun'] = Module['postRun'] || [];
+Module['postRun'].push(async () => {
   // Resolve sqleet
   resolveModule((await import("./Database")).default);
-};
+});

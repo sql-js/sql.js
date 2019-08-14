@@ -12,11 +12,11 @@
   // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
   async function main() {
     
-    const sql = await sqleet(config);
-    console.log('sql', sql)
+    const Database = await sqleet(config);
+    console.log('Database', Database)
 
     //Create the database
-    const db = new sql();
+    const db = new Database();
     console.log('db', db)
 
     await db.mount();
@@ -35,20 +35,19 @@
     db.run("CREATE TABLE IF NOT EXISTS test (col1, col2);");
     // Insert two random rows
     db.run("INSERT INTO test VALUES (?,?), (?,?)", [Math.random(), Math.random(), Math.random(), Math.random()]);
+    //db.run(`INSERT INTO test VALUES (${Math.random()},${Math.random()}), (${Math.random()},${Math.random()})`);
 
     // Prepare a statement
     var stmt = db.prepare("SELECT * FROM test WHERE col1");
-    stmt.getAsObject();
+    console.log(stmt)
+    log(stmt.getAsObject());
+    console.log(stmt)
 
     // Results will increment as the page gets reloaded
     while (stmt.step()) {
       var row = stmt.getAsObject();
       log('Found a row: ' + JSON.stringify(row));
     }
-
-    log('Persisting changes...');
-    //await db.saveChanges();
-    log('Changes persisted');
   };
 
   main();

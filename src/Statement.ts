@@ -1,15 +1,5 @@
-import { SQLite, NULL } from "./Helper";
+import { SQLite, NULL, __range__ } from "./Helper";
 import { sqlite3_clear_bindings, sqlite3_reset, sqlite3_finalize, sqlite3_step, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, sqlite3_data_count, sqlite3_column_name, sqlite3_bind_text, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_type } from "./lib/sqlite3";
-
-function __range__(left: number, right: number, inclusive: any) {
-  let range: number[] = [];
-  let ascending = left < right;
-  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
-  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
-    range.push(i);
-  }
-  return range;
-}
   
 /* Represents a prepared statement.
 
@@ -155,28 +145,27 @@ export class Statement {
       if (params != null) {
         this.bind(params) && this.step();
       }
-      return (() => {
-        const result: any = [];
-        for (
-          let field = 0, end = sqlite3_data_count(this.stmt), asc = 0 <= end; asc ? field < end : field > end; asc ? field++ : field--
-        ) {
-          switch (sqlite3_column_type(this.stmt, field)) {
-            case SQLite.INTEGER:
-            case SQLite.FLOAT:
-              result.push(this.getNumber(field));
-              break;
-            case SQLite.TEXT:
-              result.push(this.getString(field));
-              break;
-            case SQLite.BLOB:
-              result.push(this.getBlob(field));
-              break;
-            default:
-              result.push(null);
-          }
+
+      const result: any = [];
+      for (
+        let field = 0, end = sqlite3_data_count(this.stmt), asc = 0 <= end; asc ? field < end : field > end; asc ? field++ : field--
+      ) {
+        switch (sqlite3_column_type(this.stmt, field)) {
+          case SQLite.INTEGER:
+          case SQLite.FLOAT:
+            result.push(this.getNumber(field));
+            break;
+          case SQLite.TEXT:
+            result.push(this.getString(field));
+            break;
+          case SQLite.BLOB:
+            result.push(this.getBlob(field));
+            break;
+          default:
+            result.push(null);
         }
-        return result;
-      })();
+      }
+      return result;
     }
   
     /* Get the list of column names of a row of result of a statement.

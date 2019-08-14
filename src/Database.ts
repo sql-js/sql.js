@@ -4,8 +4,6 @@ import { sqlite3_open, sqlite3_exec, sqlite3_prepare_v2_sqlptr, sqlite3_prepare_
 
 const apiTemp = stackAlloc(4);
 
-console.log(SQLite.OK)
-
 // Represents an SQLite database
 export default class Database {
   data: any;
@@ -22,7 +20,7 @@ export default class Database {
 
   /* Mount the database
    */
-  mount(): Promise<void> {
+  public mount(): Promise<void> {
     return new Promise((resolve: () => void, reject: (arg0: any) => void) => {
       FS.mkdir("/sqleet");
       FS.mount(IDBFS, {}, "/sqleet");
@@ -43,9 +41,9 @@ export default class Database {
 
   /* Persist data on disk
    */
-  saveChanges() {
+  public saveChanges(): Promise<void> {
     if (!this.db) {
-      throw "Database closed";
+      throw new Error('Database closed');
     }
     return new Promise((resolve: () => void, reject: (arg0: any) => void) => {
       return FS.syncfs(false, (err: any) => {
@@ -70,9 +68,9 @@ export default class Database {
 
     @return [Database] The database object (useful for method chaining)
     */
-  run(sql: any, params: any) {
+  public run(sql: any, params: any) {
     if (!this.db) {
-      throw "Database closed";
+      throw new Error('Database closed');
     }
     if (params) {
       const stmt = this.prepare(sql, params);
@@ -123,9 +121,9 @@ export default class Database {
     @param sql [String] a string containing some SQL text to execute
     @return [Array<QueryResults>] An array of results.
     */
-  exec(sql: any) {
+  public exec(sql: any) {
     if (!this.db) {
-      throw "Database closed";
+      throw new Error('Database closed');
     }
 
     const stack = stackSave();
@@ -193,7 +191,7 @@ export default class Database {
                         function(row){console.log(row.name + " is a grown-up.")}
                     );
     */
-  each(sql: any, params: any, callback: (arg0?: {}) => void, done: () => void) {
+  public each(sql: any, params: any, callback: (arg0?: {}) => void, done: () => void) {
     if (typeof params === "function") {
       done = () => callback();
       callback = params;
@@ -209,31 +207,28 @@ export default class Database {
     }
   }
 
-  /* Prepare an SQL statement
-    @param sql [String] a string of SQL, that can contain placeholders ('?', ':VVV', ':AAA', '@AAA')
-    @param params [Array] (*optional*) values to bind to placeholders
-    @return [Statement] the resulting statement
-    @throw [String] SQLite error
-    */
-  prepare(sql: any, params: any) {
-    Module.setValue(apiTemp, 0, "i32");
-    this.handleError(sqlite3_prepare_v2(this.db, sql, -1, apiTemp, NULL));
-    const pStmt = Module.getValue(apiTemp, "i32"); //  pointer to a statement, or null
+  /* Prepare an SQL statement*/
+  public prepare(query: string, params: any[]): Statement {
+    Module.setValue(apiTemp, 0, 'i32');
+    this.handleError(sqlite3_prepare_v2(this.db, query, -1, apiTemp, NULL));
+    const pStmt = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
+    console.log('pStmt', pStmt)
     if (pStmt === NULL) {
-      throw "Nothing to prepare";
+      throw new Error("Nothing to prepare");
     }
     const stmt = new Statement(pStmt, this);
     if (!params) {
       stmt.bind(params);
     }
     this.statements[pStmt] = stmt;
+    console.log('this.statements[pStmt]', this.statements[pStmt])
     return stmt;
   }
 
   /* Exports the contents of the database to a binary array
     @return [Uint8Array] An array of bytes of the SQLite3 database file
     */
-  export () {
+  public export(): Uint8Array {
     for (let _statement in this.statements) {
       const stmt = this.statements[_statement];
       stmt.free();
@@ -242,14 +237,18 @@ export default class Database {
       const func = this.functions[_function];
       removeFunction(func);
     }
+
     this.functions = {};
     this.handleError(sqlite3_close_v2(this.db));
+
     if (!this.filename) {
       throw "Filename not available, did you used mount()?";
     }
+
     const binaryDb = FS.readFile(this.filename, {
       encoding: "binary"
-    });
+    }) as Uint8Array;
+
     this.handleError(sqlite3_open(this.filename, apiTemp));
     this.db = Module.getValue(apiTemp, "i32");
     return binaryDb;
@@ -266,7 +265,7 @@ export default class Database {
     Databases **must** be closed, when you're finished with them, or the
     memory consumption will grow forever
     */
-  close() {
+  public close(): void {
     let _;
     for (_ in this.statements) {
       const stmt = this.statements[_];
@@ -278,21 +277,18 @@ export default class Database {
     }
     this.functions = {};
     this.handleError(sqlite3_close_v2(this.db));
-    return (this.db = null);
+    this.db = null;
   }
 
   /* Delete the database
     Same as close but also remove the database from IndexedDB
   */
-  wipe() {
+  wipe(): void {
     this.close();
-    return FS.unlink("/" + this.filename);
+    FS.unlink("/" + this.filename);
   }
 
-  /* Analyze a result code, return null if no error occured, and throw
-    an error with a descriptive message otherwise
-    @nodoc
-    */
+  // Analyze a result code, return null if no error occured, and throw an error with a descriptive message otherwise
   handleError(returnCode: any) {
     if (returnCode === SQLite.OK) {
       return null;
@@ -321,7 +317,7 @@ export default class Database {
     @param name [String] the name of the function as referenced in SQL statements.
     @param func [Function] the actual function to be executed.
     */
-  create_function(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }) {
+  public create_function(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }) {
     const wrapped_func = function(cx: any, argc: any, argv: number) {
       // Parse the args from sqlite into JS objects
       let result;
