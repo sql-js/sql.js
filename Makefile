@@ -30,10 +30,12 @@ CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=d
 EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
-	-s EXPORTED_FUNCTIONS=@src/exported_functions.json \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
+	-s EXPORTED_FUNCTIONS=@exports/functions.json \
+	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exports/runtime_methods.json \
 	-s SINGLE_FILE=0 \
 	-s NODEJS_CATCH_EXIT=0
+	#-s MODULARIZE=1 \
+	#-s 'EXPORT_NAME="sqleet"'
 
 EMFLAGS_WASM = \
 	-s WASM=1 \
@@ -49,88 +51,89 @@ EMFLAGS_DEBUG = \
 	-O1
 
 BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
-OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
+#OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
-all: optimized debug worker
+#all: optimized debug worker
+all: optimized debug
 
 .PHONY: debug
-debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
+#debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
+debug: dist/sql-wasm-debug.js
 
-dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/exported_functions.json src/exported_runtime_methods.json
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
-	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	rm out/tmp-raw.js
+#dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exports/functions.json exports/runtime_methods.json
+#	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
+#	mv $@ out/tmp-raw.js
+#	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+#	rm out/tmp-raw.js
 
-dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/exported_functions.json src/exported_runtime_methods.json
+dist/sql-wasm-debug.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
-	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	rm out/tmp-raw.js
+	##mv $@ out/tmp-raw.js
+	##cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	##rm out/tmp-raw.js
 
 .PHONY: optimized
-optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
+#optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
+optimized: dist/sql-wasm.js
 
-dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/exported_functions.json src/exported_runtime_methods.json 
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
-	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	rm out/tmp-raw.js
+#dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
+#	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
+#	mv $@ out/tmp-raw.js
+#	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+#	rm out/tmp-raw.js
 
-dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/exported_functions.json src/exported_runtime_methods.json 
+dist/sql-wasm.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
-	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	rm out/tmp-raw.js
+	##mv $@ out/tmp-raw.js
+	##cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	##rm out/tmp-raw.js
 
-dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/exported_functions.json src/exported_runtime_methods.json 
+dist/sql-asm-memory-growth.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js out/api.js -o $@
-	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	rm out/tmp-raw.js
-
+	##mv $@ out/tmp-raw.js
+	##cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	##rm out/tmp-raw.js
 
 # Web worker API
-.PHONY: worker
-worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
-
-out/worker.js: src/worker.coffee
-	cat $^ | coffee --bare --compile --stdio > $@
-
-dist/worker.sql-asm.js: dist/sql-asm.js out/worker.js
-	cat $^ > $@
-
-dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js out/worker.js
-	cat $^ > $@
-
-dist/worker.sql-wasm.js: dist/sql-wasm.js out/worker.js
-	cat $^ > $@
-
-dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
-	cat $^ > $@
+#.PHONY: worker
+#worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
+#
+#out/worker.js: src/worker.coffee
+#	cat $^ | coffee --bare --compile --stdio > $@
+#
+#dist/worker.sql-asm.js: dist/sql-asm.js out/worker.js
+#	cat $^ > $@
+#
+#dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js out/worker.js
+#	cat $^ > $@
+#
+#dist/worker.sql-wasm.js: dist/sql-wasm.js out/worker.js
+#	cat $^ > $@
+#
+#dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
+#	cat $^ > $@
 
 # Building it this way gets us a wrapper that _knows_ it's in worker mode, which is nice.
 # However, since we can't tell emcc that we don't need the wasm generated, and just want the wrapper, we have to pay to have the .wasm generated
 # even though we would have already generated it with our sql-wasm.js target above.
 # This would be made easier if this is implemented: https://github.com/emscripten-core/emscripten/issues/8506
-# dist/worker.sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js src/exported_functions.json src/exported_runtime_methods.json dist/sql-wasm-debug.wasm
+# dist/worker.sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js exports/functions.json exports/runtime_methods.json dist/sql-wasm-debug.wasm
 # 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s ENVIRONMENT=worker -s $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm.js
 # 	mv out/sql-wasm.js out/tmp-raw.js
 # 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
 # 	#mv out/sql-wasm.wasm dist/sql-wasm.wasm
 # 	rm out/tmp-raw.js
 
-# dist/worker.sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js src/exported_functions.json src/exported_runtime_methods.json dist/sql-wasm-debug.wasm
+# dist/worker.sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js exports/functions.json exports/runtime_methods.json dist/sql-wasm-debug.wasm
 # 	$(EMCC) -s ENVIRONMENT=worker $(EMFLAGS) $(EMFLAGS_DEBUG) -s ENVIRONMENT=worker -s WASM_BINARY_FILE=sql-wasm-foo.debug $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm-debug.js
 # 	mv out/sql-wasm-debug.js out/tmp-raw.js
 # 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
 # 	#mv out/sql-wasm-debug.wasm dist/sql-wasm-debug.wasm
 # 	rm out/tmp-raw.js
 
-out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.coffee src/output-post.js
-	cat src/api.coffee src/exports.coffee src/api-data.coffee | coffee --bare --compile --stdio > $@
-	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
-	mv out/api-wrapped.js $@
+#out/api.js: src/output-pre.js src/output-post.js
+#	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
+#	mv out/api-wrapped.js $@
 
 out/sqlite3.bc: sqlite-src/$(SQLEET_AMALGAMATION)
 	# Generate llvm bitcode
@@ -143,11 +146,11 @@ out/extension-functions.bc: sqlite-src/$(SQLEET_AMALGAMATION)/$(EXTENSION_FUNCTI
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
 # 	tar --create --gzip $^ > $@
 
-## cache
+## Cache
 
 .PHONY: clean-cache
 clean-cache:
-	rm -rf cache
+	rm -rf cache/*
 
 cache/$(SQLITE_AMALGAMATION).zip:
 	mkdir -p cache

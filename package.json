@@ -20,8 +20,7 @@
 	"license": "MIT",
 	"main": "./dist/sql-wasm.js",
 	"scripts": {
-		"build": "make",
-		"rebuild": "make clean && make",
+		"build": "make clean && webpack && make && cd build && node shell.js",
 		"test": "npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
 		"test-asm": "node test/all.js asm",
 		"test-asm-debug": "node test/all.js asm-debug",
@@ -40,7 +39,15 @@
 	},
 	"devDependencies": {
 		"test": ">=0.6",
-		"tiny-worker": "^2.1.2"
+		"tiny-worker": "^2.1.2",
+		"ts-loader": "^6.0.4",
+		"typescript": "^3.5.3",
+		"webpack-cli": "^3.3.6"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"@types/emscripten": "^1.38.0",
+		"@types/node": "^12.7.1",
+		"webpack": "^4.39.2",
+		"wrapper-webpack-plugin": "^2.1.0"
+	}
 }

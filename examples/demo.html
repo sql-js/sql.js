@@ -3,19 +3,24 @@
 <script src='../dist/sql-wasm-debug.js'></script>
 <script>
   const log = (text) => document.getElementById('output').insertAdjacentHTML('beforeend', `${text}<br />`);
-
-  config = {
-    locateFile: (filename, prefix) => {
-      return `../dist/${filename}`;
-    }
-  }
-  
+  const config = {
+      locateFile: (filename, prefix) => {
+        return `../dist/${filename}`;
+      }
+    };
   // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
   // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
-  initSqlJs(config).then(async (SQL) => {
+  async function main() {
+    
+    const sql = await sqleet(config);
+    console.log('sql', sql)
+
     //Create the database
-    const db = new SQL.Database();
+    const db = new sql();
+    console.log('db', db)
+
     await db.mount();
+    console.log('Database mounted');
 
     db.run('PRAGMA `encoding`="UTF-8";');
     db.run('PRAGMA `key`="supersecurepassword";');
@@ -36,7 +41,7 @@
     stmt.getAsObject();
 
     // Results will increment as the page gets reloaded
-    while (stmt.step()) { 
+    while (stmt.step()) {
       var row = stmt.getAsObject();
       log('Found a row: ' + JSON.stringify(row));
     }
@@ -44,7 +49,9 @@
     log('Persisting changes...');
     //await db.saveChanges();
     log('Changes persisted');
-  });
+  };
+
+  main();
 </script>
 
 <body>

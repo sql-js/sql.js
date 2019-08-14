@@ -1,0 +1,11 @@
+[
+  "cwrap",
+  "stackAlloc",
+  "stackSave",
+  "stackRestore",
+  "getValue",
+  "setValue",
+  "allocate",
+  "intArrayFromString"
+]
+
