@@ -2,6 +2,7 @@
 <html>
 <script src='../dist/sql-wasm-debug.js'></script>
 <script>
+  // helpers
   const log = (functionName, text, outputId = 'output') => document.getElementById(outputId).insertAdjacentHTML('beforeend', `${functionName ? `<b>${functionName}:</b> ` : ''}${text}<br />`);
   const config = {
     locateFile: (filename, prefix) => {
@@ -72,16 +73,47 @@
     db.run("CREATE TABLE IF NOT EXISTS test (key, value);");
   };
 
+  const toggleButtons = () => {
+    const start = document.getElementById('start');
+    const stop = document.getElementById('stop');
+
+    if (start.getAttribute('disabled') === 'disabled') {
+      start.removeAttribute('disabled');
+    } else {
+      start.setAttribute('disabled', 'disabled');
+    }
+
+    if (stop.getAttribute('disabled') === 'disabled') {
+      stop.removeAttribute('disabled');
+    } else {
+      stop.setAttribute('disabled', 'disabled');
+    }
+  };
+  const startBenchmark = () => {
+    if (!globalBenchmark) {
+      document.getElementById('container').style.display = 'block';
+      document.getElementById('output').innerHTML = '';
+      runBenchmark(db);
+    }
+  };
+  const stopBenchmark = () => {
+    if (globalBenchmark) {
+      clearTimeout(globalBenchmark);
+      globalBenchmark = undefined;
+    }
+  };
+
   main();
 </script>
 
 <body>
   <p id="main_output"></p>
-  <button onclick="globalBenchmark ? (clearTimeout(globalBenchmark) && (globalBenchmark = undefined)) : alert('Benchmark is not running')">Stop benchmark</button>
-  <button onclick="globalBenchmark ? alert('Benchmark already running') : runBenchmark(db)">Start benchmark</button>
-  <br />
-  <p>Benchmark output:</p>
-  <p id="output"></p>
+  <button id="stop" disabled="disabled" onclick="stopBenchmark(); toggleButtons();">Stop benchmark</button>
+  <button id="start" onclick="startBenchmark(); toggleButtons();">Start benchmark</button>
+  <div id="container" style="display: none">
+    <p>Benchmark output:</p>
+    <p id="output"></p>
+  </div>
 </body>
 
 </html>
