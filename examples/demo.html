@@ -2,59 +2,85 @@
 <html>
 <script src='../dist/sql-wasm-debug.js'></script>
 <script>
-  const log = (text) => document.getElementById('output').insertAdjacentHTML('beforeend', `${text}<br />`);
+  const log = (functionName, text, outputId = 'output') => document.getElementById(outputId).insertAdjacentHTML('beforeend', `${functionName ? `<b>${functionName}:</b> ` : ''}${text}<br />`);
   const config = {
-      locateFile: (filename, prefix) => {
-        return `../dist/${filename}`;
+    locateFile: (filename, prefix) => {
+      return `../dist/${filename}`;
+    }
+  };
+  const timer = () => {
+    const start = new Date();
+    return {
+      stop: () => {
+        const end  = new Date();
+        return end.getTime() - start.getTime();
       }
-    };
-  // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
-  // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
-  async function main() {
-    
-    const Database = await sqleet(config);
-    console.log('Database', Database)
+    }
+  };
 
-    //Create the database
-    const db = new Database();
-    console.log('db', db)
+  let globalBenchmark;
+  let db;
 
-    await db.mount();
-    console.log('Database mounted');
+  async function runBenchmark(db) {
+    var bench = timer();
+      for (let i = 0; i < 250; i++) {
+        db.run("INSERT INTO test VALUES (?,?), (?,?), (?,?), (?,?)", [
+          'hello',
+          'world',
+          Math.random(),
+          Math.random(),
+          1,
+          2,
+          new Uint8Array(50),
+          new Uint8Array(25)
+        ]);
+      }
+      log('db.run', `Took ${bench.stop()}ms to add 1000 entries using`);
 
-    db.run('PRAGMA `encoding`="UTF-8";');
-    //db.run('PRAGMA `key`="supersecurepassword";');
+      var bench = timer();
+      console.log(db.exec('SELECT * FROM test;'));
+      log('db.exec', `Took ${bench.stop()}ms to get the rows in the test table`);
 
-    // beforeunload event catch when the page is about to change
-    window.addEventListener("beforeunload", async (event) => {
+      var bench = timer();
       await db.saveChanges();
-      return true;
-    });
-    
+      log('db.saveChanges', `Took ${bench.stop()}ms to save the changes`);
+
+      // Prepare a statement
+      var bench = timer();
+      const statement = db.prepare('SELECT * FROM test');
+      while (statement.step()) {
+        const row = statement.getAsObject();
+        //console.log('Found a row: ' + JSON.stringify(row));
+      }
+      log('db.prepare', `Took ${bench.stop()}ms to get the rows in the test table`);
+      log(undefined, '');
+
+      globalBenchmark = setTimeout(async () => await runBenchmark(db), 2000);
+  }
+
+  async function main() {
+    // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
+    var bench = timer();
+    db = new (await sqleet(config))({key: 'supersecurepassword'}, 'aaaaa');
+    log('constructor', `Took ${bench.stop()}ms to call the constructor`, 'main_output');
+
+    var bench = timer();
+    await db.mount();
+    log('db.mount', `Took ${bench.stop()}ms to mount the database`, 'main_output');
+
     // Run a query without reading the results
-    db.run("CREATE TABLE IF NOT EXISTS test (col1, col2);");
-    // Insert two random rows
-    db.run("INSERT INTO test VALUES (?,?), (?,?)", [Math.random(), Math.random(), Math.random(), Math.random()]);
-    //db.run(`INSERT INTO test VALUES (${Math.random()},${Math.random()}), (${Math.random()},${Math.random()})`);
-
-    // Prepare a statement
-    /*var stmt = db.prepare("SELECT * FROM test");
-    console.log(stmt)
-    log(stmt.getAsObject());
-    console.log(stmt)
-
-    // Results will increment as the page gets reloaded
-    while (stmt.step()) {
-      var row = stmt.getAsObject();
-      log('Found a row: ' + JSON.stringify(row));
-    }*/
+    db.run("CREATE TABLE IF NOT EXISTS test (key, value);");
   };
 
   main();
 </script>
 
 <body>
-  <p>Javascript output:</p>
+  <p id="main_output"></p>
+  <button onclick="globalBenchmark ? (clearTimeout(globalBenchmark) && (globalBenchmark = undefined)) : alert('Benchmark is not running')">Stop benchmark</button>
+  <button onclick="globalBenchmark ? alert('Benchmark already running') : runBenchmark(db)">Start benchmark</button>
+  <br />
+  <p>Benchmark output:</p>
   <p id="output"></p>
 </body>
 

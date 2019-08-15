@@ -3,8 +3,6 @@ export const sqlite3_close_v2 = Module.cwrap('sqlite3_close_v2', 'number', ['num
 export const sqlite3_exec = Module.cwrap('sqlite3_exec', 'number', ['number', 'string', 'number', 'number', 'number']);
 export const sqlite3_free = Module.cwrap('sqlite3_free', 'boolean', ['number']);
 export const sqlite3_changes = Module.cwrap('sqlite3_changes', 'number', ['number']);
-export const sqlite3_key = Module.cwrap('sqlite3_key', 'number', ['number', 'string', 'number']);
-export const sqlite3_rekey = Module.cwrap('sqlite3_rekey', 'number', ['number', 'string', 'number']);
 
 // Prepared statements
 //# prepare

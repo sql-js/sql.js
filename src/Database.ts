@@ -1,4 +1,4 @@
-import { SQLite, NULL } from './Helper';
+import { SQLite, NULL, ConnectionOptions } from './Helper';
 import { Statement } from './Statement';
 import { sqlite3_open, sqlite3_exec, sqlite3_prepare_v2_sqlptr, sqlite3_prepare_v2, sqlite3_close_v2, sqlite3_errmsg, sqlite3_changes, sqlite3_value_type, sqlite3_value_double, sqlite3_value_text, sqlite3_value_bytes, sqlite3_value_blob, sqlite3_result_error, sqlite3_result_int, sqlite3_result_double, sqlite3_result_text, sqlite3_result_null, sqlite3_result_blob, sqlite3_create_function_v2, RegisterExtensionFunctions } from './lib/sqlite3';
 
@@ -6,10 +6,9 @@ const apiTemp = stackAlloc(4);
 
 // Represents an SQLite database
 export default class Database {
-  private data: any;
-  private identifier: any;
-  private db: any;
+  private pDatabase?: number; 
   private filename?: string;
+  private static readonly mountName = '/sqleet';
 
   // A list of all prepared statements of the database
   public statements: {} = {};
@@ -17,42 +16,60 @@ export default class Database {
   // A list of all user function of the database (created by create_function call)
   private functions: {} = {};
 
-  private static readonly mountName = '/sqleet';
-
-  constructor(data: any, identifier: string = 'default') {
-    this.data = data;
-    this.identifier = identifier;
-  }
+  constructor(private options?: ConnectionOptions, private identifier: string = 'default') {}
 
   /* Mount the database
    */
   public mount(): Promise<void> {
-    return new Promise((resolve: () => void, reject: (arg0: any) => void) => {
+    if (!this.options || !this.options['key']) {
+      throw new Error('An encryption key must be set, aborting the mount operation');
+    }
+
+    return new Promise((resolve, reject) => {
       FS.mkdir(Database.mountName);
       FS.mount(IDBFS, {}, Database.mountName);
+      FS.syncfs(true, (error: any) => {
+        if (error) {
+          return reject(error);
+        }
 
-      return FS.syncfs(true, (err: any) => {
-        if (err) {
-          return reject(err);
+        const searchParams = new URLSearchParams();
+        for (const option in this.options) {
+          searchParams.set(option, this.options[option]);
         }
 
         this.filename = `${Database.mountName}/${this.identifier}.db`;
-        this.handleError(sqlite3_open(this.filename, apiTemp));
-        this.db = Module.getValue(apiTemp, 'i32');
+        this.handleError(sqlite3_open(`file:${this.filename}?${searchParams.toString()}`, apiTemp));
+        this.pDatabase = Module.getValue(apiTemp, 'i32');
 
-        RegisterExtensionFunctions(this.db);
+        RegisterExtensionFunctions(this.pDatabase);
+
+        // Pragma defaults
+        this.run('PRAGMA `encoding`="UTF-8";');
 
         return resolve();
       });
     });
   }
 
-  // Persist data on disk
-  public saveChanges(): Promise<void> {
-    if (!this.db) {
+  // Utils
+  private ensureDatabaseIsOpen(): void {
+    if (!this.pDatabase) {
       throw new Error('Database closed');
     }
-    return new Promise((resolve: () => void, reject: (arg0: any) => void) => {
+  }
+  // Analyze a result code, return void if no error occured otherwise throw an error with a descriptive message
+  public handleError(returnCode: SQLite): void {
+    if (returnCode !== SQLite.OK) {
+      const errmsg = sqlite3_errmsg(this.pDatabase);
+      throw new Error(errmsg);
+    }
+  }
+
+  // Persist data on disk
+  public saveChanges(): Promise<void> {
+    this.ensureDatabaseIsOpen();
+    return new Promise((resolve, reject) => {
       return FS.syncfs(false, (err: any) => {
         if (err) {
           return reject(err);
@@ -61,7 +78,7 @@ export default class Database {
       });
     });
   }
-
+  
   /* Execute an SQL query, ignoring the rows it returns.
 
     If you use the params argument, you **cannot** provide an sql string that contains several
@@ -70,16 +87,14 @@ export default class Database {
     @example Insert values in a table
         db.run('INSERT INTO test VALUES (:age, :name)', {':age':18, ':name':'John'});
     */
-  public run(query: string, params: any[]): void {
-    if (!this.db) {
-      throw new Error('Database closed');
-    }
+  public run(query: string, params?: any[]): void {
+    this.ensureDatabaseIsOpen();
     if (params) {
       const stmt = this.prepare(query, params);
       stmt.step();
       stmt.free();
     } else {
-      this.handleError(sqlite3_exec(this.db, query, 0, 0, apiTemp));
+      this.handleError(sqlite3_exec(this.pDatabase, query, 0, 0, apiTemp));
     }
   }
 
@@ -122,19 +137,17 @@ export default class Database {
     @param sql [String] a string containing some SQL text to execute
     @return [Array<QueryResults>] An array of results.
     */
-  public exec(sql: any) {
-    if (!this.db) {
-      throw new Error('Database closed');
-    }
+  public exec(query: string): any[] {
+    this.ensureDatabaseIsOpen();
 
-    const stack = stackSave();
+    const stack: number = stackSave();
 
     // Store the SQL string in memory. The string will be consumed, one statement
     // at a time, by sqlite3_prepare_v2_sqlptr.
     // Note that if we want to allocate as much memory as could _possibly_ be used, we can
     // we allocate bytes equal to 4* the number of chars in the sql string.
     // It would be faster, but this is probably a premature optimization
-    let nextSqlPtr = allocateUTF8OnStack(sql);
+    let nextSqlPtr = allocateUTF8OnStack(query);
 
     // Used to store a pointer to the next SQL statement in the string
     const pzTail = stackAlloc(4);
@@ -144,27 +157,28 @@ export default class Database {
       Module.setValue(apiTemp, 0, 'i32');
       Module.setValue(pzTail, 0, 'i32');
       this.handleError(
-        sqlite3_prepare_v2_sqlptr(this.db, nextSqlPtr, -1, apiTemp, pzTail)
+        sqlite3_prepare_v2_sqlptr(this.pDatabase, nextSqlPtr, -1, apiTemp, pzTail)
       );
       const pStmt = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
       nextSqlPtr = Module.getValue(pzTail, 'i32');
 
       if (pStmt === NULL) {
-        continue; // Empty statement
+        // Empty statement
+        continue;
       }
 
       const stmt = new Statement(pStmt, this);
-      let curresult: any = null;
+      let curresult;
 
       while (stmt.step()) {
-        if (curresult === null) {
+        if (!curresult) {
           curresult = {
             columns: stmt.getColumnNames(),
             values: []
           };
           results.push(curresult);
         }
-        curresult.push(stmt.get());
+        curresult.values.push(stmt.get());
       }
       stmt.free();
     }
@@ -213,17 +227,16 @@ export default class Database {
   // Prepare an SQL statement
   public prepare(query: string, params: any[]): Statement {
     Module.setValue(apiTemp, 0, 'i32');
-    this.handleError(sqlite3_prepare_v2(this.db, query, -1, apiTemp, NULL));
+    this.handleError(sqlite3_prepare_v2(this.pDatabase, query, -1, apiTemp, NULL));
 
     // Pointer to a statement, or null
     const pStmt = Module.getValue(apiTemp, 'i32');
-
     if (pStmt === NULL) {
       throw new Error('Nothing to prepare');
     }
 
     const stmt = new Statement(pStmt, this);
-    if (!params) {
+    if (params) {
       stmt.bind(params);
     }
 
@@ -274,9 +287,9 @@ export default class Database {
     this.functions = {};
     this.statements = {};
     
-    this.handleError(sqlite3_close_v2(this.db));
+    this.handleError(sqlite3_close_v2(this.pDatabase));
 
-    this.db = null;
+    this.pDatabase = undefined;
   }
 
   /* Delete the database
@@ -284,20 +297,11 @@ export default class Database {
   */
   wipe(): void {
     this.close();
+
     if (!this.filename) {
       throw new Error('Filename not available, did you used mount()?');
     }
     FS.unlink(this.filename);
-  }
-
-  // Analyze a result code, return null if no error occured, and throw an error with a descriptive message otherwise
-  handleError(returnCode: SQLite) {
-    if (returnCode === SQLite.OK) {
-      return null;
-    } else {
-      const errmsg = sqlite3_errmsg(this.db);
-      throw new Error(errmsg);
-    }
   }
 
   /* Returns the number of rows modified, inserted or deleted by the
@@ -308,7 +312,7 @@ export default class Database {
     @return [Number] the number of rows modified
     */
   getRowsModified() {
-    return sqlite3_changes(this.db);
+    return sqlite3_changes(this.pDatabase);
   }
 
   /* Register a custom function with SQLite
@@ -331,14 +335,14 @@ export default class Database {
         var value_type = sqlite3_value_type(value_ptr);
         const data_func = (() => {
           switch (false) {
-            case value_type !== 1:
+            case value_type !== SQLite.INTEGER:
               return sqlite3_value_double;
-            case value_type !== 2:
+            case value_type !== SQLite.FLOAT:
               return sqlite3_value_double;
-            case value_type !== 3:
+            case value_type !== SQLite.TEXT:
               return sqlite3_value_text;
-            case value_type !== 4:
-              return function(ptr: any) {
+            case value_type !== SQLite.BLOB:
+              return (ptr: number) => {
                 const size = sqlite3_value_bytes(ptr);
                 const blob_ptr = sqlite3_value_blob(ptr);
                 const blob_arg = new Uint8Array(size);
@@ -381,7 +385,7 @@ export default class Database {
           if (result === null) {
             sqlite3_result_null(cx);
           } else if (result.length != null) {
-            const blobptr = Module.allocate(result, 'i8', Module.ALLOC_NORMAL);
+            const blobptr = Module.allocate(result, 'i8', Module.ALLOC_NORMAL, NULL);
             sqlite3_result_blob(cx, blobptr, result.length, -1);
             Module._free(blobptr);
           } else {
@@ -405,7 +409,7 @@ export default class Database {
     this.functions[name] = func_ptr;
     this.handleError(
       sqlite3_create_function_v2(
-        this.db,
+        this.pDatabase,
         name,
         func.length,
         SQLite.UTF8,

@@ -6,6 +6,10 @@
   "getValue",
   "setValue",
   "allocate",
-  "intArrayFromString"
+  "intArrayFromString",
+  "ALLOC_NORMAL",
+  "ALLOC_STACK",
+  "ALLOC_DYNAMIC",
+  "ALLOC_NONE"
 ]
 

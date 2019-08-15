@@ -6,9 +6,9 @@
 
 # I got this handy makefile syntax from : https://github.com/mandel59/sqlite-wasm (MIT License) Credited in LICENSE
 # To use another version of Sqlite, visit https://www.sqlite.org/download.html and copy the appropriate values here:
-SQLITE_AMALGAMATION = sqlite-amalgamation-3280000
-SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2019/sqlite-amalgamation-3280000.zip
-SQLITE_AMALGAMATION_ZIP_SHA512 = 6a2b9c0accd286b09d7e077393a627e22112ef11c76ff6a5896f5ff1a11eb62a8b2700f5a99eebda82df63b3968814ca460582aa4619852f96a899d2f59b9f8d
+SQLITE_AMALGAMATION = sqlite-amalgamation-3290000
+SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2019/sqlite-amalgamation-3290000.zip
+SQLITE_AMALGAMATION_ZIP_SHA512 = 3306ac3e37ec46f1b2ac74155756c82afadff7bf5b8b4c9b5516f5e8c1c785b5f50ec9b840482292f2f6c5d72cf6d9a78a0dfb727f0a9cf134b6c5522606e9b3
 SQLITE_EXTENSION_HEADERS = sqlite3ext.h
 
 SQLEET_AMALGAMATION = sqleet-v0.29.0
@@ -34,8 +34,6 @@ EMFLAGS = \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exports/runtime_methods.json \
 	-s SINGLE_FILE=0 \
 	-s NODEJS_CATCH_EXIT=0
-	#-s MODULARIZE=1 \
-	#-s 'EXPORT_NAME="sqleet"'
 
 EMFLAGS_WASM = \
 	-s WASM=1 \
@@ -51,48 +49,24 @@ EMFLAGS_DEBUG = \
 	-O1
 
 BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
-#OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
 #all: optimized debug worker
 all: optimized debug
 
 .PHONY: debug
-#debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
 debug: dist/sql-wasm-debug.js
-
-#dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exports/functions.json exports/runtime_methods.json
-#	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
-#	mv $@ out/tmp-raw.js
-#	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-#	rm out/tmp-raw.js
 
 dist/sql-wasm-debug.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
-	##mv $@ out/tmp-raw.js
-	##cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	##rm out/tmp-raw.js
 
 .PHONY: optimized
-#optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
 optimized: dist/sql-wasm.js
-
-#dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
-#	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 $(BITCODE_FILES) --pre-js out/api.js -o $@
-#	mv $@ out/tmp-raw.js
-#	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-#	rm out/tmp-raw.js
 
 dist/sql-wasm.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
-	##mv $@ out/tmp-raw.js
-	##cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	##rm out/tmp-raw.js
 
 dist/sql-asm-memory-growth.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js out/api.js -o $@
-	##mv $@ out/tmp-raw.js
-	##cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
-	##rm out/tmp-raw.js
 
 # Web worker API
 #.PHONY: worker
@@ -131,20 +105,12 @@ dist/sql-asm-memory-growth.js: $(BITCODE_FILES) out/api.js exports/functions.jso
 # 	#mv out/sql-wasm-debug.wasm dist/sql-wasm-debug.wasm
 # 	rm out/tmp-raw.js
 
-#out/api.js: src/output-pre.js src/output-post.js
-#	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
-#	mv out/api-wrapped.js $@
-
 out/sqlite3.bc: sqlite-src/$(SQLEET_AMALGAMATION)
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) sqlite-src/$(SQLEET_AMALGAMATION)/sqleet.c -o $@
 
 out/extension-functions.bc: sqlite-src/$(SQLEET_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLEET_AMALGAMATION)/extension-functions.c -o $@
-
-# TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
-# module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
-# 	tar --create --gzip $^ > $@
 
 ## Cache
 
@@ -203,4 +169,3 @@ clean:
 clean-all: 
 	rm -rf out/* dist/* cache/*
 	rm -rf sqlite-src/
-

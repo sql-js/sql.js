@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = {
+  // EMFLAGS_OPTIMIZED ("--closure 1") already managing optimizations in Makefile
   mode: 'development',
   entry: './src/index.ts',
   module: {
