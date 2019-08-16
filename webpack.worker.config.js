@@ -1,14 +1,15 @@
 const path = require('path');
 
 module.exports = {
-  // EMFLAGS_OPTIMIZED ("--closure 1") already managing optimizations in Makefile
   mode: 'production',
-  entry: './src/database/index.ts',
+  entry: {
+    sqleet: './src/worker/index.ts',
+  },
   module: {
     rules: [
       {
         test: /\.ts?$/,
-        use: 'ts-loader?configFile=tsconfig.json',
+        use: 'ts-loader?configFile=tsconfig.worker.json',
         exclude: /node_modules/
       }
     ]
@@ -17,7 +18,9 @@ module.exports = {
     extensions: ['.ts', '.js']
   },
   output: {
-    filename: 'api.js',
-    path: path.resolve(__dirname, 'out')
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist'),
+    libraryTarget: 'var',
+    library: '[name]'
   }
 };

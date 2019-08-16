@@ -1,4 +1,7 @@
-export const NULL = 0; // Null pointer
+// Null pointer
+export const NULL_PTR = 0; 
+
+// SQLite interface
 export enum SQLite {
   OK = 0,
   ERROR = 1,
@@ -39,24 +42,8 @@ export enum SQLite {
   BLOB = 4,
   NULL = 5,
 
-  // Encodings, used for registering functions. 
+  // Encodings, used for registering functions
   UTF8 = 1,
-}
-
-export interface ConnectionOptions {
-  vfs?: string;
-  mode?: "ro" | "rw" | "rwc" | "memory";
-  cache?: "shared" | "private";
-  psow?: boolean;
-  nolock?: boolean;
-  immutable?: boolean;
-  salt?: string;
-  header?: unknown;
-  kdf?: string;
-  skip?: unknown;
-  page_size?: unknown;
-
-  key: string;
 }
 
 export function __range__(left: number, right: number, inclusive: any) {

@@ -1,14 +1,9 @@
 <meta charset="utf8" />
 <html>
-<script src='../dist/sql-wasm-debug.js'></script>
+<script src='../dist/sqleet.js'></script>
 <script>
   // helpers
   const log = (functionName, text, outputId = 'output') => document.getElementById(outputId).insertAdjacentHTML('beforeend', `${functionName ? `<b>${functionName}:</b> ` : ''}${text}<br />`);
-  const config = {
-    locateFile: (filename, prefix) => {
-      return `../dist/${filename}`;
-    }
-  };
   const timer = () => {
     const start = new Date();
     return {
@@ -19,13 +14,40 @@
     }
   };
 
+  /*[
+  'mount',
+  'saveChanges',
+  'run',
+  'exec',
+  'each',
+  'prepare',
+  'export',
+  'close',
+  'wipe',
+  'getRowsModified',
+  'createFunction',
+];*/
+
   let globalBenchmark;
   let db;
 
   async function runBenchmark(db) {
     var bench = timer();
+    await db.run("INSERT INTO test VALUES (?,?), (?,?), (?,?), (?,?)", [
+      'hello',
+      'world',
+      Math.random(),
+      Math.random(),
+      1,
+      2,
+      new Uint8Array(50),
+      new Uint8Array(25)
+    ]);
+    log('db.run', `Took ${bench.stop()}ms to add 1 entry using`);
+
+    var bench = timer();
       for (let i = 0; i < 250; i++) {
-        db.run("INSERT INTO test VALUES (?,?), (?,?), (?,?), (?,?)", [
+        await db.run("INSERT INTO test VALUES (?,?), (?,?), (?,?), (?,?)", [
           'hello',
           'world',
           Math.random(),
@@ -39,7 +61,7 @@
       log('db.run', `Took ${bench.stop()}ms to add 1000 entries using`);
 
       var bench = timer();
-      console.log(db.exec('SELECT * FROM test;'));
+      console.log(await db.exec('SELECT * FROM test;'));
       log('db.exec', `Took ${bench.stop()}ms to get the rows in the test table`);
 
       var bench = timer();
@@ -48,21 +70,22 @@
 
       // Prepare a statement
       var bench = timer();
-      const statement = db.prepare('SELECT * FROM test');
+      const statement = await db.prepare('SELECT * FROM test');
+      console.log(statement)
       while (statement.step()) {
         const row = statement.getAsObject();
         //console.log('Found a row: ' + JSON.stringify(row));
       }
       log('db.prepare', `Took ${bench.stop()}ms to get the rows in the test table`);
-      log(undefined, '');
 
+      log(undefined, '');
       globalBenchmark = setTimeout(async () => await runBenchmark(db), 2000);
   }
 
   async function main() {
     // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
     var bench = timer();
-    db = new (await sqleet(config))({key: 'supersecurepassword'}, 'aaaaa');
+    db = new sqleet.DatabaseWorkerSender({key: 'supersecurepassword'}, 'aaaaa');
     log('constructor', `Took ${bench.stop()}ms to call the constructor`, 'main_output');
 
     var bench = timer();
@@ -70,7 +93,7 @@
     log('db.mount', `Took ${bench.stop()}ms to mount the database`, 'main_output');
 
     // Run a query without reading the results
-    db.run("CREATE TABLE IF NOT EXISTS test (key, value);");
+    await db.run("CREATE TABLE IF NOT EXISTS test (key, value);");
   };
 
   const toggleButtons = () => {
@@ -102,8 +125,8 @@
       globalBenchmark = undefined;
     }
   };
-
-  main();
+  
+  window.onload = () => main();
 </script>
 
 <body>

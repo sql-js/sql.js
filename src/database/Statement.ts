@@ -1,6 +1,6 @@
-import { SQLite, NULL, __range__ } from './Helper';
+import { SQLite, NULL_PTR, __range__ } from './Helper';
 import { sqlite3_clear_bindings, sqlite3_reset, sqlite3_finalize, sqlite3_step, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, sqlite3_data_count, sqlite3_column_name, sqlite3_bind_text, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_type } from './lib/sqlite3';
-import Database from './Database';
+import {Database} from './Database';
 
 /* Represents a prepared statement.
 
@@ -108,19 +108,19 @@ export class Statement {
   }
 
   // Internal methods to retrieve data from the results of a statement that has been executed
-  getNumber(pos) {
+  private getNumber(pos) {
     if (!pos) {
       pos = this.pos = this.pos++;
     }
     return sqlite3_column_double(this.stmt, pos);
   }
-  getString(pos) {
+  private getString(pos) {
     if (!pos) {
       pos = this.pos = this.pos++;
     }
     return sqlite3_column_text(this.stmt, pos);
   }
-  getBlob(pos) {
+  private getBlob(pos) {
     if (!pos) {
       pos = this.pos = this.pos++;
     }
@@ -145,7 +145,7 @@ export class Statement {
         var stmt = db.prepare('SELECT * FROM test');
         while (stmt.step()) console.log(stmt.get());
     */
-  get(params?: any[] | {}): any[] {
+  public get(params?: any[] | {}): any[] {
     // Get all fields
     if (params) {
       this.bind(params);
@@ -183,7 +183,7 @@ export class Statement {
         stmt.step(); // Execute the statement
         console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
     */
-  getColumnNames() {
+  public getColumnNames() {
     return __range__(0, sqlite3_data_count(this.stmt), false).map(i =>
       sqlite3_column_name(this.stmt, i)
     );
@@ -226,46 +226,35 @@ export class Statement {
   }
 
   // Internal methods to bind values to parameters
-  // @private
-  // @nodoc
-  bindString(string: string, pos: number = this.pos++) {
+  private bindString(string: string, pos: number = this.pos++) {
     const bytes = Module.intArrayFromString(string);
-    const strptr = Module.allocate(bytes, 'i8', Module.ALLOC_NORMAL, NULL);
+    const strptr = Module.allocate(bytes, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
     this.allocatedMemory.push(strptr);
     this.database.handleError(
       sqlite3_bind_text(this.stmt, pos, strptr, bytes.length - 1, 0)
     );
     return true;
   }
-
-  // @nodoc
-  bindBlob(array: number[], pos: number = this.pos++) {
-    let blobptr = Module.allocate(array, 'i8', Module.ALLOC_NORMAL, NULL);
+  private bindBlob(array: number[], pos: number = this.pos++) {
+    let blobptr = Module.allocate(array, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
     this.allocatedMemory.push(blobptr);
     this.database.handleError(
       sqlite3_bind_blob(this.stmt, pos, blobptr, array.length, 0)
     );
     return true;
   }
-
-  // @private
-  // @nodoc
-  bindNumber(num: number, pos: number = this.pos++) {
+  private bindNumber(num: number, pos: number = this.pos++) {
     const IS_INT = (num | 0);
     const bindfunc = num === IS_INT ? sqlite3_bind_int : sqlite3_bind_double;
     this.database.handleError(bindfunc(this.stmt, pos, num));
     return true;
   }
-
-  // @nodoc
-  bindNull(pos: number = this.pos++) {
+  private bindNull(pos: number = this.pos++) {
     return sqlite3_bind_blob(this.stmt, pos, 0, 0, 0) === SQLite.OK;
   }
   
   // Call bindNumber or bindString appropriatly
-  // @private
-  // @nodoc
-  bindValue(value: any, pos: number = this.pos++) {
+  private bindValue(value: any, pos: number = this.pos++) {
     switch (typeof value) {
       case 'string':
         return this.bindString(value, pos);
@@ -283,12 +272,9 @@ export class Statement {
 
     throw new Error(`Wrong API use: tried to bind a value of an unknown type (${value}).`);
   }
-  /* Bind names and values of an object to the named parameters of the statement
-    @param [Object]
-    @private
-    @nodoc
-    */
-  bindFromObject(valuesObj) {
+
+  // Bind names and values of an object to the named parameters of the statement
+  private bindFromObject(valuesObj: {}): boolean {
     for (let name in valuesObj) {
       const value = valuesObj[name];
       const num = sqlite3_bind_parameter_index(this.stmt, name);
@@ -298,12 +284,9 @@ export class Statement {
     }
     return true;
   }
-  /* Bind values to numbered parameters
-    @param [Array]
-    @private
-    @nodoc
-    */
-  bindFromArray(values) {
+
+  // Bind values to numbered parameters
+  private bindFromArray(values: any[]) {
     for (let num = 0; num < values.length; num++) {
       const value = values[num];
       this.bindValue(value, num + 1);
@@ -311,19 +294,18 @@ export class Statement {
     return true;
   }
 
-  /* Reset a statement, so that it's parameters can be bound to new values
-    It also clears all previous bindings, freeing the memory used by bound parameters.
-    */
-  public reset() {
+  // Reset a statement, so that it's parameters can be bound to new values
+  // It also clears all previous bindings, freeing the memory used by bound parameters.
+  public reset(): boolean {
     this.freemem();
+
     return (
       sqlite3_clear_bindings(this.stmt) === SQLite.OK &&
       sqlite3_reset(this.stmt) === SQLite.OK
     );
   }
 
-  /* Free the memory allocated during parameter binding
-    */
+  // Free the memory allocated during parameter binding
   private freemem() {
     let mem: number | undefined;
     while (mem = this.allocatedMemory.pop()) {
@@ -334,11 +316,13 @@ export class Statement {
   /* Free the memory used by the statement
     @return [Boolean] true in case of success
     */
-  public free() {
+  public free(): boolean {
     this.freemem();
+
     const res = sqlite3_finalize(this.stmt) === SQLite.OK;
     delete this.database.statements[this.stmt];
-    this.stmt = NULL;
+    this.stmt = NULL_PTR;
+    
     return res;
   }
 }

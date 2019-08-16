@@ -6,3 +6,7 @@ out/
 sqlite-src/
 cache/
 .DS_Store
+
+# Ignore compiled database module as Uint8Array
+src/worker/lib/sql-wasm-debug.ts
+src/worker/lib/sql-wasm.ts

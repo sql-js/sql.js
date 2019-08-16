@@ -1,31 +1,45 @@
-import { SQLite, NULL, ConnectionOptions } from './Helper';
+import { Database as DatabaseInterface } from '../interfaces/Database';
+import { ConnectionOptions } from '../interfaces/ConnectionOptions';
+import { SQLite, NULL_PTR } from './Helper';
 import { Statement } from './Statement';
 import { sqlite3_open, sqlite3_exec, sqlite3_prepare_v2_sqlptr, sqlite3_prepare_v2, sqlite3_close_v2, sqlite3_errmsg, sqlite3_changes, sqlite3_value_type, sqlite3_value_double, sqlite3_value_text, sqlite3_value_bytes, sqlite3_value_blob, sqlite3_result_error, sqlite3_result_int, sqlite3_result_double, sqlite3_result_text, sqlite3_result_null, sqlite3_result_blob, sqlite3_create_function_v2, RegisterExtensionFunctions } from './lib/sqlite3';
 
 const apiTemp = stackAlloc(4);
 
-// Represents an SQLite database
-export default class Database {
-  private pDatabase?: number; 
+export const whitelistedFunctions = [
+  'mount',
+  'saveChanges',
+  'run',
+  'exec',
+  'prepare',
+  'export',
+  'close',
+  'wipe',
+  'getRowsModified',
+  'createFunction',
+];
+
+export class Database implements DatabaseInterface {
+  private pDatabase?: number;
   private filename?: string;
   private static readonly mountName = '/sqleet';
 
   // A list of all prepared statements of the database
-  public statements: {} = {};
+  public statements: Record<number, Statement> = {};
 
   // A list of all user function of the database (created by create_function call)
-  private functions: {} = {};
+  private functions = {};
 
   constructor(private options?: ConnectionOptions, private identifier: string = 'default') {}
 
   /* Mount the database
    */
   public mount(): Promise<void> {
-    if (!this.options || !this.options['key']) {
-      throw new Error('An encryption key must be set, aborting the mount operation');
-    }
-
     return new Promise((resolve, reject) => {
+      if (!this.options || !this.options['key']) {
+        return reject(new Error('An encryption key must be set, aborting the mount operation'));
+      }
+
       FS.mkdir(Database.mountName);
       FS.mount(IDBFS, {}, Database.mountName);
       FS.syncfs(true, (error: any) => {
@@ -39,6 +53,7 @@ export default class Database {
         }
 
         this.filename = `${Database.mountName}/${this.identifier}.db`;
+
         this.handleError(sqlite3_open(`file:${this.filename}?${searchParams.toString()}`, apiTemp));
         this.pDatabase = Module.getValue(apiTemp, 'i32');
 
@@ -52,22 +67,8 @@ export default class Database {
     });
   }
 
-  // Utils
-  private ensureDatabaseIsOpen(): void {
-    if (!this.pDatabase) {
-      throw new Error('Database closed');
-    }
-  }
-  // Analyze a result code, return void if no error occured otherwise throw an error with a descriptive message
-  public handleError(returnCode: SQLite): void {
-    if (returnCode !== SQLite.OK) {
-      const errmsg = sqlite3_errmsg(this.pDatabase);
-      throw new Error(errmsg);
-    }
-  }
-
   // Persist data on disk
-  public saveChanges(): Promise<void> {
+  public async saveChanges(): Promise<void> {
     this.ensureDatabaseIsOpen();
     return new Promise((resolve, reject) => {
       return FS.syncfs(false, (err: any) => {
@@ -87,12 +88,12 @@ export default class Database {
     @example Insert values in a table
         db.run('INSERT INTO test VALUES (:age, :name)', {':age':18, ':name':'John'});
     */
-  public run(query: string, params?: any[]): void {
+  public async run(query: string, params?: any[]): Promise<void> {
     this.ensureDatabaseIsOpen();
     if (params) {
-      const stmt = this.prepare(query, params);
-      stmt.step();
-      stmt.free();
+      const statementId = await this.prepare(query, params);
+      this.statements[statementId].step();
+      this.statements[statementId].free();
     } else {
       this.handleError(sqlite3_exec(this.pDatabase, query, 0, 0, apiTemp));
     }
@@ -137,7 +138,7 @@ export default class Database {
     @param sql [String] a string containing some SQL text to execute
     @return [Array<QueryResults>] An array of results.
     */
-  public exec(query: string): any[] {
+  public async exec(query: string): Promise<any[]> {
     this.ensureDatabaseIsOpen();
 
     const stack: number = stackSave();
@@ -153,7 +154,7 @@ export default class Database {
     const pzTail = stackAlloc(4);
 
     const results: any[] = [];
-    while (Module.getValue(nextSqlPtr, 'i8') !== NULL) {
+    while (Module.getValue(nextSqlPtr, 'i8') !== NULL_PTR) {
       Module.setValue(apiTemp, 0, 'i32');
       Module.setValue(pzTail, 0, 'i32');
       this.handleError(
@@ -162,7 +163,7 @@ export default class Database {
       const pStmt = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
       nextSqlPtr = Module.getValue(pzTail, 'i32');
 
-      if (pStmt === NULL) {
+      if (pStmt === NULL_PTR) {
         // Empty statement
         continue;
       }
@@ -186,52 +187,14 @@ export default class Database {
     return results;
   }
 
-  /* Execute an sql statement, and call a callback for each row of result.
-
-    **Currently** this method is synchronous, it will not return until the callback has
-    been called on every row of the result. But this might change.
-
-    @param sql [String] A string of SQL text. Can contain placeholders that will be
-    bound to the parameters given as the second argument
-    @param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters to bind
-    to the query
-    @param callback [Function(Object)] A function that will be called on each row of result
-    @param done [Function] A function that will be called when all rows have been retrieved
-
-    @return [Database] The database object. Useful for method chaining
-
-    @example Read values from a table
-        db.each('SELECT name,age FROM users WHERE age >= $majority',
-                        {$majority:18},
-                        function(row){console.log(row.name + ' is a grown-up.')}
-                    );
-    */
-  public each(sql: any, params: any, callback: (arg0?: {}) => void, done: () => void) {
-    if (typeof params === 'function') {
-      done = () => callback();
-      callback = params;
-      params = undefined;
-    }
-
-    const stmt = this.prepare(sql, params);
-    while (stmt.step()) {
-      callback(stmt.getAsObject());
-    }
-    stmt.free();
-
-    if (typeof done === 'function') {
-      return done();
-    }
-  }
-
   // Prepare an SQL statement
-  public prepare(query: string, params: any[]): Statement {
+  public async prepare(query: string, params: any[]): Promise<number> {
     Module.setValue(apiTemp, 0, 'i32');
-    this.handleError(sqlite3_prepare_v2(this.pDatabase, query, -1, apiTemp, NULL));
+    this.handleError(sqlite3_prepare_v2(this.pDatabase, query, -1, apiTemp, NULL_PTR));
 
     // Pointer to a statement, or null
     const pStmt = Module.getValue(apiTemp, 'i32');
-    if (pStmt === NULL) {
+    if (pStmt === NULL_PTR) {
       throw new Error('Nothing to prepare');
     }
 
@@ -239,10 +202,9 @@ export default class Database {
     if (params) {
       stmt.bind(params);
     }
-
     this.statements[pStmt] = stmt;
 
-    return stmt;
+    return pStmt;
   }
 
   /* Exports the contents of the database to a binary array
@@ -274,7 +236,7 @@ export default class Database {
     Databases **must** be closed, when you're finished with them, or the
     memory consumption will grow forever
     */
-  public close(): void {
+  public async close(): Promise<void> {
     for (let _statement in this.statements) {
       const stmt = this.statements[_statement];
       stmt.free();
@@ -295,7 +257,7 @@ export default class Database {
   /* Delete the database
     Same as close but also remove the database from IndexedDB
   */
-  wipe(): void {
+  public async wipe(): Promise<void> {
     this.close();
 
     if (!this.filename) {
@@ -311,19 +273,19 @@ export default class Database {
 
     @return [Number] the number of rows modified
     */
-  getRowsModified() {
+  public async getRowsModified(): Promise<number> {
     return sqlite3_changes(this.pDatabase);
   }
 
   /* Register a custom function with SQLite
     @example Register a simple function
-        db.create_function('addOne', function(x) {return x+1;})
+        db.createFunction('addOne', function(x) {return x+1;})
         db.exec('SELECT addOne(1)') // = 2
 
     @param name [String] the name of the function as referenced in SQL statements.
     @param func [Function] the actual function to be executed.
     */
-  public create_function(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }) {
+  public async createFunction(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }): Promise<any> {
     const wrapped_func = function(cx: any, argc: any, argv: number) {
       // Parse the args from sqlite into JS objects
       let result;
@@ -385,7 +347,7 @@ export default class Database {
           if (result === null) {
             sqlite3_result_null(cx);
           } else if (result.length != null) {
-            const blobptr = Module.allocate(result, 'i8', Module.ALLOC_NORMAL, NULL);
+            const blobptr = Module.allocate(result, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
             sqlite3_result_blob(cx, blobptr, result.length, -1);
             Module._free(blobptr);
           } else {
@@ -421,5 +383,19 @@ export default class Database {
       )
     );
     return this;
+  }
+
+  // Utils
+  private ensureDatabaseIsOpen(): void {
+    if (!this.pDatabase) {
+      throw new Error('Database closed');
+    }
+  }
+  // Analyze a result code, return void if no error occured otherwise throw an error with a descriptive message
+  public handleError(returnCode: SQLite): void {
+    if (returnCode !== SQLite.OK) {
+      const errmsg = sqlite3_errmsg(this.pDatabase);
+      throw new Error(errmsg);
+    }
   }
 }

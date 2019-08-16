@@ -1,8 +1,4 @@
-# Note: Last built with version 1.38.30 of Emscripten
-
 # TODO: Emit a file showing which version of emcc and SQLite was used to compile the emitted output.
-# TODO: Create a release on Github with these compiled assets rather than checking them in
-# TODO: Consider creating different files based on browser vs module usage: https://github.com/vuejs/vue/tree/dev/dist
 
 # I got this handy makefile syntax from : https://github.com/mandel59/sqlite-wasm (MIT License) Credited in LICENSE
 # To use another version of Sqlite, visit https://www.sqlite.org/download.html and copy the appropriate values here:
@@ -27,13 +23,15 @@ CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=d
 # When compiling to WASM, enabling memory-growth is not expected to make much of an impact, so we enable it for all builds
 # Since tihs is a library and not a standalone executable, we don't want to catch unhandled Node process exceptions
 # So, we do : `NODEJS_CATCH_EXIT=0`, which fixes issue: https://github.com/kripken/sql.js/issues/173 and https://github.com/kripken/sql.js/issues/262
+# Use the SINGLE_FILE=1 option so we can bundle the .wasm within the JS
 EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s EXPORTED_FUNCTIONS=@exports/functions.json \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=@exports/runtime_methods.json \
 	-s SINGLE_FILE=0 \
-	-s NODEJS_CATCH_EXIT=0
+	-s NODEJS_CATCH_EXIT=0 \
+	-s SINGLE_FILE=1
 
 EMFLAGS_WASM = \
 	-s WASM=1 \
@@ -41,8 +39,9 @@ EMFLAGS_WASM = \
 
 EMFLAGS_OPTIMIZED= \
 	-s INLINING_LIMIT=50 \
-	-O3 \
-	--closure 1
+	-O3
+	# Do not use Closure, instead use Webpack production optimizations since Module becomes undefined otherwise
+	#--closure 1
 
 EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
@@ -50,66 +49,28 @@ EMFLAGS_DEBUG = \
 
 BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
 
-#all: optimized debug worker
 all: optimized debug
 
 .PHONY: debug
-debug: dist/sql-wasm-debug.js
+debug: out/sql-wasm-debug.js
 
-dist/sql-wasm-debug.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json
+out/sql-wasm-debug.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json
+	# Generate sql-wasm-debug
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
 
 .PHONY: optimized
-optimized: dist/sql-wasm.js
+optimized: out/sql-wasm.js
 
-dist/sql-wasm.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
+out/sql-wasm.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
+	# Generate sql-wasm
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
 
-dist/sql-asm-memory-growth.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 $(BITCODE_FILES) --pre-js out/api.js -o $@
-
-# Web worker API
-#.PHONY: worker
-#worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
-#
-#out/worker.js: src/worker.coffee
-#	cat $^ | coffee --bare --compile --stdio > $@
-#
-#dist/worker.sql-asm.js: dist/sql-asm.js out/worker.js
-#	cat $^ > $@
-#
-#dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js out/worker.js
-#	cat $^ > $@
-#
-#dist/worker.sql-wasm.js: dist/sql-wasm.js out/worker.js
-#	cat $^ > $@
-#
-#dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
-#	cat $^ > $@
-
-# Building it this way gets us a wrapper that _knows_ it's in worker mode, which is nice.
-# However, since we can't tell emcc that we don't need the wasm generated, and just want the wrapper, we have to pay to have the .wasm generated
-# even though we would have already generated it with our sql-wasm.js target above.
-# This would be made easier if this is implemented: https://github.com/emscripten-core/emscripten/issues/8506
-# dist/worker.sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js exports/functions.json exports/runtime_methods.json dist/sql-wasm-debug.wasm
-# 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s ENVIRONMENT=worker -s $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm.js
-# 	mv out/sql-wasm.js out/tmp-raw.js
-# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
-# 	#mv out/sql-wasm.wasm dist/sql-wasm.wasm
-# 	rm out/tmp-raw.js
-
-# dist/worker.sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js exports/functions.json exports/runtime_methods.json dist/sql-wasm-debug.wasm
-# 	$(EMCC) -s ENVIRONMENT=worker $(EMFLAGS) $(EMFLAGS_DEBUG) -s ENVIRONMENT=worker -s WASM_BINARY_FILE=sql-wasm-foo.debug $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm-debug.js
-# 	mv out/sql-wasm-debug.js out/tmp-raw.js
-# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
-# 	#mv out/sql-wasm-debug.wasm dist/sql-wasm-debug.wasm
-# 	rm out/tmp-raw.js
-
 out/sqlite3.bc: sqlite-src/$(SQLEET_AMALGAMATION)
-	# Generate llvm bitcode
+	# Generate sqleet llvm bitcode
 	$(EMCC) $(CFLAGS) sqlite-src/$(SQLEET_AMALGAMATION)/sqleet.c -o $@
 
 out/extension-functions.bc: sqlite-src/$(SQLEET_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+	# Generate extension-functions llvm bitcode
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLEET_AMALGAMATION)/extension-functions.c -o $@
 
 ## Cache
