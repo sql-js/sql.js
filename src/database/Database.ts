@@ -285,7 +285,7 @@ export class Database implements DatabaseInterface {
     @param name [String] the name of the function as referenced in SQL statements.
     @param func [Function] the actual function to be executed.
     */
-  public async createFunction(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }): Promise<any> {
+  /*public async createFunction(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }): Promise<any> {
     const wrapped_func = function(cx: any, argc: any, argv: number) {
       // Parse the args from sqlite into JS objects
       let result;
@@ -383,7 +383,7 @@ export class Database implements DatabaseInterface {
       )
     );
     return this;
-  }
+  }*/
 
   // Utils
   private ensureDatabaseIsOpen(): void {

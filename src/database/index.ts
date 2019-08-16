@@ -1,4 +1,3 @@
-
 let DatabaseWorkerForwarder: any;
 const isRuntimeInitialized = (() => new Promise(resolve =>
   Module['onRuntimeInitialized'] = async () => {

@@ -65,7 +65,7 @@ export class Statement {
     @return [Boolean] true if it worked
     @throw [String] SQLite Error
     */
-  bind(values: any) {
+  bind(values: any): boolean {
     if (!this.stmt) {
       throw new Error('Statement closed');
     }
@@ -322,7 +322,7 @@ export class Statement {
     const res = sqlite3_finalize(this.stmt) === SQLite.OK;
     delete this.database.statements[this.stmt];
     this.stmt = NULL_PTR;
-    
+
     return res;
   }
 }
