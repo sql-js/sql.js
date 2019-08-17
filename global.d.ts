@@ -1,4 +1,4 @@
-export interface ConnectionOptions {
+declare interface ConnectionOptions {
   vfs?: string;
   mode?: "ro" | "rw" | "rwc" | "memory";
   cache?: "shared" | "private";

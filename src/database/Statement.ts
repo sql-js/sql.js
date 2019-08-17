@@ -2,6 +2,20 @@ import { SQLite, NULL_PTR, __range__ } from './Helper';
 import { sqlite3_clear_bindings, sqlite3_reset, sqlite3_finalize, sqlite3_step, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, sqlite3_data_count, sqlite3_column_name, sqlite3_bind_text, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_type } from './lib/sqlite3';
 import {Database} from './Database';
 
+export const whitelistedFunctions = [
+  'bind',
+  'get',
+  'getColumnNames',
+  'getAsObject',
+  'free',
+  'reset',
+  'run',
+];
+
+type ValueInterface = string|number|Uint8Array|null;
+type BindInterface = any[] | {};
+type ResultGetInterface = (ValueInterface)[];
+
 /* Represents a prepared statement.
 
 Prepared statements allow you to have a template sql string,
@@ -65,7 +79,7 @@ export class Statement {
     @return [Boolean] true if it worked
     @throw [String] SQLite Error
     */
-  bind(values: any): boolean {
+  public bind(values: BindInterface): boolean {
     if (!this.stmt) {
       throw new Error('Statement closed');
     }
@@ -73,7 +87,7 @@ export class Statement {
     this.reset();
 
     if (typeof values !== 'object') {
-      throw new Error('Could not bind unknown object type')
+      throw new Error('Could not bind unknown object type');
     }
 
     if (Array.isArray(values)) {
@@ -83,31 +97,140 @@ export class Statement {
     }
   }
 
-  /* Execute the statement, fetching the the next line of result,
-    that can be retrieved with [Statement.get()](#get-dynamic) .
-
-    @return [Boolean] true if a row of result available
-    @throw [String] SQLite Error
-    */
-  public step() {
+  // Execute the statement, fetching the the next line of result,
+  // that can be retrieved with Statement.get()
+  public step(): boolean | void {
     if (!this.stmt) {
       throw new Error('Statement closed');
     }
 
     this.pos = 1;
-    
+
     const ret = sqlite3_step(this.stmt);
     switch (ret) {
       case SQLite.ROW:
         return true;
       case SQLite.DONE:
         return false;
-      default:
-        return this.database.handleError(ret);
     }
+
+    this.database.handleError(ret);
+    return;
   }
 
-  // Internal methods to retrieve data from the results of a statement that has been executed
+  /* Get one row of results of a statement.
+    If the first parameter is not provided, step must have been called before get.
+    @param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
+    @return [Array<String,Number,Uint8Array,null>] One row of result
+
+    @example Print all the rows of the table test to the console
+
+        var stmt = db.prepare('SELECT * FROM test');
+        while (stmt.step()) console.log(stmt.get());
+    */
+  public get(params?: BindInterface): ResultGetInterface {
+    // Get all fields
+    if (params) {
+      this.bind(params);
+      this.step();
+    }
+
+    const result: ResultGetInterface = [];
+    for (let field = 0, i = 0, ref = sqlite3_data_count(this.stmt); (0 <= ref ? i < ref : i > ref); field = 0 <= ref ? ++i : --i) {
+      const value = sqlite3_column_type(this.stmt, field);
+      switch (value) {
+        case SQLite.INTEGER:
+        case SQLite.FLOAT:
+          result.push(this.getNumber(field));
+          break;
+        case SQLite.TEXT:
+          result.push(this.getString(field));
+          break;
+        case SQLite.BLOB:
+          result.push(this.getBlob(field));
+          break;
+        default:
+          result.push(null);
+          break;
+      }
+    }
+
+    return result;
+  }
+
+  /* Get the list of column names of a row of result of a statement.
+
+    @example
+        var stmt = db.prepare('SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;');
+        stmt.step(); // Execute the statement
+        console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
+    */
+  public getColumnNames(): string[] {
+    return __range__(0, sqlite3_data_count(this.stmt), false).map(i =>
+      sqlite3_column_name(this.stmt, i)
+    );
+  }
+
+  /* Return all the rows associating column names with their value.
+    
+    @example
+      const stmt = db.prepare('SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;');
+      console.log(stmt.getAsObject()); // Will print [{nbr:5, data: Uint8Array([1,2,3]), null_value:null}]
+    */
+  public getAsObject(params?: BindInterface): {}[] {
+    const rowObject: Record<string, ValueInterface>[] = [];
+    let columns: string[] | undefined = undefined;
+
+    while (this.step()) {
+      if (!columns) {
+        columns = this.getColumnNames();
+      }
+      const values = this.get(params);
+      const row: Record<string, ValueInterface> = {};
+      for (let i = 0; i < columns.length; i++) {
+        row[columns[i]] = values[i];
+      }
+      rowObject.push(row);
+    }
+
+    return rowObject;
+  }
+
+  // Shorthand for bind + step + reset
+  // Bind the values, execute the statement, ignoring the rows it returns, and resets it
+  public run(values: BindInterface): void {
+    if (values) {
+      this.bind(values);
+    }
+    this.step();
+    this.reset();
+  }
+
+  // Reset a statement, so that it's parameters can be bound to new values
+  // It also clears all previous bindings, freeing the memory used by bound parameters.
+  public reset(): boolean {
+    this.freemem();
+
+    return (
+      sqlite3_clear_bindings(this.stmt) === SQLite.OK &&
+      sqlite3_reset(this.stmt) === SQLite.OK
+    );
+  }
+
+  // Free the memory used by the statement
+  public free(): boolean {
+    this.freemem();
+
+    const res = sqlite3_finalize(this.stmt) === SQLite.OK;
+    delete this.database.statements[this.stmt];
+    this.stmt = NULL_PTR;
+
+    return res;
+  }
+
+  // Internal methods
+
+  // Retrieve data from the results of a statement that has been executed
   private getNumber(pos) {
     if (!pos) {
       pos = this.pos = this.pos++;
@@ -135,98 +258,16 @@ export class Statement {
     return result;
   }
 
-  /* Get one row of results of a statement.
-    If the first parameter is not provided, step must have been called before get.
-    @param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
-    @return [Array<String,Number,Uint8Array,null>] One row of result
-
-    @example Print all the rows of the table test to the console
-
-        var stmt = db.prepare('SELECT * FROM test');
-        while (stmt.step()) console.log(stmt.get());
-    */
-  public get(params?: any[] | {}): any[] {
-    // Get all fields
-    if (params) {
-      this.bind(params);
-      this.step();
+  // Free the memory allocated during parameter binding
+  private freemem() {
+    let mem: number | undefined;
+    while (mem = this.allocatedMemory.pop()) {
+      Module._free(mem);
     }
-
-    const result: any = [];
-    for (let field = 0, i = 0, ref = sqlite3_data_count(this.stmt); (0 <= ref ? i < ref : i > ref); field = 0 <= ref ? ++i : --i) {
-      const value = sqlite3_column_type(this.stmt, field);
-      switch (value) {
-        case SQLite.INTEGER:
-        case SQLite.FLOAT:
-          result.push(this.getNumber(field));
-          break;
-        case SQLite.TEXT:
-          result.push(this.getString(field));
-          break;
-        case SQLite.BLOB:
-          result.push(this.getBlob(field));
-          break;
-        default:
-          result.push(null);
-          break;
-      }
-    }
-
-    return result;
   }
-
-  /* Get the list of column names of a row of result of a statement.
-    @return [Array<String>] The names of the columns
-    @example
-
-        var stmt = db.prepare('SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;');
-        stmt.step(); // Execute the statement
-        console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
-    */
-  public getColumnNames() {
-    return __range__(0, sqlite3_data_count(this.stmt), false).map(i =>
-      sqlite3_column_name(this.stmt, i)
-    );
-  }
-
-  /* Get one row of result as a javascript object, associating column names with
-    their value in the current row.
-    @param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
-    @return [Object] The row of result
-    @see [Statement.get](#get-dynamic)
-
-    @example
-
-      const stmt = db.prepare('SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;');
-      stmt.step(); // Execute the statement
-      console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
-    */
-  public getAsObject(params = undefined) {
-    const values = this.get(params);
-    const names = this.getColumnNames();
-
-    const rowObject = {};
-    for (let i = 0; i < names.length; i++) {
-      const name = names[i];
-      rowObject[name] = values[i];
-    }
-    return rowObject;
-  }
-
-  /* Shorthand for bind + step + reset
-    Bind the values, execute the statement, ignoring the rows it returns, and resets it
-    @param [Array,Object] Value to bind to the statement
-    */
-  public run(values) {
-    if (values) {
-      this.bind(values);
-    }
-    this.step();
-    this.reset();
-  }
-
-  // Internal methods to bind values to parameters
-  private bindString(string: string, pos: number = this.pos++) {
+  
+  // Bind values to parameters
+  private bindString(string: string, pos: number = this.pos++): boolean {
     const bytes = Module.intArrayFromString(string);
     const strptr = Module.allocate(bytes, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
     this.allocatedMemory.push(strptr);
@@ -235,26 +276,26 @@ export class Statement {
     );
     return true;
   }
-  private bindBlob(array: number[], pos: number = this.pos++) {
-    let blobptr = Module.allocate(array, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
+  private bindBlob(array: number[], pos: number = this.pos++): boolean {
+    const blobptr = Module.allocate(array, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
     this.allocatedMemory.push(blobptr);
     this.database.handleError(
       sqlite3_bind_blob(this.stmt, pos, blobptr, array.length, 0)
     );
     return true;
   }
-  private bindNumber(num: number, pos: number = this.pos++) {
+  private bindNumber(num: number, pos: number = this.pos++): boolean {
     const IS_INT = (num | 0);
     const bindfunc = num === IS_INT ? sqlite3_bind_int : sqlite3_bind_double;
     this.database.handleError(bindfunc(this.stmt, pos, num));
     return true;
   }
-  private bindNull(pos: number = this.pos++) {
+  private bindNull(pos: number = this.pos++): boolean {
     return sqlite3_bind_blob(this.stmt, pos, 0, 0, 0) === SQLite.OK;
   }
   
   // Call bindNumber or bindString appropriatly
-  private bindValue(value: any, pos: number = this.pos++) {
+  private bindValue(value: any, pos: number = this.pos++): boolean {
     switch (typeof value) {
       case 'string':
         return this.bindString(value, pos);
@@ -275,7 +316,7 @@ export class Statement {
 
   // Bind names and values of an object to the named parameters of the statement
   private bindFromObject(valuesObj: {}): boolean {
-    for (let name in valuesObj) {
+    for (const name in valuesObj) {
       const value = valuesObj[name];
       const num = sqlite3_bind_parameter_index(this.stmt, name);
       if (num !== 0) {
@@ -292,37 +333,5 @@ export class Statement {
       this.bindValue(value, num + 1);
     }
     return true;
-  }
-
-  // Reset a statement, so that it's parameters can be bound to new values
-  // It also clears all previous bindings, freeing the memory used by bound parameters.
-  public reset(): boolean {
-    this.freemem();
-
-    return (
-      sqlite3_clear_bindings(this.stmt) === SQLite.OK &&
-      sqlite3_reset(this.stmt) === SQLite.OK
-    );
-  }
-
-  // Free the memory allocated during parameter binding
-  private freemem() {
-    let mem: number | undefined;
-    while (mem = this.allocatedMemory.pop()) {
-      Module._free(mem);
-    }
-  }
-
-  /* Free the memory used by the statement
-    @return [Boolean] true in case of success
-    */
-  public free(): boolean {
-    this.freemem();
-
-    const res = sqlite3_finalize(this.stmt) === SQLite.OK;
-    delete this.database.statements[this.stmt];
-    this.stmt = NULL_PTR;
-
-    return res;
   }
 }

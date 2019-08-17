@@ -45,7 +45,7 @@
     ]);
     log('db.run', `Took ${bench.stop()}ms to add 1 entry using`);
 
-    var bench = timer();
+    /*var bench = timer();
       for (let i = 0; i < 250; i++) {
         await db.run("INSERT INTO test VALUES (?,?), (?,?), (?,?), (?,?)", [
           'hello',
@@ -58,7 +58,7 @@
           new Uint8Array(25)
         ]);
       }
-      log('db.run', `Took ${bench.stop()}ms to add 1000 entries using`);
+      log('db.run', `Took ${bench.stop()}ms to add 1000 entries using`);*/
 
       var bench = timer();
       console.log(await db.exec('SELECT * FROM test;'));
@@ -71,11 +71,8 @@
       // Prepare a statement
       var bench = timer();
       const statement = await db.prepare('SELECT * FROM test');
-      console.log(statement)
-      while (statement.step()) {
-        const row = statement.getAsObject();
-        //console.log('Found a row: ' + JSON.stringify(row));
-      }
+      console.log(await statement.getAsObject());
+
       log('db.prepare', `Took ${bench.stop()}ms to get the rows in the test table`);
 
       log(undefined, '');
@@ -83,14 +80,15 @@
   }
 
   async function main() {
-    // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
-    var bench = timer();
-    db = new sqleet.DatabaseWorkerSender({key: 'supersecurepassword'}, 'aaaaa');
-    log('constructor', `Took ${bench.stop()}ms to call the constructor`, 'main_output');
+    db = new sqleet.DatabaseProxy('../dist/sqleet-shared-worker-debug.js');
 
-    var bench = timer();
-    await db.mount();
-    log('db.mount', `Took ${bench.stop()}ms to mount the database`, 'main_output');
+    try {
+      var bench = timer();
+      await db.mount({key: 'supersecurepassword'}, 'aaaaa');
+      log('db.mount', `Took ${bench.stop()}ms to mount the database`, 'main_output');
+    } catch (error) {
+      log('db.mount', `<b>Database was already mounted</b>`, 'main_output');
+    }
 
     // Run a query without reading the results
     await db.run("CREATE TABLE IF NOT EXISTS test (key, value);");

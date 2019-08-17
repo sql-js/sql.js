@@ -3,12 +3,12 @@
 
 ## Currently WIP
 
-sqleet.js is a fork of (sql.js)[https://github.com/kripken/sql.js] with some changes:
+sqleet.js is a fork of [sql.js](https://github.com/kripken/sql.js) with some changes:
 
 - Uses sqleet which is sqlite with encryption enabled
 - Database is persisted to IndexedDB, and can be synced using the `saveChanges` API
 - WASM file is embed within the library so no need to worry about `locateFile`
-- Use of Web Workers (with MessageChannel and postMessage)
+- Use of Shared Workers (with MessageChannel and postMessage)
 - Slightly different but easier API
 - `createFunction` and `each` has been removed from the API
 - Removed old code related to ASM, only using WASM now

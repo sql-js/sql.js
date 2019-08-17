@@ -1,8 +1,11 @@
-import {Database, whitelistedFunctions} from './Database';
+import {Database, whitelistedFunctions as DatabaseWhitelistedFunctions} from './Database';
+import {whitelistedFunctions as StatementWhitelistedFunctions} from './Statement';
 
 // Receive messages from outside the worker
 export default class DatabaseWorkerForwarder {
   private static DatabaseInstance?: Database;
+  private static readonly statementFunctionName = 'statements.';
+
   private static postMessageToOrigin(data: any, event: any): void {
     if (!event.ports[0]) {
       throw new Error('Unable to reply to origin');
@@ -14,32 +17,46 @@ export default class DatabaseWorkerForwarder {
   }
 
   public static async onMessageReceived(event: any): Promise<void> {
-    const args = event.data.__args;
-    const functionName = event.data.__functionName;
-
-    //console.log(JSON.stringify({message: 'onMessageReceived', args, functionName}));
+    const args = event.data.args;
+    const functionName = event.data.functionName;
 
     // Handle the init of the constructor
     if (functionName === 'constructor') {
-      DatabaseWorkerForwarder.DatabaseInstance = new Database(...args);
-      return DatabaseWorkerForwarder.postMessageToOrigin({error: false, output: undefined}, event);
+      if (!this.DatabaseInstance) {
+        this.DatabaseInstance = new Database();
+      }
+      return this.postMessageToOrigin({error: false, output: undefined}, event);
     }
     
-    if (!DatabaseWorkerForwarder.DatabaseInstance) {
-      return DatabaseWorkerForwarder.throwError('Database has not been initialized, you must do it first', event);
+    if (!this.DatabaseInstance) {
+      return this.throwError('Database has not been initialized, you must do it first', event);
     }
 
-    if (!functionName || !whitelistedFunctions.includes(functionName)) {
-      return DatabaseWorkerForwarder.throwError('This function either does not exist or is not allowed to be called', event);
-    }
-
+    // Remapper
     let output;
     try {
-      output = await DatabaseWorkerForwarder.DatabaseInstance[functionName](...args);
+      const isStatementCall = functionName.startsWith(this.statementFunctionName);
+      if (isStatementCall) {
+        const statementFunctionName = functionName.substr(this.statementFunctionName.length);
+        if (!StatementWhitelistedFunctions.includes(statementFunctionName)) {
+          throw new Error('This function either does not exist or is not allowed to be called from the proxy (Statement)');
+        }
+        const statementId = Number(event.data.statementId);
+        output = this.DatabaseInstance.statements[statementId][statementFunctionName](...args);
+      } else {
+        if (!DatabaseWhitelistedFunctions.includes(functionName)) {
+          throw new Error('This function either does not exist or is not allowed to be called from the proxy (Database)');
+        }
+        output = await this.DatabaseInstance[functionName](...args);
+        // Reset database global if we closed the database
+        if (functionName === 'close') {
+          this.DatabaseInstance = undefined;
+        }
+      }
     } catch (error) {
-      return DatabaseWorkerForwarder.throwError(error.message, event);
+      return this.throwError(error.message, event);
     }
 
-    return DatabaseWorkerForwarder.postMessageToOrigin({error: false, output}, event);
+    return this.postMessageToOrigin({error: false, output}, event);
   }
 }

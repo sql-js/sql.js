@@ -52,17 +52,17 @@ BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
 all: optimized debug
 
 .PHONY: debug
-debug: out/sql-wasm-debug.js
+debug: dist/sqleet-shared-worker-debug.js
 
-out/sql-wasm-debug.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json
-	# Generate sql-wasm-debug
+dist/sqleet-shared-worker-debug.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json
+	# Generate shared-worker-debug.js
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
 
 .PHONY: optimized
-optimized: out/sql-wasm.js
+optimized: dist/sqleet-shared-worker.js
 
-out/sql-wasm.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
-	# Generate sql-wasm
+dist/sqleet-shared-worker.js: $(BITCODE_FILES) out/api.js exports/functions.json exports/runtime_methods.json 
+	# Generate sqleet-shared-worker.js
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o $@
 
 out/sqlite3.bc: sqlite-src/$(SQLEET_AMALGAMATION)

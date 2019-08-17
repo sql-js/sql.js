@@ -1,10 +1,10 @@
-import { Database as DatabaseInterface } from '../interfaces/Database';
-import { ConnectionOptions } from '../interfaces/ConnectionOptions';
 import { SQLite, NULL_PTR } from './Helper';
 import { Statement } from './Statement';
 import { sqlite3_open, sqlite3_exec, sqlite3_prepare_v2_sqlptr, sqlite3_prepare_v2, sqlite3_close_v2, sqlite3_errmsg, sqlite3_changes, sqlite3_value_type, sqlite3_value_double, sqlite3_value_text, sqlite3_value_bytes, sqlite3_value_blob, sqlite3_result_error, sqlite3_result_int, sqlite3_result_double, sqlite3_result_text, sqlite3_result_null, sqlite3_result_blob, sqlite3_create_function_v2, RegisterExtensionFunctions } from './lib/sqlite3';
 
 const apiTemp = stackAlloc(4);
+
+declare const URLSearchParams: any;
 
 export const whitelistedFunctions = [
   'mount',
@@ -19,7 +19,9 @@ export const whitelistedFunctions = [
   'createFunction',
 ];
 
-export class Database implements DatabaseInterface {
+type ExecResultInterface = {columns?: string[]; values: any[]};
+
+export class Database {
   private pDatabase?: number;
   private filename?: string;
   private static readonly mountName = '/sqleet';
@@ -27,40 +29,40 @@ export class Database implements DatabaseInterface {
   // A list of all prepared statements of the database
   public statements: Record<number, Statement> = {};
 
-  // A list of all user function of the database (created by create_function call)
-  private functions = {};
+  constructor() {}
 
-  constructor(private options?: ConnectionOptions, private identifier: string = 'default') {}
-
-  /* Mount the database
-   */
-  public mount(): Promise<void> {
+  // Mount the database
+  public mount(options?: ConnectionOptions, identifier: string = 'default'): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.options || !this.options['key']) {
+      if (this.pDatabase) {
+        return reject(new Error('Database is already mounted'));
+      }
+
+      if (!options || !options['key']) {
         return reject(new Error('An encryption key must be set, aborting the mount operation'));
       }
 
       FS.mkdir(Database.mountName);
       FS.mount(IDBFS, {}, Database.mountName);
-      FS.syncfs(true, (error: any) => {
+      FS.syncfs(true, async (error: any) => {
         if (error) {
           return reject(error);
         }
 
         const searchParams = new URLSearchParams();
-        for (const option in this.options) {
-          searchParams.set(option, this.options[option]);
+        for (const option in options) {
+          searchParams.set(option, options[option]);
         }
 
-        this.filename = `${Database.mountName}/${this.identifier}.db`;
+        this.filename = `${Database.mountName}/${identifier}.db`;
 
         this.handleError(sqlite3_open(`file:${this.filename}?${searchParams.toString()}`, apiTemp));
         this.pDatabase = Module.getValue(apiTemp, 'i32');
 
-        RegisterExtensionFunctions(this.pDatabase);
+        //RegisterExtensionFunctions(this.pDatabase);
 
         // Pragma defaults
-        this.run('PRAGMA `encoding`="UTF-8";');
+        await this.run('PRAGMA `encoding`="UTF-8";');
 
         return resolve();
       });
@@ -70,24 +72,22 @@ export class Database implements DatabaseInterface {
   // Persist data on disk
   public async saveChanges(): Promise<void> {
     this.ensureDatabaseIsOpen();
-    return new Promise((resolve, reject) => {
-      return FS.syncfs(false, (err: any) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve();
-      });
-    });
+    return new Promise((resolve, reject) => FS.syncfs(false, (err: any) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve();
+    }));
   }
   
   /* Execute an SQL query, ignoring the rows it returns.
-
-    If you use the params argument, you **cannot** provide an sql string that contains several
-    queries (separated by ';')
-
-    @example Insert values in a table
-        db.run('INSERT INTO test VALUES (:age, :name)', {':age':18, ':name':'John'});
-    */
+    
+      If you use the params argument, you **cannot** provide an sql string that contains several
+      queries (separated by ';')
+    
+      @example Insert values in a table
+          db.run('INSERT INTO test VALUES (:age, :name)', {':age':18, ':name':'John'});
+  */
   public async run(query: string, params?: any[]): Promise<void> {
     this.ensureDatabaseIsOpen();
     if (params) {
@@ -101,7 +101,7 @@ export class Database implements DatabaseInterface {
 
   /* Execute an SQL query, and returns the result.
 
-    This is a wrapper against Database.prepare, Statement.step, Statement.get,
+    This is a wrapper against Database.prepare, Statement.execute, Statement.get,
     and Statement.free.
 
     The result is an array of result elements. There are as many result elements
@@ -134,11 +134,8 @@ export class Database implements DatabaseInterface {
             {columns: ['age','name'], values:[[1,'Ling'],[18,'Paul'],[3,'Markus']]}
         ]
     ```
-
-    @param sql [String] a string containing some SQL text to execute
-    @return [Array<QueryResults>] An array of results.
     */
-  public async exec(query: string): Promise<any[]> {
+  public async exec(query: string): Promise<ExecResultInterface[]> {
     this.ensureDatabaseIsOpen();
 
     const stack: number = stackSave();
@@ -153,34 +150,35 @@ export class Database implements DatabaseInterface {
     // Used to store a pointer to the next SQL statement in the string
     const pzTail = stackAlloc(4);
 
-    const results: any[] = [];
+    const results: ExecResultInterface[] = [];
     while (Module.getValue(nextSqlPtr, 'i8') !== NULL_PTR) {
       Module.setValue(apiTemp, 0, 'i32');
       Module.setValue(pzTail, 0, 'i32');
+
       this.handleError(
         sqlite3_prepare_v2_sqlptr(this.pDatabase, nextSqlPtr, -1, apiTemp, pzTail)
       );
-      const pStmt = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
+      const pointerStatement = Module.getValue(apiTemp, 'i32'); // Pointer to a statement, or null
       nextSqlPtr = Module.getValue(pzTail, 'i32');
 
-      if (pStmt === NULL_PTR) {
+      if (pointerStatement === NULL_PTR) {
         // Empty statement
         continue;
       }
 
-      const stmt = new Statement(pStmt, this);
-      let curresult;
+      const stmt = new Statement(pointerStatement, this);
+      const curresult: ExecResultInterface = {
+        columns: undefined,
+        values: []
+      };
 
       while (stmt.step()) {
-        if (!curresult) {
-          curresult = {
-            columns: stmt.getColumnNames(),
-            values: []
-          };
-          results.push(curresult);
+        if (!curresult.columns) {
+          curresult.columns = stmt.getColumnNames();
         }
         curresult.values.push(stmt.get());
       }
+      results.push(curresult);
       stmt.free();
     }
     stackRestore(stack);
@@ -188,7 +186,7 @@ export class Database implements DatabaseInterface {
   }
 
   // Prepare an SQL statement
-  public async prepare(query: string, params: any[]): Promise<number> {
+  private prepare(query: string, params: any[]): number {
     Module.setValue(apiTemp, 0, 'i32');
     this.handleError(sqlite3_prepare_v2(this.pDatabase, query, -1, apiTemp, NULL_PTR));
 
@@ -207,25 +205,23 @@ export class Database implements DatabaseInterface {
     return pStmt;
   }
 
-  /* Exports the contents of the database to a binary array
-    @return [Uint8Array] An array of bytes of the SQLite3 database file
-    */
-  public async export(): Promise<Uint8Array> {
-    this.close();
+  // Exports the contents of the database to a binary array
+  public async export(encoding: 'binary' | 'utf8' = 'binary'): Promise<Uint8Array | string> {
+    await this.close();
 
     if (!this.filename) {
       throw new Error('Filename not available, did you used mount()?');
     }
     const binaryDb = FS.readFile(this.filename, {
-      encoding: 'binary'
-    }) as Uint8Array;
+      encoding
+    });
 
     await this.mount();
     
     return binaryDb;
   }
 
-  /* Close the database, and all associated prepared statements.
+  /* Save and close the database, and all associated prepared statements.
 
     The memory associated to the database and all associated statements
     will be freed.
@@ -236,21 +232,22 @@ export class Database implements DatabaseInterface {
     Databases **must** be closed, when you're finished with them, or the
     memory consumption will grow forever
     */
-  public async close(): Promise<void> {
-    for (let _statement in this.statements) {
-      const stmt = this.statements[_statement];
-      stmt.free();
-    }
-    for (let _function in this.functions) {
-      const func = this.functions[_function];
-      removeFunction(func);
+  public async close(saveOnClose: boolean = true): Promise<void> {
+    // Save changes by default
+    if (saveOnClose) {
+      await this.saveChanges();
     }
 
-    this.functions = {};
+    // Close and free all statements
+    for (const statement in this.statements) {
+      this.statements[statement].free();
+    }
     this.statements = {};
-    
+
+    // Close the database internally
     this.handleError(sqlite3_close_v2(this.pDatabase));
 
+    // Wipe the pointer
     this.pDatabase = undefined;
   }
 
@@ -258,8 +255,7 @@ export class Database implements DatabaseInterface {
     Same as close but also remove the database from IndexedDB
   */
   public async wipe(): Promise<void> {
-    this.close();
-
+    await this.close(false);
     if (!this.filename) {
       throw new Error('Filename not available, did you used mount()?');
     }
@@ -270,120 +266,10 @@ export class Database implements DatabaseInterface {
     most recently completed INSERT, UPDATE or DELETE statement on the
     database Executing any other type of SQL statement does not modify
     the value returned by this function.
-
-    @return [Number] the number of rows modified
     */
   public async getRowsModified(): Promise<number> {
     return sqlite3_changes(this.pDatabase);
   }
-
-  /* Register a custom function with SQLite
-    @example Register a simple function
-        db.createFunction('addOne', function(x) {return x+1;})
-        db.exec('SELECT addOne(1)') // = 2
-
-    @param name [String] the name of the function as referenced in SQL statements.
-    @param func [Function] the actual function to be executed.
-    */
-  /*public async createFunction(name: string, func: { apply: (arg0: null, arg1: any[]) => void; length: any; }): Promise<any> {
-    const wrapped_func = function(cx: any, argc: any, argv: number) {
-      // Parse the args from sqlite into JS objects
-      let result;
-      const args: any[] = [];
-      for (
-        let i = 0, end = argc, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--
-      ) {
-        const value_ptr = Module.getValue(argv + 4 * i, 'i32');
-        var value_type = sqlite3_value_type(value_ptr);
-        const data_func = (() => {
-          switch (false) {
-            case value_type !== SQLite.INTEGER:
-              return sqlite3_value_double;
-            case value_type !== SQLite.FLOAT:
-              return sqlite3_value_double;
-            case value_type !== SQLite.TEXT:
-              return sqlite3_value_text;
-            case value_type !== SQLite.BLOB:
-              return (ptr: number) => {
-                const size = sqlite3_value_bytes(ptr);
-                const blob_ptr = sqlite3_value_blob(ptr);
-                const blob_arg = new Uint8Array(size);
-                for (
-                  let j = 0, end1 = size, asc1 = 0 <= end1; asc1 ? j < end1 : j > end1; asc1 ? j++ : j--
-                ) {
-                  blob_arg[j] = Module.HEAP8[blob_ptr + j];
-                }
-                return blob_arg;
-              };
-            default:
-              return (ptr: any) => null;
-          }
-        })();
-
-        const arg = data_func(value_ptr);
-        args.push(arg);
-      }
-
-      // Invoke the user defined function with arguments from SQLite
-      try {
-        result = func.apply(null, args);
-      } catch (error) {
-        sqlite3_result_error(cx, error, -1);
-        return;
-      }
-
-      // Return the result of the user defined function to SQLite
-      switch (typeof result) {
-        case 'boolean':
-          sqlite3_result_int(cx, result ? 1 : 0);
-          break;
-        case 'number':
-          sqlite3_result_double(cx, result);
-          break;
-        case 'string':
-          sqlite3_result_text(cx, result, -1, -1);
-          break;
-        case 'object':
-          if (result === null) {
-            sqlite3_result_null(cx);
-          } else if (result.length != null) {
-            const blobptr = Module.allocate(result, 'i8', Module.ALLOC_NORMAL, NULL_PTR);
-            sqlite3_result_blob(cx, blobptr, result.length, -1);
-            Module._free(blobptr);
-          } else {
-            sqlite3_result_error(
-              cx,
-              `Wrong API use : tried to return a value of an unknown type (${result}).`,
-              -1
-            );
-          }
-          break;
-        default:
-          sqlite3_result_null(cx);
-      }
-    };
-    if (name in this.functions) {
-      removeFunction(this.functions[name]);
-      delete this.functions[name];
-    }
-    // Generate a pointer to the wrapped, user defined function, and register with SQLite.
-    const func_ptr = addFunction(wrapped_func);
-    this.functions[name] = func_ptr;
-    this.handleError(
-      sqlite3_create_function_v2(
-        this.pDatabase,
-        name,
-        func.length,
-        SQLite.UTF8,
-        0,
-        func_ptr,
-        0,
-        0,
-        0
-      )
-    );
-    return this;
-  }*/
 
   // Utils
   private ensureDatabaseIsOpen(): void {
