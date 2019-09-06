@@ -698,6 +698,15 @@ Database = (function() {
       return null;
     } else {
       errmsg = sqlite3_errmsg(this.db);
+      // hack-sqjs - err-handling
+      // chrome, edge, (firefox?) don't support worker.onerror
+      // we postMessage back the errmsg instead
+      if (ENVIRONMENT_IS_WORKER) {
+        return postMessage({
+          id: self.callbackId,
+          errmsg: errmsg
+        });
+      }
       throw new Error(errmsg);
     }
   };
@@ -6928,6 +6937,10 @@ if (typeof importScripts === 'function') {
     return sqlModuleReady.then(function() {
       var buff, callback, data, done, err, result;
       data = event['data'];
+      // hack-sqjs - err-handling
+      // save callbackId globally so it can be accessed
+      // by Database.prototype.handleError
+      self.callbackId = data && data.id;
       switch (data != null ? data['action'] : void 0) {
         case 'open':
           buff = data['buffer'];
