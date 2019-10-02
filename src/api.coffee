@@ -237,12 +237,19 @@ class Database
     # Open a new database either by creating a new one or opening an existing one,
     # stored in the byte array passed in first argument
     # @param data [Array<Integer>] An array of bytes representing an SQLite database file
-    constructor: (data) ->
+    # @param initialDbSize [Integer] Size to which the database node will be expanded
+    constructor: (data, initialDbSize) ->
         @filename = 'dbfile_' + (0xffffffff*Math.random()>>>0)
         if data? then FS.createDataFile '/', @filename, data, true, true
         @handleError sqlite3_open @filename, apiTemp
         @db = getValue(apiTemp, 'i32')
         RegisterExtensionFunctions(@db)
+        if initialDbSize?
+            @run 'VACUUM' # Called so the node will have the correct database structure
+            parent = FS.lookupPath '/'
+            parentNode = parent.node
+            dbNode = FS.lookupNode parentNode, @filename
+            MEMFS.expandFileStorage dbNode, initialDbSize
         @statements = {} # A list of all prepared statements of the database
         @functions = {} # A list of all user function of the database (created by create_function call)
 
@@ -315,7 +322,7 @@ class Database
 
         # Store the SQL string in memory. The string will be consumed, one statement
         # at a time, by sqlite3_prepare_v2_sqlptr.
-        # Note that if we want to allocate as much memory as could _possibly_ be used, we can 
+        # Note that if we want to allocate as much memory as could _possibly_ be used, we can
         # we allocate bytes equal to 4* the number of chars in the sql string.
         # It would be faster, but this is probably a premature optimization
         nextSqlPtr = allocateUTF8OnStack(sql)
@@ -480,7 +487,7 @@ class Database
               sqlite3_result_error(cx,error,-1)
               return
 
-            # Return the result of the user defined function to SQLite            
+            # Return the result of the user defined function to SQLite
             switch typeof(result)
                 when 'boolean' then sqlite3_result_int(cx,if result then 1 else 0)
                 when 'number' then sqlite3_result_double(cx, result)
