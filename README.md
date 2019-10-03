@@ -13,7 +13,7 @@ Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedi
 
 ## Version of binaries
 Sql.js was last built with:
-Emscripten version 1.38.30 (2019-04-16) [Release History](https://emscripten.org/docs/introducing_emscripten/release_notes.html)
+Emscripten version 1.38.47  (2019-10-03) [Release History](https://emscripten.org/docs/introducing_emscripten/release_notes.html)
 SqlLite version: 3.28.0 (2019-04-16) [Release History](https://www.sqlite.org/changes.html)
 
 ## Documentation
