@@ -37,6 +37,7 @@
 		"url": "https://github.com/kripken/sql.js/issues"
 	},
 	"devDependencies": {
+		"coffeescript": "^1.12.7",
 		"test": ">=0.6",
 		"tiny-worker": "^2.3.0"
 	},

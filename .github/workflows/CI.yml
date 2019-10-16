@@ -13,6 +13,6 @@ jobs:
       with:
         version: '1.38.47'
     - name: install coffee
-      run: npm install --global coffeescript
+      run: npm install --global coffeescript@1
     - name: make
       run: make
