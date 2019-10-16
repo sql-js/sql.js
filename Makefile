@@ -123,15 +123,18 @@ dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
 # 	rm out/tmp-raw.js
 
 out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.coffee src/output-post.js
+	mkdir -p out
 	cat src/api.coffee src/exports.coffee src/api-data.coffee | coffee --bare --compile --stdio > $@
 	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
 	mv out/api-wrapped.js $@
 
 out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
+	mkdir -p out
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
 
 out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+	mkdir -p out
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
