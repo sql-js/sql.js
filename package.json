@@ -34,12 +34,11 @@
 		"url": "http://github.com/kripken/sql.js.git"
 	},
 	"bugs": {
-		"url": "https://github.com/kripken/sql.js/issues",
-		"email": "pere.jobs@gmail.com"
+		"url": "https://github.com/kripken/sql.js/issues"
 	},
 	"devDependencies": {
 		"test": ">=0.6",
-		"tiny-worker": "^2.1.2"
+		"tiny-worker": "^2.3.0"
 	},
 	"dependencies": {}
 }
