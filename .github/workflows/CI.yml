@@ -4,9 +4,7 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
@@ -16,3 +14,9 @@ jobs:
       run: npm install --global coffeescript@1
     - name: make
       run: make
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+    - name: test
+      run: npm ci && npm test
