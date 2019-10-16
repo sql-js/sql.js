@@ -11,5 +11,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
       version: '1.38.47'
+    - name: install coffee
+      run: npm install --global coffeescript
     - name: make
       run: make
