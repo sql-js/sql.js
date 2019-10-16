@@ -16,3 +16,7 @@ jobs:
       run: make
     - name: test
       run: npm ci && npm test
+    - uses: actions/upload-artifact@master
+      with:
+        name: dist
+        path: dist
