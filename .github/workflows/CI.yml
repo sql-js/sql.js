@@ -10,5 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
+      version: '1.38.47'
     - name: make
       run: make
