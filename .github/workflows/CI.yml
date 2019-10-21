@@ -1,0 +1,22 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: mymindstorm/setup-emsdk@v1
+      with:
+        version: '1.38.47'
+    - name: install coffee
+      run: npm install --global coffeescript@1
+    - name: make
+      run: make
+    - name: test
+      run: npm ci && npm test
+    - uses: actions/upload-artifact@master
+      with:
+        name: dist
+        path: dist
