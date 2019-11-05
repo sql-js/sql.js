@@ -327,7 +327,11 @@ class Database
         while getValue(nextSqlPtr,'i8') isnt NULL
             setValue apiTemp, 0, 'i32'
             setValue pzTail, 0, 'i32'
-            @handleError sqlite3_prepare_v2_sqlptr @db, nextSqlPtr, -1, apiTemp, pzTail
+            try
+              @handleError sqlite3_prepare_v2_sqlptr @db, nextSqlPtr, -1, apiTemp, pzTail
+            catch e
+              stackRestore stack # Avoid leaking memory on error
+              throw e
             pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
             nextSqlPtr = getValue pzTail, 'i32'
             if pStmt is NULL then continue # Empty statement
