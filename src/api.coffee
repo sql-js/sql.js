@@ -312,41 +312,39 @@ class Database
         if not @db then throw "Database closed"
 
         stack = stackSave()
+        try
+          # Store the SQL string in memory. The string will be consumed, one statement
+          # at a time, by sqlite3_prepare_v2_sqlptr.
+          # Note that if we want to allocate as much memory as could _possibly_ be used, we can 
+          # we allocate bytes equal to 4* the number of chars in the sql string.
+          # It would be faster, but this is probably a premature optimization
+          nextSqlPtr = allocateUTF8OnStack(sql)
 
-        # Store the SQL string in memory. The string will be consumed, one statement
-        # at a time, by sqlite3_prepare_v2_sqlptr.
-        # Note that if we want to allocate as much memory as could _possibly_ be used, we can 
-        # we allocate bytes equal to 4* the number of chars in the sql string.
-        # It would be faster, but this is probably a premature optimization
-        nextSqlPtr = allocateUTF8OnStack(sql)
-
-        # Used to store a pointer to the next SQL statement in the string
-        pzTail = stackAlloc(4)
-
-        results = []
-        while getValue(nextSqlPtr,'i8') isnt NULL
-            setValue apiTemp, 0, 'i32'
-            setValue pzTail, 0, 'i32'
-            try
+          # Used to store a pointer to the next SQL statement in the string
+          pzTail = stackAlloc(4)
+          results = []
+          while getValue(nextSqlPtr,'i8') isnt NULL
+              setValue apiTemp, 0, 'i32'
+              setValue pzTail, 0, 'i32'
               @handleError sqlite3_prepare_v2_sqlptr @db, nextSqlPtr, -1, apiTemp, pzTail
-            catch e
-              stackRestore stack # Avoid leaking memory on error
-              throw e
-            pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
-            nextSqlPtr = getValue pzTail, 'i32'
-            if pStmt is NULL then continue # Empty statement
-            stmt = new Statement pStmt, this
-            curresult = null
-            while stmt['step']()
-              if curresult is null
-                curresult =
-                  'columns' : stmt['getColumnNames']()
-                  'values' : []
-                results.push curresult
-              curresult['values'].push stmt['get']()
-            stmt['free']()
-        stackRestore stack
-        return results
+              pStmt = getValue apiTemp, 'i32' #  pointer to a statement, or null
+              nextSqlPtr = getValue pzTail, 'i32'
+              if pStmt is NULL then continue # Empty statement
+              curresult = null
+              stmt = new Statement pStmt, this
+              try
+                while stmt['step']()
+                  if curresult is null
+                    curresult =
+                      'columns' : stmt['getColumnNames']()
+                      'values' : []
+                    results.push curresult
+                  curresult['values'].push stmt['get']()
+              finally
+                stmt['free']()
+          return results
+        finally
+          stackRestore stack
 
     ### Execute an sql statement, and call a callback for each row of result.
 
