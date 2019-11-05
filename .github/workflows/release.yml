@@ -8,7 +8,7 @@ name: Create a release
 
 jobs:
   build:
-    name: Upload Release Asset
+    name: Create a release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -19,12 +19,6 @@ jobs:
         run: npm install --global coffeescript@1
       - name: make
         run: make
-      - uses: actions/setup-node@v1
-        with:
-          registry-url: 'https://npm.pkg.github.com'
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
