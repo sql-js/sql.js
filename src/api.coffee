@@ -263,8 +263,8 @@ class Database
         if not @db then throw "Database closed"
         if params
             stmt = @['prepare'] sql, params
-            stmt['step']()
-            stmt['free']()
+            try stmt['step']()
+            finally stmt['free']()
         else
             @handleError sqlite3_exec @db, sql, 0, 0, apiTemp
         return @
@@ -372,9 +372,11 @@ class Database
             callback = params
             params = undefined
         stmt = @['prepare'] sql, params
-        while stmt['step']()
-          callback(stmt['getAsObject']())
-        stmt['free']()
+        try
+          while stmt['step']()
+            callback(stmt['getAsObject']())
+        finally
+          stmt['free']()
         if typeof done is 'function' then done()
 
     ### Prepare an SQL statement
