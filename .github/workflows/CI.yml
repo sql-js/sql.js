@@ -12,6 +12,11 @@ jobs:
         version: '1.38.47'
     - name: install coffee
       run: npm install --global coffeescript@1
+    - uses: actions/cache@v1
+      id: cache
+      with:
+        path: ~/.emscripten_cache
+        key: emscripten-1.38.47
     - name: make
       run: make
     - name: test
