@@ -12,10 +12,6 @@ SQLite is public domain, sql.js is MIT licensed.
 
 Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
 
-## Version of binaries
-Sql.js was last built with:
-Emscripten version 1.38.30 (2019-04-16) [Release History](https://emscripten.org/docs/introducing_emscripten/release_notes.html)
-SqlLite version: 3.28.0 (2019-04-16) [Release History](https://www.sqlite.org/changes.html)
 
 ## Documentation
 A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kripken.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
