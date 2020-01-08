@@ -17,7 +17,14 @@ EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
 
 EMCC=emcc
 
-CFLAGS=-O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_THREADSAFE=0 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS
+CFLAGS = \
+	-O2 \
+	-DLONGDOUBLE_TYPE=double \
+	-DSQLITE_OMIT_LOAD_EXTENSION \
+	-DSQLITE_DISABLE_LFS \
+	-DSQLITE_ENABLE_FTS3 \
+	-DSQLITE_ENABLE_FTS3_PARENTHESIS \
+	-DSQLITE_THREADSAFE=0
 
 # When compiling to WASM, enabling memory-growth is not expected to make much of an impact, so we enable it for all builds
 # Since tihs is a library and not a standalone executable, we don't want to catch unhandled Node process exceptions
