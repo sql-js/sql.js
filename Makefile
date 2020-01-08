@@ -182,7 +182,7 @@ sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNC
 
 .PHONY: clean 
 clean: 
-	rm -rf out/* dist/*	
+	rm -rf out/* dist/*
 
 .PHONY: clean-all
 clean-all: 
