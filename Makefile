@@ -91,7 +91,7 @@ dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.
 worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
 
 out/worker.js: src/worker.coffee
-	cat $^ | coffee --bare --compile --stdio > $@
+	cat $^ | npx coffee --bare --compile --stdio > $@
 
 dist/worker.sql-asm.js: dist/sql-asm.js out/worker.js
 	cat $^ > $@
@@ -125,7 +125,7 @@ dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
 
 out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.coffee src/output-post.js
 	mkdir -p out
-	cat src/api.coffee src/exports.coffee src/api-data.coffee | coffee --bare --compile --stdio > $@
+	cat src/api.coffee src/exports.coffee src/api-data.coffee | npx coffee --bare --compile --stdio > $@
 	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
 	mv out/api-wrapped.js $@
 
