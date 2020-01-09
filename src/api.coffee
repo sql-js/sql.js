@@ -315,7 +315,7 @@ class Database
         try
           # Store the SQL string in memory. The string will be consumed, one statement
           # at a time, by sqlite3_prepare_v2_sqlptr.
-          # Note that if we want to allocate as much memory as could _possibly_ be used, we can 
+          # Note that if we want to allocate as much memory as could _possibly_ be used, we can
           # we allocate bytes equal to 4* the number of chars in the sql string.
           # It would be faster, but this is probably a premature optimization
           nextSqlPtr = allocateUTF8OnStack(sql)
@@ -484,7 +484,7 @@ class Database
               sqlite3_result_error(cx,error,-1)
               return
 
-            # Return the result of the user defined function to SQLite            
+            # Return the result of the user defined function to SQLite
             switch typeof(result)
                 when 'boolean' then sqlite3_result_int(cx,if result then 1 else 0)
                 when 'number' then sqlite3_result_double(cx, result)
