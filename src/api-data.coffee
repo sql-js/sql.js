@@ -40,5 +40,5 @@ SQLite.TEXT=3
 SQLite.BLOB=4
 SQLite.NULL=5
 
-# Encodings, used for registering functions. 
+# Encodings, used for registering functions.
 SQLite.UTF8=1
