@@ -86,7 +86,7 @@ The test files provide up to date example of the use of the api.
   <script src='/dist/sql-wasm.js'></script>
   <script>
     config = {
-      locateFile: filename => `/dist/${filename}` 
+      locateFile: filename => `/dist/${filename}`
     }
     // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
     // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
@@ -97,11 +97,11 @@ The test files provide up to date example of the use of the api.
       db.run("CREATE TABLE test (col1, col2);");
       // Insert two rows: (1,111) and (2,222)
       db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
-  
+
       // Prepare a statement
       var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
       stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
-  
+
       // Bind new values
       stmt.bind({$start:1, $end:2});
       while(stmt.step()) { //
@@ -161,7 +161,7 @@ Alternatively, you can simply download `sql-wasm.js` and `sql-wasm.wasm`, from t
 var fs = require('fs');
 var initSqlJs = require('sql-wasm.js');
 var filebuffer = fs.readFileSync('test.sqlite');
- 
+
 initSqlJs().then(function(SQL){
   // Load the db
   var db = new SQL.Database(filebuffer);
@@ -196,7 +196,7 @@ Example:
     worker.onmessage = event => {
       console.log(event.data); // The result of the query
     };
-	
+
     worker.postMessage({
       id: 2,
       action: 'exec',
@@ -221,7 +221,7 @@ This library includes both WebAssembly and asm.js versions of Sqlite. (WebAssemb
 
 ## Upgrading from 0.x to 1.x
 
-Version 1.0 of sql.js must be loaded asynchronously, whereas asm.js was able to be loaded synchronously. 
+Version 1.0 of sql.js must be loaded asynchronously, whereas asm.js was able to be loaded synchronously.
 
 So in the past, you would:
 ```html
@@ -260,7 +260,7 @@ initSqlJs().then(function(SQL){
 `NOTHING` is now a reserved word in SQLite, whereas previously it was not. This could cause errors like `Error: near "nothing": syntax error`
 
 ### Downloading/Using: ###
-Although asm.js files were distributed as a single Javascript file, WebAssembly libraries are most efficiently distributed as a pair of files, the `.js`  loader and the `.wasm` file, like [dist/sql-wasm.js]([dist/sql-wasm.js]) and [dist/sql-wasm.wasm]([dist/sql-wasm.wasm]). The `.js` file is responsible for wrapping/loading the `.wasm` file. 
+Although asm.js files were distributed as a single Javascript file, WebAssembly libraries are most efficiently distributed as a pair of files, the `.js`  loader and the `.wasm` file, like [dist/sql-wasm.js]([dist/sql-wasm.js]) and [dist/sql-wasm.wasm]([dist/sql-wasm.wasm]). The `.js` file is responsible for wrapping/loading the `.wasm` file.
 
 
 
