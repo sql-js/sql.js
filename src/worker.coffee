@@ -48,4 +48,8 @@ if typeof importScripts is 'function' # Detect webworker context
                 when 'close'
                     db?.close()
                 else
-                    throw new 'Invalid action : ' + data?['action']
+                    throw new Error 'Invalid action : ' + data?['action']
+        .catch (err) ->
+            postMessage
+                'id': event['data']['id']
+                'error': err['message']
