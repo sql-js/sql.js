@@ -92,7 +92,6 @@ dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-
 # Web worker API
 .PHONY: worker
 worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
