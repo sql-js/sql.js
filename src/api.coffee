@@ -240,9 +240,13 @@ class Database
     constructor: (data) ->
         @filename = 'dbfile_' + (0xffffffff*Math.random()>>>0)
         if data? then FS.createDataFile '/', @filename, data, true, true
+        # open the database and register extension functions
         @handleError sqlite3_open @filename, apiTemp
         @db = getValue(apiTemp, 'i32')
+        # register built-in extension functions:
         RegisterExtensionFunctions(@db)
+        # register any custom (non-standard) extension functions:
+        custom_extensions(@db)
         @statements = {} # A list of all prepared statements of the database
         @functions = {} # A list of all user function of the database (created by create_function call)
 
@@ -404,6 +408,8 @@ class Database
         @functions={}
         @handleError sqlite3_close_v2 @db
         binaryDb = FS.readFile @filename, encoding:'binary'
+        # just open the database
+        # (no need to register extension functions)
         @handleError sqlite3_open @filename, apiTemp
         @db = getValue apiTemp, 'i32'
         binaryDb

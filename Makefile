@@ -58,7 +58,7 @@ EMFLAGS_DEBUG = \
 	-s ASSERTIONS=1 \
 	-O1
 
-BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
+BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc out/custom_extensions.bc
 
 OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
@@ -159,6 +159,10 @@ out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
 	mkdir -p out
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+
+out/custom_extensions.bc: src/custom_extensions/custom_extensions.c
+	mkdir -p out
+	$(EMCC) $(CFLAGS) -Isqlite-src/$(SQLITE_AMALGAMATION) -s LINKABLE=1 $^ -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js

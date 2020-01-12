@@ -59,6 +59,9 @@ sqlite3_result_int64 = Module['cwrap'] 'sqlite3_result_int64', '', ['number', 'n
 sqlite3_result_error = Module['cwrap'] 'sqlite3_result_error', '', ['number', 'string', 'number']
 RegisterExtensionFunctions = Module['cwrap'] 'RegisterExtensionFunctions', 'number', ['number']
 
+## Support custom db extensions
+custom_extensions = Module['cwrap'] 'custom_extensions', 'number', ['number']
+
 # Export the API
 this['SQL'] = {'Database':Database}
 Module[i] = this['SQL'][i] for i of this['SQL']
