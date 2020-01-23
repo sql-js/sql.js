@@ -495,6 +495,8 @@ class Database
                     blobptr = allocate result, 'i8', ALLOC_NORMAL
                     sqlite3_result_blob(cx, blobptr,result.length, -1)
                     _free blobptr
+                  else if result instanceof Date
+                    sqlite3_result_text(cx, result.toISOString(), -1, -1)
                   else sqlite3_result_error(cx,"Wrong API use : tried to return a value of an unknown type (#{result}).",-1)
                 else sqlite3_result_null cx
             return
