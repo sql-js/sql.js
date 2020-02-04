@@ -66,7 +66,7 @@ var initSqlJs = function (moduleConfig) {
         // of the options, and has the side effect of reducing emcc's efforts to modify the module if its output were to change in the future.
         // That's a nice side effect since we're handling the modularization efforts ourselves
         module = undefined;
-        
+
         // The emcc-generated code and shell-post.js code goes below,
         // meaning that all of it runs inside of this promise. If anything throws an exception, our promise will abort
 // Copyright 2010 The Emscripten Authors.  All rights reserved.
@@ -2193,11 +2193,11 @@ function updateGlobalBufferAndViews(buf) {
 
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 61536,
+    STACK_BASE = 62528,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 5304416,
-    DYNAMIC_BASE = 5304416,
-    DYNAMICTOP_PTR = 61504;
+    STACK_MAX = 5305408,
+    DYNAMIC_BASE = 5305408,
+    DYNAMICTOP_PTR = 62496;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -2708,7 +2708,7 @@ var ASM_CONSTS = [];
 
 
 
-// STATICTOP = STATIC_BASE + 60512;
+// STATICTOP = STATIC_BASE + 61504;
 /* global initializers */  __ATINIT__.push({ func: function() { ___emscripten_environ_constructor() } });
 
 
@@ -2719,7 +2719,7 @@ var ASM_CONSTS = [];
 
 
 /* no memory initializer */
-var tempDoublePtr = 61520
+var tempDoublePtr = 62512
 assert(tempDoublePtr % 8 == 0);
 
 function copyTempFloat(ptr) { // functions, because inlining this code increases code size too much
@@ -6412,10 +6412,10 @@ function copyTempDouble(ptr) {
     }
 
   
-  var ___tm_current=61360;
+  var ___tm_current=62352;
   
   
-  var ___tm_timezone=(stringToUTF8("GMT", 61408, 4), 61408);
+  var ___tm_timezone=(stringToUTF8("GMT", 62400, 4), 62400);
   
   function _tzset() {
       // TODO: Use (malleable) environment variables instead of system settings.
@@ -7768,4 +7768,3 @@ else if (typeof define === 'function' && define['amd']) {
 else if (typeof exports === 'object'){
     exports["Module"] = initSqlJs;
 }
-    
