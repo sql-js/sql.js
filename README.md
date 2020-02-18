@@ -1,5 +1,6 @@
 # SQLite compiled to JavaScript
 [![CI status](https://github.com/kripken/sql.js/workflows/CI/badge.svg)](https://github.com/kripken/sql.js/actions)
+[![npm](https://img.shields.io/npm/v/sql.js)](https://www.npmjs.com/package/sql.js)
 [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
 For the impatients, try the demo here: http://kripken.github.io/sql.js/examples/GUI
