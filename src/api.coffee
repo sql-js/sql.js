@@ -235,11 +235,15 @@ class Statement
 # Represents an SQLite database
 class Database
     # Open a new database either by creating a new one or opening an existing one,
-    # stored in the byte array passed in first argument
-    # @param data [Array<Integer>] An array of bytes representing an SQLite database file
-    constructor: (data) ->
+    # either stored in the byte array or at the URL passed in first argument
+    # @param dataOrURL [Array<Integer>, String] An array of bytes representing an SQLite database file or the URL to the database file
+    constructor: (dataOrURL) ->
         @filename = 'dbfile_' + (0xffffffff*Math.random()>>>0)
-        if data? then FS.createDataFile '/', @filename, data, true, true
+        if dataOrURL?
+            if typeof dataOrURL is 'string'  # URL
+                FS.createLazyFile '/', @filename, dataOrURL, true, true
+            else  # Data
+                FS.createDataFile '/', @filename, dataOrURL, true, true
         @handleError sqlite3_open @filename, apiTemp
         @db = getValue(apiTemp, 'i32')
         RegisterExtensionFunctions(@db)
