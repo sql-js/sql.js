@@ -38,5 +38,6 @@
 "_sqlite3_result_int",
 "_sqlite3_result_int64",
 "_sqlite3_result_error",
+"_custom_extensions",
 "_RegisterExtensionFunctions"
 ]
