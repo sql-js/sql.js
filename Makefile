@@ -111,42 +111,39 @@ dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT
 .PHONY: worker
 worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
 
-out/worker.js: src/worker.coffee
-	cat $^ | npx coffee --bare --compile --stdio > $@
-
-dist/worker.sql-asm.js: dist/sql-asm.js out/worker.js
+dist/worker.sql-asm.js: dist/sql-asm.js src/worker.js
 	cat $^ > $@
 
-dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js out/worker.js
+dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js src/worker.js
 	cat $^ > $@
 
-dist/worker.sql-wasm.js: dist/sql-wasm.js out/worker.js
+dist/worker.sql-wasm.js: dist/sql-wasm.js src/worker.js
 	cat $^ > $@
 
-dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js out/worker.js
+dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js src/worker.js
 	cat $^ > $@
 
 # Building it this way gets us a wrapper that _knows_ it's in worker mode, which is nice.
 # However, since we can't tell emcc that we don't need the wasm generated, and just want the wrapper, we have to pay to have the .wasm generated
 # even though we would have already generated it with our sql-wasm.js target above.
 # This would be made easier if this is implemented: https://github.com/emscripten-core/emscripten/issues/8506
-# dist/worker.sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js $(EXPORTED_METHODS_JSON_FILES) dist/sql-wasm-debug.wasm
+# dist/worker.sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/worker.js $(EXPORTED_METHODS_JSON_FILES) dist/sql-wasm-debug.wasm
 # 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) -s ENVIRONMENT=worker -s $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm.js
 # 	mv out/sql-wasm.js out/tmp-raw.js
-# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
+# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js src/worker.js > $@
 # 	#mv out/sql-wasm.wasm dist/sql-wasm.wasm
 # 	rm out/tmp-raw.js
 
-# dist/worker.sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js out/worker.js $(EXPORTED_METHODS_JSON_FILES) dist/sql-wasm-debug.wasm
+# dist/worker.sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) out/api.js src/worker.js $(EXPORTED_METHODS_JSON_FILES) dist/sql-wasm-debug.wasm
 # 	$(EMCC) -s ENVIRONMENT=worker $(EMFLAGS) $(EMFLAGS_DEBUG) -s ENVIRONMENT=worker -s WASM_BINARY_FILE=sql-wasm-foo.debug $(EMFLAGS_WASM) $(BITCODE_FILES) --pre-js out/api.js -o out/sql-wasm-debug.js
 # 	mv out/sql-wasm-debug.js out/tmp-raw.js
-# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js out/worker.js > $@
+# 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js src/worker.js > $@
 # 	#mv out/sql-wasm-debug.wasm dist/sql-wasm-debug.wasm
 # 	rm out/tmp-raw.js
 
-out/api.js: src/output-pre.js src/api.coffee src/exports.coffee src/api-data.coffee src/output-post.js
+out/api.js: src/output-pre.js src/api.js src/exports.js src/api-data.js src/output-post.js
 	mkdir -p out
-	cat src/api.coffee src/exports.coffee src/api-data.coffee | npx coffee --bare --compile --stdio > $@
+	cat src/api.js src/exports.js src/api-data.js > $@
 	cat src/output-pre.js $@ src/output-post.js > out/api-wrapped.js
 	mv out/api-wrapped.js $@
 
