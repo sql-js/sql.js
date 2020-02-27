@@ -62,7 +62,7 @@ BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
 
 OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
-OUTPUT_API_FILES = src/api.js
+SOURCE_API_FILES = src/api.js
 
 EMFLAGS_PRE_JS_FILES = \
 	--pre-js src/api.js
@@ -74,13 +74,13 @@ all: optimized debug worker
 .PHONY: debug
 debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
 
-dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
@@ -89,19 +89,19 @@ dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT_API_FI
 .PHONY: optimized
 optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
 
-dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(OUTPUT_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM_MEMORY_GROWTH) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
