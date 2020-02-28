@@ -1,5 +1,21 @@
-/*jslint browser*/
-/*global Module*/
+/*jslint bitwise browser this*/
+/*global
+    ALLOC_NORMAL
+    FS
+    HEAP8
+    Module
+    _free
+    addFunction
+    allocate
+    allocateUTF8OnStack
+    getValue
+    intArrayFromString
+    removeFunction
+    setValue
+    stackAlloc
+    stackRestore
+    stackSave
+*/
 
 
 
@@ -55,46 +71,115 @@ var SQLITE_UTF8 = 1;
 
 
 
+// functions
+var isNullOrUndefined = function (val) {
+    return val === null || val === undefined;
+};
 var cwrap = Module["cwrap"];
+var throwError = function (err) {
+    throw err;
+};
 var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
 var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
-var sqlite3_exec = cwrap("sqlite3_exec", "number", ["number", "string", "number", "number", "number"]);
+var sqlite3_exec = cwrap(
+    "sqlite3_exec", "number",
+    ["number", "string", "number", "number", "number"]
+);
 var sqlite3_free = cwrap("sqlite3_free", "", ["number"]);
 var sqlite3_changes = cwrap("sqlite3_changes", "number", ["number"]);
-var sqlite3_prepare_v2 = cwrap("sqlite3_prepare_v2", "number", ["number", "string", "number", "number", "number"]);
-var sqlite3_prepare_v2_sqlptr = cwrap("sqlite3_prepare_v2", "number", ["number", "number", "number", "number", "number"]);
-var sqlite3_bind_text = cwrap("sqlite3_bind_text", "number", ["number", "number", "number", "number", "number"]);
-var sqlite3_bind_blob = cwrap("sqlite3_bind_blob", "number", ["number", "number", "number", "number", "number"]);
-var sqlite3_bind_double = cwrap("sqlite3_bind_double", "number", ["number", "number", "number"]);
-var sqlite3_bind_int = cwrap("sqlite3_bind_int", "number", ["number", "number", "number"]);
-var sqlite3_bind_parameter_index = cwrap("sqlite3_bind_parameter_index", "number", ["number", "string"]);
+var sqlite3_prepare_v2 = cwrap(
+    "sqlite3_prepare_v2", "number",
+    ["number", "string", "number", "number", "number"]
+);
+var sqlite3_prepare_v2_sqlptr = cwrap(
+    "sqlite3_prepare_v2", "number",
+    ["number", "number", "number", "number", "number"]
+);
+var sqlite3_bind_text = cwrap(
+    "sqlite3_bind_text", "number",
+    ["number", "number", "number", "number", "number"]
+);
+var sqlite3_bind_blob = cwrap(
+    "sqlite3_bind_blob", "number",
+    ["number", "number", "number", "number", "number"]
+);
+var sqlite3_bind_double = cwrap(
+    "sqlite3_bind_double", "number", ["number", "number", "number"]
+);
+var sqlite3_bind_int = cwrap(
+    "sqlite3_bind_int", "number", ["number", "number", "number"]
+);
+var sqlite3_bind_parameter_index = cwrap(
+    "sqlite3_bind_parameter_index", "number", ["number", "string"]
+);
 var sqlite3_step = cwrap("sqlite3_step", "number", ["number"]);
 var sqlite3_errmsg = cwrap("sqlite3_errmsg", "string", ["number"]);
 var sqlite3_data_count = cwrap("sqlite3_data_count", "number", ["number"]);
-var sqlite3_column_double = cwrap("sqlite3_column_double", "number", ["number", "number"]);
-var sqlite3_column_text = cwrap("sqlite3_column_text", "string", ["number", "number"]);
-var sqlite3_column_blob = cwrap("sqlite3_column_blob", "number", ["number", "number"]);
-var sqlite3_column_bytes = cwrap("sqlite3_column_bytes", "number", ["number", "number"]);
-var sqlite3_column_type = cwrap("sqlite3_column_type", "number", ["number", "number"]);
-var sqlite3_column_name = cwrap("sqlite3_column_name", "string", ["number", "number"]);
+var sqlite3_column_double = cwrap(
+    "sqlite3_column_double", "number", ["number", "number"]
+);
+var sqlite3_column_text = cwrap(
+    "sqlite3_column_text", "string", ["number", "number"]
+);
+var sqlite3_column_blob = cwrap(
+    "sqlite3_column_blob", "number", ["number", "number"]
+);
+var sqlite3_column_bytes = cwrap(
+    "sqlite3_column_bytes", "number", ["number", "number"]
+);
+var sqlite3_column_type = cwrap(
+    "sqlite3_column_type", "number", ["number", "number"]
+);
+var sqlite3_column_name = cwrap(
+    "sqlite3_column_name", "string", ["number", "number"]
+);
 var sqlite3_reset = cwrap("sqlite3_reset", "number", ["number"]);
-var sqlite3_clear_bindings = cwrap("sqlite3_clear_bindings", "number", ["number"]);
+var sqlite3_clear_bindings = cwrap(
+    "sqlite3_clear_bindings", "number", ["number"]
+);
 var sqlite3_finalize = cwrap("sqlite3_finalize", "number", ["number"]);
-var sqlite3_create_function_v2 = cwrap("sqlite3_create_function_v2", "number", ["number", "string", "number", "number", "number", "number", "number", "number", "number"]);
+var sqlite3_create_function_v2 = cwrap(
+    "sqlite3_create_function_v2", "number",
+    [
+        "number",
+        "string",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number"
+    ]
+);
 var sqlite3_value_type = cwrap("sqlite3_value_type", "number", ["number"]);
 var sqlite3_value_bytes = cwrap("sqlite3_value_bytes", "number", ["number"]);
 var sqlite3_value_text = cwrap("sqlite3_value_text", "string", ["number"]);
 var sqlite3_value_int = cwrap("sqlite3_value_int", "number", ["number"]);
 var sqlite3_value_blob = cwrap("sqlite3_value_blob", "number", ["number"]);
 var sqlite3_value_double = cwrap("sqlite3_value_double", "number", ["number"]);
-var sqlite3_result_double = cwrap("sqlite3_result_double", "", ["number", "number"]);
-var sqlite3_result_null = cwrap("sqlite3_result_null", "", ["number"]);
-var sqlite3_result_text = cwrap("sqlite3_result_text", "", ["number", "string", "number", "number"]);
-var sqlite3_result_blob = cwrap("sqlite3_result_blob", "", ["number", "number", "number", "number"]);
+var sqlite3_result_double = cwrap(
+    "sqlite3_result_double", "", ["number", "number"]
+);
+var sqlite3_result_null = cwrap(
+    "sqlite3_result_null", "", ["number"]
+);
+var sqlite3_result_text = cwrap(
+    "sqlite3_result_text", "", ["number", "string", "number", "number"]
+);
+var sqlite3_result_blob = cwrap(
+    "sqlite3_result_blob", "", ["number", "number", "number", "number"]
+);
 var sqlite3_result_int = cwrap("sqlite3_result_int", "", ["number", "number"]);
-var sqlite3_result_int64 = cwrap("sqlite3_result_int64", "", ["number", "number"]);
-var sqlite3_result_error = cwrap("sqlite3_result_error", "", ["number", "string", "number"]);
-var RegisterExtensionFunctions = cwrap("RegisterExtensionFunctions", "number", ["number"]);
+var sqlite3_result_int64 = cwrap(
+    "sqlite3_result_int64", "", ["number", "number"]
+);
+var sqlite3_result_error = cwrap(
+    "sqlite3_result_error", "", ["number", "string", "number"]
+);
+var registerExtensionFunctions = cwrap(
+    "RegisterExtensionFunctions", "number", ["number"]
+);
 
 
 
@@ -107,11 +192,11 @@ var apiTemp = stackAlloc(4);
 Prepared statements allow you to have a template sql string,
 that you can execute multiple times with different parameters.
 
-You can't instantiate this class directly, you have to use a [Database](Database.html)
-object in order to create a statement.
+You can't instantiate this class directly, you have to use a
+[Database](Database.html) object in order to create a statement.
 
-**Warning**: When you close a database (using db.close()), all its statements are
-closed too and become unusable.
+**Warning**: When you close a database (using db.close()),
+all its statements are closed too and become unusable.
 
 @see Database.html#prepare-dynamic
 @see https://en.wikipedia.org/wiki/Prepared_statement
@@ -133,7 +218,9 @@ This function binds these parameters to the given values.
 
 ## Binding values to named parameters
 @example Bind values to named parameters
-    var stmt = db.prepare("UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi");
+    var stmt = db.prepare(
+        "UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi"
+    );
     stmt.bind({$mini:10, $maxi:20, '@newval':5});
 - Create a statement that contains parameters like '$VVV', ':VVV', '@VVV'
 - Call Statement.bind with an object as parameter
@@ -184,7 +271,8 @@ Statement.prototype["step"] = function() {
         throw "Statement closed";
     }
     this.pos = 1;
-    switch (ret = sqlite3_step(this.stmt)) {
+    ret = sqlite3_step(this.stmt);
+    switch (ret) {
     case SQLITE_ROW:
         return true;
     case SQLITE_DONE:
@@ -195,15 +283,17 @@ Statement.prototype["step"] = function() {
 };
 
 Statement.prototype.getNumber = function(pos) {
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
     return sqlite3_column_double(this.stmt, pos);
 };
 
 Statement.prototype.getString = function(pos) {
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
     return sqlite3_column_text(this.stmt, pos);
 };
@@ -215,8 +305,9 @@ Statement.prototype.getBlob = function(pos) {
     var ref;
     var result;
     var size;
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
     size = sqlite3_column_bytes(this.stmt, pos);
     ptr = sqlite3_column_blob(this.stmt, pos);
@@ -231,7 +322,8 @@ Statement.prototype.getBlob = function(pos) {
 
 /* Get one row of results of a statement.
 If the first parameter is not provided, step must have been called before get.
-@param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
+@param [Array,Object] Optional: If set, the values will be bound
+to the statement, and it will be executed
 @return [Array<String,Number,Uint8Array,null>] One row of result
 
 @example Print all the rows of the table test to the console
@@ -243,8 +335,8 @@ Statement.prototype["get"] = function(params) {
     var field;
     var ref;
     var results1;
-    if (params != null) {
-        this["bind"](params) && this["step"]();
+    if (!isNullOrUndefined(params) && this["bind"](params)) {
+        this["step"]();
     }
     results1 = [];
     field = 0;
@@ -277,7 +369,8 @@ Statement.prototype["get"] = function(params) {
     var x'616200' AS data;
     var NULL AS null_value;");
     stmt.step(); // Execute the statement
-    console.log(stmt.getColumnNames()); // Will print ['nbr','data','null_value']
+    console.log(stmt.getColumnNames());
+    // Will print ['nbr','data','null_value']
  */
 Statement.prototype["getColumnNames"] = function() {
     var i;
@@ -295,7 +388,8 @@ Statement.prototype["getColumnNames"] = function() {
 
 /* Get one row of result as a javascript object, associating column names with
 their value in the current row.
-@param [Array,Object] Optional: If set, the values will be bound to the statement, and it will be executed
+@param [Array,Object] Optional: If set, the values will be bound
+to the statement, and it will be executed
 @return [Object] The row of result
 @see [Statement.get](#get-dynamic)
 
@@ -305,7 +399,8 @@ their value in the current row.
     var x'616200' AS data;
     var NULL AS null_value;");
     stmt.step(); // Execute the statement
-    console.log(stmt.getAsObject()); // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
+    console.log(stmt.getAsObject());
+    // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
  */
 Statement.prototype["getAsObject"] = function(params) {
     var i;
@@ -328,11 +423,12 @@ Statement.prototype["getAsObject"] = function(params) {
 };
 
 /* Shorthand for bind + step + reset
-Bind the values, execute the statement, ignoring the rows it returns, and resets it
+Bind the values, execute the statement, ignoring the rows it returns,
+and resets it
 @param [Array,Object] Value to bind to the statement
  */
 Statement.prototype["run"] = function(values) {
-    if (values != null) {
+    if (!isNullOrUndefined(values)) {
         this["bind"](values);
     }
     this["step"]();
@@ -342,45 +438,68 @@ Statement.prototype["run"] = function(values) {
 Statement.prototype.bindString = function(string, pos) {
     var bytes;
     var strptr;
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
     bytes = intArrayFromString(string);
-    this.allocatedmem.push(strptr = allocate(bytes, "i8", ALLOC_NORMAL));
-    this.db.handleError(sqlite3_bind_text(this.stmt, pos, strptr, bytes.length - 1, 0));
+    strptr = allocate(bytes, "i8", ALLOC_NORMAL);
+    this.allocatedmem.push(strptr);
+    this.db.handleError(sqlite3_bind_text(
+        this.stmt,
+        pos,
+        strptr,
+        bytes.length - 1,
+        0
+    ));
     return true;
 };
 
 Statement.prototype.bindBlob = function(array, pos) {
     var blobptr;
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
-    this.allocatedmem.push(blobptr = allocate(array, "i8", ALLOC_NORMAL));
-    this.db.handleError(sqlite3_bind_blob(this.stmt, pos, blobptr, array.length, 0));
+    blobptr = allocate(array, "i8", ALLOC_NORMAL);
+    this.allocatedmem.push(blobptr);
+    this.db.handleError(sqlite3_bind_blob(
+        this.stmt,
+        pos,
+        blobptr,
+        array.length,
+        0
+    ));
     return true;
 };
 
 Statement.prototype.bindNumber = function(num, pos) {
     var bindfunc;
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
-    bindfunc = num === (num | 0) ? sqlite3_bind_int : sqlite3_bind_double;
+    bindfunc = (
+        num === (num | 0)
+        ? sqlite3_bind_int
+        : sqlite3_bind_double
+    );
     this.db.handleError(bindfunc(this.stmt, pos, num));
     return true;
 };
 
 Statement.prototype.bindNull = function(pos) {
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
     return sqlite3_bind_blob(this.stmt, pos, 0, 0, 0) === SQLITE_OK;
 };
 
 Statement.prototype.bindValue = function(val, pos) {
-    if (pos == null) {
-        pos = this.pos++;
+    if (isNullOrUndefined(pos)) {
+        pos = this.pos;
+        this.pos += 1;
     }
     switch (typeof val) {
     case "string":
@@ -391,10 +510,13 @@ Statement.prototype.bindValue = function(val, pos) {
     case "object":
         if (val === null) {
             return this.bindNull(pos);
-        } else if (val.length != null) {
+        } else if (!isNullOrUndefined(val.length)) {
             return this.bindBlob(val, pos);
         } else {
-            throw "Wrong API use : tried to bind a value of an unknown type (" + val + ").";
+            throw (
+                "Wrong API use : tried to bind a value of an unknown type ("
+                + val + ")."
+            );
         }
     }
 };
@@ -405,16 +527,15 @@ Statement.prototype.bindValue = function(val, pos) {
 @nodoc
  */
 Statement.prototype.bindFromObject = function(valuesObj) {
-    var name;
-    var num;
-    var value;
-    for (name in valuesObj) {
-        value = valuesObj[name];
-        num = sqlite3_bind_parameter_index(this.stmt, name);
+    var that;
+    that = this;
+    Object.keys(valuesObj).forEach(function (name) {
+        var num;
+        num = sqlite3_bind_parameter_index(that.stmt, name);
         if (num !== 0) {
-            this.bindValue(value, num);
+            that.bindValue(valuesObj[name], num);
         }
-    }
+    });
     return true;
 };
 
@@ -434,21 +555,28 @@ Statement.prototype.bindFromArray = function(values) {
 };
 
 /* Reset a statement, so that it's parameters can be bound to new values
-It also clears all previous bindings, freeing the memory used by bound parameters.
+It also clears all previous bindings, freeing the memory used
+by bound parameters.
  */
 Statement.prototype["reset"] = function() {
     this.freemem();
-    return sqlite3_clear_bindings(this.stmt) === SQLITE_OK && sqlite3_reset(this.stmt) === SQLITE_OK;
+    return (
+        sqlite3_clear_bindings(this.stmt) === SQLITE_OK
+        && sqlite3_reset(this.stmt) === SQLITE_OK
+    );
 };
 
 /* Free the memory allocated during parameter binding
  */
 Statement.prototype.freemem = function() {
     var mem;
-    while (mem = this.allocatedmem.pop()) {
+    while (true) {
+        mem = this.allocatedmem.pop();
+        if (!mem) {
+            return;
+        }
         _free(mem);
     }
-    return null;
 };
 
 /* Free the memory used by the statement
@@ -465,12 +593,12 @@ Statement.prototype["free"] = function() {
 
 Database = function (data) {
     this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
-    if (data != null) {
+    if (!isNullOrUndefined(data)) {
         FS.createDataFile("/", this.filename, data, true, true);
     }
     this.handleError(sqlite3_open(this.filename, apiTemp));
     this.db = getValue(apiTemp, "i32");
-    RegisterExtensionFunctions(this.db);
+    registerExtensionFunctions(this.db);
     this.statements = {};
     this.functions = {};
 };
@@ -478,13 +606,17 @@ Database = function (data) {
 /* Execute an SQL query, ignoring the rows it returns.
 
 @param sql [String] a string containing some SQL text to execute
-@param params [Array] (*optional*) When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed.
+@param params [Array] (*optional*) When the SQL statement contains placeholders,
+you can pass them in here. They will be bound to the statement
+before it is executed.
 
-If you use the params argument, you **cannot** provide an sql string that contains several
-queries (separated by ';')
+If you use the params argument, you **cannot** provide an sql string
+that contains several queries (separated by ';')
 
 @example Insert values in a table
-    db.run("INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'});
+    db.run(
+        "INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'}
+    );
 
 @return [Database] The database object (useful for method chaining)
  */
@@ -497,6 +629,8 @@ Database.prototype["run"] = function(sql, params) {
         stmt = this["prepare"](sql, params);
         try {
             stmt["step"]();
+        } catch (errCaught) {
+            throwError(errCaught);
         } finally {
             stmt["free"]();
         }
@@ -512,10 +646,12 @@ This is a wrapper against Database.prepare, Statement.step, Statement.get,
 and Statement.free.
 
 The result is an array of result elements. There are as many result elements
-as the number of statements in your sql string (statements are separated by a semicolon)
+as the number of statements in your sql string (statements are separated
+by a semicolon)
 
 Each result element is an object with two properties:
-    'columns' : the name of the columns of the result (as returned by Statement.getColumnNames())
+    'columns' : the name of the columns of the result (as returned
+    by Statement.getColumnNames())
     'values' : an array of rows. Each row is itself an array of values
 
 ## Example use
@@ -563,15 +699,18 @@ Database.prototype["exec"] = function(sql) {
         while (getValue(nextSqlPtr, "i8") !== NULL) {
             setValue(apiTemp, 0, "i32");
             setValue(pzTail, 0, "i32");
-            this.handleError(sqlite3_prepare_v2_sqlptr(this.db, nextSqlPtr, -1, apiTemp, pzTail));
+            this.handleError(sqlite3_prepare_v2_sqlptr(
+                this.db,
+                nextSqlPtr,
+                -1,
+                apiTemp,
+                pzTail
+            ));
             pStmt = getValue(apiTemp, "i32");
             nextSqlPtr = getValue(pzTail, "i32");
-            if (pStmt === NULL) {
-                continue;
-            }
-            curresult = null;
-            stmt = new Statement(pStmt, this);
-            try {
+            if (pStmt !== NULL) {
+                curresult = null;
+                stmt = new Statement(pStmt, this);
                 while (stmt["step"]()) {
                     if (curresult === null) {
                         curresult = {
@@ -582,11 +721,15 @@ Database.prototype["exec"] = function(sql) {
                     }
                     curresult["values"].push(stmt["get"]());
                 }
-            } finally {
                 stmt["free"]();
             }
         }
         return results;
+    } catch (errCaught) {
+        if (stmt) {
+            stmt["free"]();
+        }
+        throwError(errCaught);
     } finally {
         stackRestore(stack);
     }
@@ -594,15 +737,17 @@ Database.prototype["exec"] = function(sql) {
 
 /* Execute an sql statement, and call a callback for each row of result.
 
-**Currently** this method is synchronous, it will not return until the callback has
-been called on every row of the result. But this might change.
+**Currently** this method is synchronous, it will not return until the callback
+has been called on every row of the result. But this might change.
 
-@param sql [String] A string of SQL text. Can contain placeholders that will be
-bound to the parameters given as the second argument
-@param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters to bind
-to the query
-@param callback [Function(Object)] A function that will be called on each row of result
-@param done [Function] A function that will be called when all rows have been retrieved
+@param sql [String] A string of SQL text. Can contain placeholders
+that will be bound to the parameters given as the second argument
+@param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters
+to bind to the query
+@param callback [Function(Object)] A function that will be called on each row
+of result
+@param done [Function] A function that will be called when all rows
+have been retrieved
 
 @return [Database] The database object. Useful for method chaining
 
@@ -617,13 +762,15 @@ Database.prototype["each"] = function(sql, params, callback, done) {
     if (typeof params === "function") {
         done = callback;
         callback = params;
-        params = void 0;
+        params = undefined;
     }
     stmt = this["prepare"](sql, params);
     try {
         while (stmt["step"]()) {
             callback(stmt["getAsObject"]());
         }
+    } catch (errCaught) {
+        throwError(errCaught);
     } finally {
         stmt["free"]();
     }
@@ -633,7 +780,8 @@ Database.prototype["each"] = function(sql, params, callback, done) {
 };
 
 /* Prepare an SQL statement
-@param sql [String] a string of SQL, that can contain placeholders ('?', ':VVV', ':AAA', '@AAA')
+@param sql [String] a string of SQL, that can contain placeholders
+('?', ':VVV', ':AAA', '@AAA')
 @param params [Array] (*optional*) values to bind to placeholders
 @return [Statement] the resulting statement
 @throw [String] SQLite error
@@ -648,7 +796,7 @@ Database.prototype["prepare"] = function(sql, params) {
         throw "Nothing to prepare";
     }
     stmt = new Statement(pStmt, this);
-    if (params != null) {
+    if (!isNullOrUndefined(params)) {
         stmt.bind(params);
     }
     this.statements[pStmt] = stmt;
@@ -697,7 +845,7 @@ Database.prototype["close"] = function() {
     this.functions = {};
     this.handleError(sqlite3_close_v2(this.db));
     FS.unlink("/" + this.filename);
-    return this.db = null;
+    this.db = null;
 };
 
 /* Analyze a result code, return null if no error occured, and throw
@@ -741,46 +889,52 @@ Database.prototype["create_function"] = function(name, func) {
         var args;
         var blobptr;
         var data_func;
+        var data_func_blob;
+        var data_func_null;
         var error;
         var i;
         var result;
         var value_ptr;
         var value_type;
         args = [];
+        data_func_blob = function (ptr) {
+            var blob_arg;
+            var blob_ptr;
+            var j;
+            var size;
+            size = sqlite3_value_bytes(ptr);
+            blob_ptr = sqlite3_value_blob(ptr);
+            blob_arg = new Uint8Array(size);
+            j = 0;
+            while (j < size) {
+                blob_arg[j] = HEAP8[blob_ptr + j];
+                j += 1;
+            }
+            return blob_arg;
+        };
+        data_func_null = function () {
+            return null;
+        };
         i = 0;
         while (i < argc) {
             value_ptr = getValue(argv + (4 * i), "i32");
             value_type = sqlite3_value_type(value_ptr);
-            data_func = (function() {
-                switch (false) {
-                case value_type !== 1:
-                    return sqlite3_value_double;
-                case value_type !== 2:
-                    return sqlite3_value_double;
-                case value_type !== 3:
-                    return sqlite3_value_text;
-                case value_type !== 4:
-                    return function(ptr) {
-                        var blob_arg;
-                        var blob_ptr;
-                        var j;
-                        var size;
-                        size = sqlite3_value_bytes(ptr);
-                        blob_ptr = sqlite3_value_blob(ptr);
-                        blob_arg = new Uint8Array(size);
-                        j = 0;
-                        while (j < size) {
-                            blob_arg[j] = HEAP8[blob_ptr + j];
-                            j += 1;
-                        }
-                        return blob_arg;
-                    };
-                default:
-                    return function(ptr) {
-                        return null;
-                    };
-                }
-            })();
+            switch (value_type) {
+            case 1:
+                data_func = sqlite3_value_double;
+                break;
+            case 2:
+                data_func = sqlite3_value_double;
+                break;
+            case 3:
+                data_func = sqlite3_value_text;
+                break;
+            case 4:
+                data_func = data_func_blob;
+                break;
+            default:
+                data_func = data_func_null;
+            }
             arg = data_func(value_ptr);
             args.push(arg);
             i += 1;
@@ -805,25 +959,38 @@ Database.prototype["create_function"] = function(name, func) {
         case "object":
             if (result === null) {
                 sqlite3_result_null(cx);
-            } else if (result.length != null) {
+            } else if (!isNullOrUndefined(result.length)) {
                 blobptr = allocate(result, "i8", ALLOC_NORMAL);
                 sqlite3_result_blob(cx, blobptr, result.length, -1);
                 _free(blobptr);
             } else {
-                sqlite3_result_error(cx, "Wrong API use : tried to return a value of an unknown type (" + result + ").", -1);
+                sqlite3_result_error(cx, (
+                    "Wrong API use : tried to return a value "
+                    + "of an unknown type (" + result + ")."
+                ), -1);
             }
             break;
         default:
             sqlite3_result_null(cx);
         }
     };
-    if (name in this.functions) {
+    if (this.functions.hasOwnProperty(name)) {
         removeFunction(this.functions[name]);
         delete this.functions[name];
     }
     func_ptr = addFunction(wrapped_func);
     this.functions[name] = func_ptr;
-    this.handleError(sqlite3_create_function_v2(this.db, name, func.length, SQLITE_UTF8, 0, func_ptr, 0, 0, 0));
+    this.handleError(sqlite3_create_function_v2(
+        this.db,
+        name,
+        func.length,
+        SQLITE_UTF8,
+        0,
+        func_ptr,
+        0,
+        0,
+        0
+    ));
     return this;
 };
 

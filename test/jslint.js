@@ -39,8 +39,12 @@ shRawLibFetch
 +    return warn_at_extra(warning, warnings);
 
 -const rx_bad_property = /^_|\$|Sync\$|_$/;
-+// hack-jslint - ignore bad_property_a
++// hack-jslint - ignore warning bad_property_a
 +const rx_bad_property = /$^/m;
+
+-const rx_identifier = /^([a-zA-Z_$][a-zA-Z0-9_$]*)$/;
++// hack-jslint - ignore warning subscript_a
++const rx_identifier = /$^/m;
 
 -export default Object.freeze(function jslint(
 +// hack-jslint - disable es-module
@@ -429,9 +433,10 @@ const rx_crlf = /\n|\r\n?/;
 // unsafe characters that are silently deleted by one or more browsers
 const rx_unsafe = /[\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/;
 // identifier
-const rx_identifier = /^([a-zA-Z_$][a-zA-Z0-9_$]*)$/;
+// hack-jslint - ignore warning subscript_a
+const rx_identifier = /$^/m;
 const rx_module = /^[a-zA-Z0-9_$:.@\-\/]+$/;
-// hack-jslint - ignore bad_property_a
+// hack-jslint - ignore warning bad_property_a
 const rx_bad_property = /$^/m;
 // star slash
 const rx_star_slash = /\*\//;
@@ -5065,7 +5070,7 @@ jslint_and_print = function (source, file) {
     // when jslint detects errors
     // process.exitCode = 1;
     console.error("\u001b[1mjslint " + file + "\u001b[22m");
-    warningList.slice(0, 10).forEach(function (err, ii) {
+    warningList.forEach(function (err, ii) {
         console.error(
             ("  " + String(ii + 1)).slice(-3)
             + " \u001b[31m" + err.message + "\u001b[39m"
