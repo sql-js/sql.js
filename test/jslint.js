@@ -5066,9 +5066,8 @@ jslint_and_print = function (source, file) {
     if (!warningList.length) {
         return;
     }
-    // todo2 - uncomment this line to cause program to fail
-    // when jslint detects errors
-    // process.exitCode = 1;
+    // this program will exit with failed-code if jslint raises warnings
+    process.exitCode = 1;
     console.error("\u001b[1mjslint " + file + "\u001b[22m");
     warningList.forEach(function (err, ii) {
         console.error(
