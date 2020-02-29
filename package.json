@@ -21,7 +21,8 @@
 	"scripts": {
 		"build": "make",
 		"rebuild": "make clean && make",
-		"test": "npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
+		"test": "npm run lint && npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
+		"lint": "eslint src/api.js src/worker.js",
 		"test-asm": "node test/all.js asm",
 		"test-asm-debug": "node test/all.js asm-debug",
 		"test-asm-memory-growth": "node test/all.js asm-memory-growth",
@@ -37,9 +38,12 @@
 		"url": "https://github.com/kripken/sql.js/issues"
 	},
 	"devDependencies": {
-		"coffeescript": "^1.12.7",
-		"test": ">=0.6",
-		"tiny-worker": "^2.3.0"
+		"eslint": "^6.8.0",
+		"eslint-config-airbnb-base": "^14.0.0",
+		"eslint-plugin-import": "^2.20.1",
+		"node-fetch": "^2.6.0",
+		"puppeteer": "^2.1.1",
+		"test": ">=0.6"
 	},
 	"dependencies": {}
 }

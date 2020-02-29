@@ -56,9 +56,10 @@ exports.test = function(sql, assert, done) {
     done();
   });
   var testTimeoutId = setTimeout(function timeout(){
-    assert.strictEqual(finished, true,
-                       "db.each should call its last callback after having returned the rows");
-    done();
+    if (!finished) {
+      assert.fail("db.each should call its last callback after having returned the rows");
+      done();
+    }
   }, 3000);
 };
 

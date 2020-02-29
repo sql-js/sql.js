@@ -10,8 +10,6 @@ jobs:
     - uses: mymindstorm/setup-emsdk@v1
       with:
         version: '1.38.48'
-    - name: install coffee
-      run: npm install --global coffeescript@1
     - uses: actions/cache@v1
       id: cache
       with:
