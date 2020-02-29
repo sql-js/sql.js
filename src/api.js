@@ -173,15 +173,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         ["number"]
     );
 
-
-    function isNullOrUndefined(val) {
-        return val === null || val === undefined;
-    }
-    function throwError(err) {
-        throw err;
-    }
-
-    /* Represents a prepared statement.
+    /** Represents a prepared statement.
 
     Prepared statements allow you to have a template sql string,
     that you can execute multiple times with different parameters.
@@ -194,11 +186,9 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
 
     @see Database.html#prepare-dynamic
     @see https://en.wikipedia.org/wiki/Prepared_statement
-     */
-    /*
+
     Statements can't be created by the API user, only by Database::prepare
     @private
-    @nodoc
      */
     function Statement(stmt1, db) {
         this.stmt = stmt1;
@@ -288,7 +278,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     that has been executed
      */
     Statement.prototype.getNumber = function getNumber(pos) {
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -296,7 +286,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     };
 
     Statement.prototype.getString = function getString(pos) {
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -308,7 +298,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         var ptr;
         var result;
         var size;
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -338,7 +328,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         var field;
         var ref;
         var results1;
-        if (!isNullOrUndefined(params) && this["bind"](params)) {
+        if (params != null && this["bind"](params)) {
             this["step"]();
         }
         results1 = [];
@@ -431,7 +421,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     @param [Array,Object] Value to bind to the statement
      */
     Statement.prototype["run"] = function run(values) {
-        if (!isNullOrUndefined(values)) {
+        if (values != null) {
             this["bind"](values);
         }
         this["step"]();
@@ -441,7 +431,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     Statement.prototype.bindString = function bindString(string, pos) {
         var bytes;
         var strptr;
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -460,7 +450,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
 
     Statement.prototype.bindBlob = function bindBlob(array, pos) {
         var blobptr;
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -478,7 +468,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
 
     Statement.prototype.bindNumber = function bindNumber(num, pos) {
         var bindfunc;
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -492,7 +482,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     };
 
     Statement.prototype.bindNull = function bindNull(pos) {
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -500,7 +490,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     };
 
     Statement.prototype.bindValue = function bindValue(val, pos) {
-        if (isNullOrUndefined(pos)) {
+        if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
@@ -514,7 +504,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
             if (val === null) {
                 return this.bindNull(pos);
             }
-            if (!isNullOrUndefined(val.length)) {
+            if (val.length != null) {
                 return this.bindBlob(val, pos);
             }
             break;
@@ -602,7 +592,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
      */
     function Database(data) {
         this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
-        if (!isNullOrUndefined(data)) {
+        if (data != null) {
             FS.createDataFile("/", this.filename, data, true, true);
         }
         this.handleError(sqlite3_open(this.filename, apiTemp));
@@ -641,8 +631,6 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
             stmt = this["prepare"](sql, params);
             try {
                 stmt["step"]();
-            } catch (errCaught) {
-                throwError(errCaught);
             } finally {
                 stmt["free"]();
             }
@@ -805,7 +793,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
             throw "Nothing to prepare";
         }
         stmt = new Statement(pStmt, this);
-        if (!isNullOrUndefined(params)) {
+        if (params != null) {
             stmt.bind(params);
         }
         this.statements[pStmt] = stmt;
@@ -960,7 +948,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
             case "object":
                 if (result === null) {
                     sqlite3_result_null(cx);
-                } else if (!isNullOrUndefined(result.length)) {
+                } else if (result.length != null) {
                     blobptr = allocate(result, "i8", ALLOC_NORMAL);
                     sqlite3_result_blob(cx, blobptr, result.length, -1);
                     _free(blobptr);
