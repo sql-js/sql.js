@@ -6,3 +6,5 @@ cache/
 out/
 sqlite-src/
 tmp/
+c/
+emsdk/
