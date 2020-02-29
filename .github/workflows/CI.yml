@@ -9,14 +9,14 @@ jobs:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
       with:
-        version: '1.38.47'
+        version: '1.38.48'
     - name: install coffee
       run: npm install --global coffeescript@1
     - uses: actions/cache@v1
       id: cache
       with:
         path: ~/.emscripten_cache
-        key: emscripten-1.38.47
+        key: emscripten-1.38.48
     - name: make
       run: make
     - name: test
