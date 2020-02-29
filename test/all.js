@@ -11,7 +11,10 @@ sqlLibLoader(sqlLibType).then((sql)=>{
     if (m !== null) {
       var name = m[1];
       var testModule = require("./" + file);
-      if (testModule.test) exports['test ' + name] = testModule.test.bind(null, sql);
+      if (testModule.test) {
+        exports['test ' + name] = testModule.test.bind(null, sql);
+      }
+
     }
   }
   

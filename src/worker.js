@@ -1,78 +1,95 @@
-var createDb, db, sqlModuleReady;
+/* global SQL initSqlJs */
+/* eslint-env worker */
+/* eslint no-restricted-globals: ["error"] */
+var db;
 
-if (typeof importScripts === 'function') {
-  db = null;
-  createDb = function(data) {
+function createDb(data) {
+    "use strict";
+
     if (db != null) {
-      db.close();
+        db.close();
     }
-    return db = new SQL.Database(data);
-  };
-  sqlModuleReady = initSqlJs();
-  self.onmessage = function(event) {
-    return sqlModuleReady.then(function() {
-      var buff, callback, data, done, err, result;
-      data = event['data'];
-      switch (data != null ? data['action'] : void 0) {
-        case 'open':
-          buff = data['buffer'];
-          createDb((buff ? new Uint8Array(buff) : void 0));
-          return postMessage({
-            'id': data['id'],
-            'ready': true
-          });
-        case 'exec':
-          if (db === null) {
+    db = new SQL.Database(data);
+    return db;
+}
+
+function onModuleReady() {
+    "use strict";
+
+    var buff; var data; var result;
+    data = this["data"];
+    switch (data && data["action"]) {
+    case "open":
+        buff = data["buffer"];
+        createDb(buff && new Uint8Array(buff));
+        return postMessage({
+            id: data["id"],
+            ready: true
+        });
+    case "exec":
+        if (db === null) {
             createDb();
-          }
-          if (!data['sql']) {
-            throw 'exec: Missing query string';
-          }
-          return postMessage({
-            'id': data['id'],
-            'results': db.exec(data['sql'])
-          });
-        case 'each':
-          if (db === null) {
+        }
+        if (!data["sql"]) {
+            throw "exec: Missing query string";
+        }
+        return postMessage({
+            id: data["id"],
+            results: db.exec(data["sql"])
+        });
+    case "each":
+        if (db === null) {
             createDb();
-          }
-          callback = function(row) {
+        }
+        var callback = function callback(row) {
             return postMessage({
-              'id': data['id'],
-              'row': row,
-              'finished': false
+                id: data["id"],
+                row: row,
+                finished: false
             });
-          };
-          done = function() {
+        };
+        var done = function done() {
             return postMessage({
-              'id': data['id'],
-              'finished': true
+                id: data["id"],
+                finished: true
             });
-          };
-          return db.each(data['sql'], data['params'], callback, done);
-        case 'export':
-          buff = db["export"]();
-          result = {
-            'id': data['id'],
-            'buffer': buff
-          };
-          try {
+        };
+        return db.each(data["sql"], data["params"], callback, done);
+    case "export":
+        buff = db["export"]();
+        result = {
+            id: data["id"],
+            buffer: buff
+        };
+        try {
             return postMessage(result, [result]);
-          } catch (error) {
-            err = error;
+        } catch (error) {
             return postMessage(result);
-          }
-          break;
-        case 'close':
-          return db != null ? db.close() : void 0;
-        default:
-          throw new Error('Invalid action : ' + (data != null ? data['action'] : void 0));
-      }
-    })["catch"](function(err) {
-      return postMessage({
-        'id': event['data']['id'],
-        'error': err['message']
-      });
+        }
+    case "close":
+        return db && db.close();
+    default:
+        throw new Error("Invalid action : " + (data && data["action"]));
+    }
+}
+
+function onError(err) {
+    "use strict";
+
+    return postMessage({
+        id: this["data"]["id"],
+        error: err["message"]
     });
-  };
+}
+
+if (typeof importScripts === "function") {
+    db = null;
+    var sqlModuleReady = initSqlJs();
+    self.onmessage = function onmessage(event) {
+        "use strict";
+
+        return sqlModuleReady
+            .then(onModuleReady.bind(event))
+            .catch(onError.bind(event));
+    };
 }

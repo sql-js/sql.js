@@ -19,7 +19,7 @@ var initSqlJs = function (moduleConfig) {
       return initSqlJsPromise;
     }
     // If we're here, we've never called this function before
-    initSqlJsPromise = new Promise((resolveModule, reject) => {
+    initSqlJsPromise = new Promise(function (resolveModule, reject) {
 
         // We are modularizing this manually because the current modularize setting in Emscripten has some issues:
         // https://github.com/kripken/emscripten/issues/5820
