@@ -144,22 +144,17 @@ dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js src/worker.js
 out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	mkdir -p out
 	# Generate llvm bitcode
-	$(EMCC) $(CFLAGS) sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
+	$(EMCC) $(CFLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
 
 out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
 	mkdir -p out
-	$(EMCC) $(CFLAGS) -s LINKABLE=1 sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
 # 	tar --create --gzip $^ > $@
 
 ## cache
-
-.PHONY: clean-cache
-clean-cache:
-	rm -rf cache
-
 cache/$(SQLITE_AMALGAMATION).zip:
 	mkdir -p cache
 	curl -LsSf '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
@@ -169,11 +164,6 @@ cache/$(EXTENSION_FUNCTIONS):
 	curl -LsSf '$(EXTENSION_FUNCTIONS_URL)' -o $@
 
 ## sqlite-src
-
-.PHONY: clean-sqlite-src
-clean-sqlite-src:
-	rm -rf sqlite
-
 .PHONY: sqlite-src
 sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(EXTENSION_FUNCTIONS)
 
@@ -194,10 +184,6 @@ sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNC
 
 .PHONY: clean
 clean:
-	rm -rf out/* dist/*
-
-.PHONY: clean-all
-clean-all:
 	rm -f out/* dist/* cache/*
-	rm -rf sqlite-src/
+	rm -rf sqlite-src/ c/
 
