@@ -820,9 +820,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         Object.values(this.statements).forEach(function each(stmt) {
             stmt["free"]();
         });
-        Object.values(this.functions).forEach(function each(func) {
-            removeFunction(func);
-        });
+        Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
         binaryDb = FS.readFile(this.filename, {
@@ -848,9 +846,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         Object.values(this.statements).forEach(function each(stmt) {
             stmt["free"]();
         });
-        Object.values(this.functions).forEach(function each(func) {
-            removeFunction(func);
-        });
+        Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
         FS.unlink("/" + this.filename);
@@ -953,12 +949,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
             }
             switch (typeof result) {
             case "boolean":
-                sqlite3_result_int(
-                    cx,
-                    result
-                        ? 1
-                        : 0
-                );
+                sqlite3_result_int(cx, result ? 1 : 0);
                 break;
             case "number":
                 sqlite3_result_double(cx, result);
@@ -984,7 +975,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
                 sqlite3_result_null(cx);
             }
         }
-        if (Object.prototype.isPrototypeOf.call(this.functions, name)) {
+        if (Object.prototype.hasOwnProperty.call(this.functions, name)) {
             removeFunction(this.functions[name]);
             delete this.functions[name];
         }
