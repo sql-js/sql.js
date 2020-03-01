@@ -32,6 +32,7 @@ CFLAGS = \
 EMFLAGS = \
 	--memory-init-file 0 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
+	-s ALLOW_TABLE_GROWTH=1 \
 	-s EXPORTED_FUNCTIONS=@src/exported_functions.json \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
 	-s SINGLE_FILE=0 \
@@ -51,6 +52,8 @@ EMFLAGS_WASM = \
 EMFLAGS_OPTIMIZED= \
 	-s INLINING_LIMIT=50 \
 	-O3 \
+	-flto \
+	--llvm-lto 1 \
 	--closure 1
 
 EMFLAGS_DEBUG = \
