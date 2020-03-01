@@ -877,40 +877,26 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         var func_ptr;
         function wrapped_func(cx, argc, argv) {
             var result;
-            function data_func_blob(ptr) {
+            function extract_blob(ptr) {
                 var size = sqlite3_value_bytes(ptr);
                 var blob_ptr = sqlite3_value_blob(ptr);
                 var blob_arg = new Uint8Array(size);
-                for (var j = 0; j < size; j += 1) {
-                    blob_arg[j] = HEAP8[blob_ptr + j];
-                }
+                for (var j = 0; j < size; j += 1) blob_arg[j] = HEAP8[blob_ptr + j];
                 return blob_arg;
-            }
-            function data_func_null() {
-                return null;
             }
             var args = [];
             for (var i = 0; i < argc; i += 1) {
                 var value_ptr = getValue(argv + (4 * i), "i32");
                 var value_type = sqlite3_value_type(value_ptr);
-                var data_func;
-                switch (value_type) {
-                case 1:
-                    data_func = sqlite3_value_double;
-                    break;
-                case 2:
-                    data_func = sqlite3_value_double;
-                    break;
-                case 3:
-                    data_func = sqlite3_value_text;
-                    break;
-                case 4:
-                    data_func = data_func_blob;
-                    break;
-                default:
-                    data_func = data_func_null;
-                }
-                args.push(data_func(value_ptr));
+                var arg;
+                if (value_type === SQLITE_INTEGER || value_type === SQLITE_FLOAT) {
+                    arg = sqlite3_value_double(value_ptr);
+                } else if (value_type === SQLITE_TEXT) {
+                    arg = sqlite3_value_text(value_ptr);
+                } else if (value_type === SQLITE_BLOB) {
+                    arg = extract_blob(value_ptr);
+                } else arg = null;
+                args.push(arg);
             }
             try {
                 result = func.apply(null, args);
