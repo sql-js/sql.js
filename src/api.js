@@ -876,38 +876,24 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     Database.prototype["create_function"] = function create_function(name, func) {
         var func_ptr;
         function wrapped_func(cx, argc, argv) {
-            var arg;
-            var args;
-            var blobptr;
-            var data_func;
-            var error;
-            var i;
             var result;
-            var value_ptr;
-            var value_type;
-            args = [];
             function data_func_blob(ptr) {
-                var blob_arg;
-                var blob_ptr;
-                var j;
-                var size;
-                size = sqlite3_value_bytes(ptr);
-                blob_ptr = sqlite3_value_blob(ptr);
-                blob_arg = new Uint8Array(size);
-                j = 0;
-                while (j < size) {
+                var size = sqlite3_value_bytes(ptr);
+                var blob_ptr = sqlite3_value_blob(ptr);
+                var blob_arg = new Uint8Array(size);
+                for (var j = 0; j < size; j += 1) {
                     blob_arg[j] = HEAP8[blob_ptr + j];
-                    j += 1;
                 }
                 return blob_arg;
             }
             function data_func_null() {
                 return null;
             }
-            i = 0;
-            while (i < argc) {
-                value_ptr = getValue(argv + (4 * i), "i32");
-                value_type = sqlite3_value_type(value_ptr);
+            var args = [];
+            for (var i = 0; i < argc; i += 1) {
+                var value_ptr = getValue(argv + (4 * i), "i32");
+                var value_type = sqlite3_value_type(value_ptr);
+                var data_func;
                 switch (value_type) {
                 case 1:
                     data_func = sqlite3_value_double;
@@ -924,14 +910,11 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
                 default:
                     data_func = data_func_null;
                 }
-                arg = data_func(value_ptr);
-                args.push(arg);
-                i += 1;
+                args.push(data_func(value_ptr));
             }
             try {
                 result = func.apply(null, args);
-            } catch (error1) {
-                error = error1;
+            } catch (error) {
                 sqlite3_result_error(cx, error, -1);
                 return;
             }
@@ -949,7 +932,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
                 if (result === null) {
                     sqlite3_result_null(cx);
                 } else if (result.length != null) {
-                    blobptr = allocate(result, "i8", ALLOC_NORMAL);
+                    var blobptr = allocate(result, "i8", ALLOC_NORMAL);
                     sqlite3_result_blob(cx, blobptr, result.length, -1);
                     _free(blobptr);
                 } else {
