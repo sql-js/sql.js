@@ -874,6 +874,8 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     @param func [Function] the actual function to be executed.
      */
     Database.prototype["create_function"] = function create_function(name, func) {
+        // TODO : add type arguments for compatibility with the llvm backend
+        // https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
         var func_ptr;
         function wrapped_func(cx, argc, argv) {
             var result;
