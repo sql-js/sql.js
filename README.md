@@ -19,7 +19,7 @@ A [full documentation](http://kripken.github.io/sql.js/documentation/#http://kri
 
 ## Usage
 
-By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAssembly), and thus needs to load a .wasm file in addition to the javascript library. You can find this file in `./node_modules/sql.js/dist/sql-wasm.wasm` after installing sql.js from npm, and add it to your static assets. Alternatively, you can load the file from a CDN :
+By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAssembly), and thus needs to load a `.wasm` file in addition to the javascript library. You can find this file in `./node_modules/sql.js/dist/sql-wasm.wasm` after installing sql.js from npm, and add it to your static assets or load it from a CDN. Then use the [`locateFile`](https://emscripten.org/docs/api_reference/module.html#Module.locateFile) property of the configuration object passed to `initSqlJs` to indicate where the file is:
 
 ```javascript
 const initSqlJs = require('sql.js');
