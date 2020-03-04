@@ -1,0 +1,10 @@
+{
+    "plugins": [
+        "plugins/markdown"
+    ],
+    "source": {
+        "include": [
+            "src/api.js"
+        ]
+    }
+}
