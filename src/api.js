@@ -21,7 +21,7 @@
  * @module SqlJs
  */
 // Wait for preRun to run, and then finish our initialization
-Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
+Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     "use strict";
 
     // Declare toplevel variables
@@ -958,6 +958,4 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
 
     // export Database to Module
     Module.Database = Database;
-    // export SQL to global-namespace
-    this["SQL"] = { Database: Database, };
-}).bind(this);
+};
