@@ -17,6 +17,9 @@
 */
 
 
+/**
+ * @module SqlJs
+ */
 // Wait for preRun to run, and then finish our initialization
 Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     "use strict";
@@ -174,21 +177,23 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     );
 
     /** Represents a prepared statement.
-
-    Prepared statements allow you to have a template sql string,
-    that you can execute multiple times with different parameters.
-
-    You can't instantiate this class directly, you have to use a
-    [Database](Database.html) object in order to create a statement.
-
-    **Warning**: When you close a database (using db.close()),
-    all its statements are closed too and become unusable.
-
-    @see Database.html#prepare-dynamic
-    @see https://en.wikipedia.org/wiki/Prepared_statement
-
-    Statements can't be created by the API user, only by Database::prepare
-    @private
+    * Prepared statements allow you to have a template sql string,
+    * that you can execute multiple times with different parameters.
+    *
+    * You can't instantiate this class directly, you have to use a
+    * {@link Database} object in order to create a statement.
+    *
+    * **Warning**: When you close a database (using db.close()),
+    * all its statements are closed too and become unusable.
+    *
+    * Statements can't be created by the API user directly, only by Database::prepare
+    *
+    * @see Database.html#prepare-dynamic
+    * @see https://en.wikipedia.org/wiki/Prepared_statement
+    *
+    * @classdesc A prepared statement
+    * @constructs Statement
+    * @memberof module:SqlJs
      */
     function Statement(stmt1, db) {
         this.stmt = stmt1;
@@ -264,12 +269,12 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         this.pos = 1;
         ret = sqlite3_step(this.stmt);
         switch (ret) {
-        case SQLITE_ROW:
-            return true;
-        case SQLITE_DONE:
-            return false;
-        default:
-            return this.db.handleError(ret);
+            case SQLITE_ROW:
+                return true;
+            case SQLITE_DONE:
+                return false;
+            default:
+                return this.db.handleError(ret);
         }
     };
 
@@ -336,18 +341,18 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         ref = sqlite3_data_count(this.stmt);
         while (field < ref) {
             switch (sqlite3_column_type(this.stmt, field)) {
-            case SQLITE_INTEGER:
-            case SQLITE_FLOAT:
-                results1.push(this.getNumber(field));
-                break;
-            case SQLITE_TEXT:
-                results1.push(this.getString(field));
-                break;
-            case SQLITE_BLOB:
-                results1.push(this.getBlob(field));
-                break;
-            default:
-                results1.push(null);
+                case SQLITE_INTEGER:
+                case SQLITE_FLOAT:
+                    results1.push(this.getNumber(field));
+                    break;
+                case SQLITE_TEXT:
+                    results1.push(this.getString(field));
+                    break;
+                case SQLITE_BLOB:
+                    results1.push(this.getBlob(field));
+                    break;
+                default:
+                    results1.push(null);
             }
             field += 1;
         }
@@ -495,25 +500,25 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
             this.pos += 1;
         }
         switch (typeof val) {
-        case "string":
-            return this.bindString(val, pos);
-        case "number":
-        case "boolean":
-            return this.bindNumber(val + 0, pos);
-        case "object":
-            if (val === null) {
-                return this.bindNull(pos);
-            }
-            if (val.length != null) {
-                return this.bindBlob(val, pos);
-            }
-            break;
-        default:
-            break;
+            case "string":
+                return this.bindString(val, pos);
+            case "number":
+            case "boolean":
+                return this.bindNumber(val + 0, pos);
+            case "object":
+                if (val === null) {
+                    return this.bindNull(pos);
+                }
+                if (val.length != null) {
+                    return this.bindBlob(val, pos);
+                }
+                break;
+            default:
+                break;
         }
         throw (
             "Wrong API use : tried to bind a value of an unknown type ("
-                + val + ")."
+            + val + ")."
         );
     };
 
@@ -907,31 +912,31 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
                 return;
             }
             switch (typeof result) {
-            case "boolean":
-                sqlite3_result_int(cx, result ? 1 : 0);
-                break;
-            case "number":
-                sqlite3_result_double(cx, result);
-                break;
-            case "string":
-                sqlite3_result_text(cx, result, -1, -1);
-                break;
-            case "object":
-                if (result === null) {
-                    sqlite3_result_null(cx);
-                } else if (result.length != null) {
-                    var blobptr = allocate(result, "i8", ALLOC_NORMAL);
-                    sqlite3_result_blob(cx, blobptr, result.length, -1);
-                    _free(blobptr);
-                } else {
-                    sqlite3_result_error(cx, (
-                        "Wrong API use : tried to return a value "
+                case "boolean":
+                    sqlite3_result_int(cx, result ? 1 : 0);
+                    break;
+                case "number":
+                    sqlite3_result_double(cx, result);
+                    break;
+                case "string":
+                    sqlite3_result_text(cx, result, -1, -1);
+                    break;
+                case "object":
+                    if (result === null) {
+                        sqlite3_result_null(cx);
+                    } else if (result.length != null) {
+                        var blobptr = allocate(result, "i8", ALLOC_NORMAL);
+                        sqlite3_result_blob(cx, blobptr, result.length, -1);
+                        _free(blobptr);
+                    } else {
+                        sqlite3_result_error(cx, (
+                            "Wrong API use : tried to return a value "
                             + "of an unknown type (" + result + ")."
-                    ), -1);
-                }
-                break;
-            default:
-                sqlite3_result_null(cx);
+                        ), -1);
+                    }
+                    break;
+                default:
+                    sqlite3_result_null(cx);
             }
         }
         if (Object.prototype.hasOwnProperty.call(this.functions, name)) {
