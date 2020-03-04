@@ -1,20 +1,16 @@
-/* global SQL initSqlJs */
+/* global initSqlJs */
 /* eslint-env worker */
 /* eslint no-restricted-globals: ["error"] */
 var db;
 
-function createDb(data) {
+function onModuleReady(SQL) {
     "use strict";
 
-    if (db != null) {
-        db.close();
+    function createDb(data) {
+        if (db != null) db.close();
+        db = new SQL.Database(data);
+        return db;
     }
-    db = new SQL.Database(data);
-    return db;
-}
-
-function onModuleReady() {
-    "use strict";
 
     var buff; var data; var result;
     data = this["data"];
