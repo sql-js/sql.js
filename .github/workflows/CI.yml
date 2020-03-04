@@ -8,8 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
-      with:
-        version: '1.39.8-fastcomp'
+      with: {version: '1.39.8-fastcomp'}
     - uses: actions/cache@v1
       id: cache
       with:
@@ -17,9 +16,7 @@ jobs:
         key: emscripten-1.39.8-fastcomp
     - name: make
       run: make
+    - uses: actions/upload-artifact@master
+      with: {name: dist, path: dist}
     - name: test
       run: npm ci && npm test
-    - uses: actions/upload-artifact@master
-      with:
-        name: dist
-        path: dist
