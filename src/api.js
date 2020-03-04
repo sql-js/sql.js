@@ -176,7 +176,9 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         ["number"]
     );
 
-    /** Represents a prepared statement.
+    /**
+    * @classdesc
+    * Represents a prepared statement.
     * Prepared statements allow you to have a template sql string,
     * that you can execute multiple times with different parameters.
     *
@@ -191,7 +193,6 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     * @see Database.html#prepare-dynamic
     * @see https://en.wikipedia.org/wiki/Prepared_statement
     *
-    * @classdesc A prepared statement
     * @constructs Statement
     * @memberof module:SqlJs
      */
@@ -205,45 +206,45 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         this.allocatedmem = [];
     }
 
-    /* Bind values to the parameters, after having reseted the statement
+    /** @typedef {string|number|null|Uint8Array} Database.SqlValue */
+    /** @typedef {Database.SqlValue[]|Object<string, Database.SqlValue>} Statement.BindParams */
 
-    SQL statements can have parameters, named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
-    where NNN is a number and VVV a string.
-    This function binds these parameters to the given values.
+    /** Bind values to the parameters, after having reseted the statement
+    *
+    * SQL statements can have parameters, named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
+    * where NNN is a number and VVV a string.
+    * This function binds these parameters to the given values.
+    *
+    * *Warning*: ':', '@', and '$' are included in the parameters names
+    *
+    * ## Value types
+    * Javascript type  | SQLite type
+    * -----------------| -----------
+    * number           | REAL, INTEGER
+    * boolean          | INTEGER
+    * string           | TEXT
+    * Array, Uint8Array| BLOB
+    * null             | NULL
+    *
+    * @example <caption>Bind values to named parameters</caption>
+    *     var stmt = db.prepare(
+    *         "UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi"
+    *     );
+    *     stmt.bind({$mini:10, $maxi:20, '@newval':5});
+    *
+    * @example <caption>Bind values to anonymous parameters</caption>
+    * // Create a statement that contains parameters like '?', '?NNN'
+    * var stmt = db.prepare("UPDATE test SET a=? WHERE id BETWEEN ? AND ?");
+    * // Call Statement.bind with an array as parameter
+    * stmt.bind([5, 10, 20]);
+    *
+    * @see http://www.sqlite.org/datatype3.html
+    * @see http://www.sqlite.org/lang_expr.html#varparam
 
-    *Warning*: ':', '@', and '$' are included in the parameters names
-
-    ## Binding values to named parameters
-    @example Bind values to named parameters
-        var stmt = db.prepare(
-            "UPDATE test SET a=@newval WHERE id BETWEEN $mini AND $maxi"
-        );
-        stmt.bind({$mini:10, $maxi:20, '@newval':5});
-    - Create a statement that contains parameters like '$VVV', ':VVV', '@VVV'
-    - Call Statement.bind with an object as parameter
-
-    ## Binding values to parameters
-    @example Bind values to anonymous parameters
-        var stmt = db.prepare("UPDATE test SET a=? WHERE id BETWEEN ? AND ?");
-        stmt.bind([5, 10, 20]);
-     - Create a statement that contains parameters like '?', '?NNN'
-     - Call Statement.bind with an array as parameter
-
-    ## Value types
-    Javascript type | SQLite type
-    --- | ---
-    number | REAL, INTEGER
-    boolean | INTEGER
-    string | TEXT
-    Array, Uint8Array | BLOB
-    null | NULL
-    @see http://www.sqlite.org/datatype3.html
-
-    @see http://www.sqlite.org/lang_expr.html#varparam
-    @param values [Array,Object] The values to bind
-    @return [Boolean] true if it worked
-    @throw [String] SQLite Error
-     */
+    * @param {Statement.BindParams} values The values to bind
+    * @return {boolean} true if it worked
+    * @throws {String} SQLite Error
+    */
     Statement.prototype["bind"] = function bind(values) {
         if (!this.stmt) {
             throw "Statement closed";
@@ -255,11 +256,11 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return this.bindFromObject(values);
     };
 
-    /* Execute the statement, fetching the the next line of result,
-    that can be retrieved with [Statement.get()](#get-dynamic) .
+    /** Execute the statement, fetching the the next line of result,
+    that can be retrieved with {@link Statement.get}.
 
-    @return [Boolean] true if a row of result available
-    @throw [String] SQLite Error
+    @return {boolean} true if a row of result available
+    @throws {String} SQLite Error
      */
     Statement.prototype["step"] = function step() {
         var ret;
@@ -318,16 +319,15 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return result;
     };
 
-    /* Get one row of results of a statement.
-    If the first parameter is not provided, step must have been called before get.
-    @param [Array,Object] Optional: If set, the values will be bound
-    to the statement, and it will be executed
-    @return [Array<String,Number,Uint8Array,null>] One row of result
+    /** Get one row of results of a statement.
+    If the first parameter is not provided, step must have been called before.
+    @param {Statement.BindParams} [params=[]] If set, the values will be bound
+    to the statement before it is executed
+    @return {Database.SqlValue[]} One row of result
 
-    @example Print all the rows of the table test to the console
-
-        var stmt = db.prepare("SELECT * FROM test");
-        while (stmt.step()) console.log(stmt.get());
+    @example <caption>Print all the rows of the table test to the console</caption>
+    var stmt = db.prepare("SELECT * FROM test");
+    while (stmt.step()) console.log(stmt.get());
      */
     Statement.prototype["get"] = function get(params) {
         var field;
@@ -359,16 +359,13 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return results1;
     };
 
-    /* Get the list of column names of a row of result of a statement.
-    @return [Array<String>] The names of the columns
+    /** Get the list of column names of a row of result of a statement.
+    @return {string[]} The names of the columns
     @example
-
-        var stmt = db.prepare("SELECT 5 AS nbr;
-        var x'616200' AS data;
-        var NULL AS null_value;");
-        stmt.step(); // Execute the statement
-        console.log(stmt.getColumnNames());
-        // Will print ['nbr','data','null_value']
+    var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
+    stmt.step(); // Execute the statement
+    console.log(stmt.getColumnNames());
+    // Will print ['nbr','data','null_value']
      */
     Statement.prototype["getColumnNames"] = function getColumnNames() {
         var i;
@@ -384,12 +381,12 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return results1;
     };
 
-    /* Get one row of result as a javascript object, associating column names with
+    /** Get one row of result as a javascript object, associating column names with
     their value in the current row.
-    @param [Array,Object] Optional: If set, the values will be bound
+    @param {Statement.BindParams} [params] If set, the values will be bound
     to the statement, and it will be executed
-    @return [Object] The row of result
-    @see [Statement.get](#get-dynamic)
+    @return {Object<string, Database.SqlValue>} The row of result
+    @see {@link Statement.get}
 
     @example
 
@@ -420,10 +417,10 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return rowObject;
     };
 
-    /* Shorthand for bind + step + reset
+    /** Shorthand for bind + step + reset
     Bind the values, execute the statement, ignoring the rows it returns,
     and resets it
-    @param [Array,Object] Value to bind to the statement
+    @param {Statement.BindParams} [values] Value to bind to the statement
      */
     Statement.prototype["run"] = function run(values) {
         if (values != null) {
@@ -522,8 +519,8 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         );
     };
 
-    /* Bind names and values of an object to the named parameters of the statement
-    @param [Object]
+    /** Bind names and values of an object to the named parameters of the statement
+    @param {Object<string, Database.SqlValue>} valuesObj
     @private
     @nodoc
      */
@@ -540,8 +537,8 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return true;
     };
 
-    /* Bind values to numbered parameters
-    @param [Array]
+    /** Bind values to numbered parameters
+    @param {Database.SqlValue[]} valuesObj
     @private
     @nodoc
      */
@@ -555,7 +552,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return true;
     };
 
-    /* Reset a statement, so that it's parameters can be bound to new values
+    /** Reset a statement, so that it's parameters can be bound to new values
     It also clears all previous bindings, freeing the memory used
     by bound parameters.
      */
@@ -567,8 +564,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         );
     };
 
-    /* Free the memory allocated during parameter binding
-     */
+    /** Free the memory allocated during parameter binding */
     Statement.prototype["freemem"] = function freemem() {
         var mem;
         while ((mem = this.allocatedmem.pop()) !== undefined) {
@@ -576,8 +572,8 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         }
     };
 
-    /* Free the memory used by the statement
-    @return [Boolean] true in case of success
+    /** Free the memory used by the statement
+    @return {boolean} true in case of success
      */
     Statement.prototype["free"] = function free() {
         var res;
@@ -589,12 +585,15 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
     };
 
 
-    /* Represents an SQLite database
-    Open a new database either by creating a new one or opening an existing one,
-    stored in the byte array passed in first argument
-    @param data [Array<Integer>] An array of bytes representing
-    an SQLite database file
-     */
+    /** @classdesc
+    * Represents an SQLite database
+    * @constructs Database
+    * @memberof module:SqlJs
+    * Open a new database either by creating a new one or opening an existing one,
+    * stored in the byte array passed in first argument
+    * @param {number[]} data An array of bytes representing
+    * an SQLite database file
+    */
     function Database(data) {
         this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
         if (data != null) {
@@ -610,22 +609,18 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         this.functions = {};
     }
 
-    /* Execute an SQL query, ignoring the rows it returns.
-
-    @param sql [String] a string containing some SQL text to execute
-    @param params [Array] (*optional*) When the SQL statement contains placeholders,
+    /** Execute an SQL query, ignoring the rows it returns.
+    @param {string} sql a string containing some SQL text to execute
+    @param {any[]} [params=[]] When the SQL statement contains placeholders,
     you can pass them in here. They will be bound to the statement
-    before it is executed.
+    before it is executed. If you use the params argument, you **cannot** provide an sql string
+    that contains several queries (separated by `;`)
 
-    If you use the params argument, you **cannot** provide an sql string
-    that contains several queries (separated by ';')
+    @example
+    // Insert values in a table
+    db.run("INSERT INTO test VALUES (:age, :name)", { ':age' : 18, ':name' : 'John' });
 
-    @example Insert values in a table
-        db.run(
-            "INSERT INTO test VALUES (:age, :name)", {':age':18, ':name':'John'}
-        );
-
-    @return [Database] The database object (useful for method chaining)
+    @return {Database} The database object (useful for method chaining)
      */
     Database.prototype["run"] = function run(sql, params) {
         var stmt;
@@ -645,46 +640,51 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return this;
     };
 
-    /* Execute an SQL query, and returns the result.
-
-    This is a wrapper against Database.prepare, Statement.step, Statement.get,
-    and Statement.free.
-
-    The result is an array of result elements. There are as many result elements
-    as the number of statements in your sql string (statements are separated
-    by a semicolon)
-
-    Each result element is an object with two properties:
-        'columns' : the name of the columns of the result (as returned
-        by Statement.getColumnNames())
-        'values' : an array of rows. Each row is itself an array of values
-
-    ## Example use
-    We have the following table, named *test* :
-
-    | id | age |  name  |
-    |:--:|:---:|:------:|
-    | 1  |  1  | Ling   |
-    | 2  |  18 | Paul   |
-    | 3  |  3  | Markus |
-
-    We query it like that:
-    ```javascript
-    var db = new SQL.Database();
-    var res = db.exec("SELECT id FROM test; SELECT age,name FROM test;");
-    ```
-
-    `res` is now :
-    ```javascript
-        [
-            {columns: ['id'], values:[[1],[2],[3]]},
-            {columns: ['age','name'], values:[[1,'Ling'],[18,'Paul'],[3,'Markus']]}
-        ]
-    ```
-
-    @param sql [String] a string containing some SQL text to execute
-    @return [Array<QueryResults>] An array of results.
+    /**
+     * @typedef {{columns:string[], values:Database.SqlValue[][]}} Database.QueryExecResult
+     * @property {string[]} columns the name of the columns of the result
+     * (as returned by {@link Statement.getColumnNames})
+     * @property {Database.SqlValue[][]} values one array per row, containing the column values
      */
+
+    /** Execute an SQL query, and returns the result.
+    *
+    * This is a wrapper against
+    * {@link Database.prepare},
+    * {@link Statement.step},
+    * {@link Statement.get},
+    * and {@link Statement.free}.
+    *
+    * The result is an array of result elements. There are as many result elements
+    * as the number of statements in your sql string (statements are separated
+    * by a semicolon)
+    *
+    * ## Example use
+    * We have the following table, named *test* :
+    *
+    * | id | age |  name  |
+    * |:--:|:---:|:------:|
+    * | 1  |  1  | Ling   |
+    * | 2  |  18 | Paul   |
+    * | 3  |  3  | Markus |
+    *
+    * We query it like that:
+    * ```javascript
+    * var db = new SQL.Database();
+    * var res = db.exec("SELECT id FROM test; SELECT age,name FROM test;");
+    * ```
+    *
+    * `res` is now :
+    * ```javascript
+    *     [
+    *         {columns: ['id'], values:[[1],[2],[3]]},
+    *         {columns: ['age','name'], values:[[1,'Ling'],[18,'Paul'],[3,'Markus']]}
+    *     ]
+    * ```
+    *
+    * @param {string} sql a string containing some SQL text to execute
+    * @return {Database.QueryExecResult[]} The results of each statement
+    */
     Database.prototype["exec"] = function exec(sql) {
         var curresult;
         var stmt;
@@ -737,27 +737,23 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         }
     };
 
-    /* Execute an sql statement, and call a callback for each row of result.
+    /** Execute an sql statement, and call a callback for each row of result.
 
     **Currently** this method is synchronous, it will not return until the callback
     has been called on every row of the result. But this might change.
 
-    @param sql [String] A string of SQL text. Can contain placeholders
+    @param {string} sql A string of SQL text. Can contain placeholders
     that will be bound to the parameters given as the second argument
-    @param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters
-    to bind to the query
-    @param callback [function (Object)] A function that will be called on each row
-    of result
-    @param done [Function] A function that will be called when all rows
-    have been retrieved
+    @param {Array<Database.SqlValue>} [params=[]] Parameters to bind to the query
+    @param {function({Object}):void} callback A function that will be called on each row of result
+    @param {function()} done A function that will be called when all rows have been retrieved
 
-    @return [Database] The database object. Useful for method chaining
+    @return {Database} The database object. Useful for method chaining
 
-    @example Read values from a table
-        db.each("SELECT name,age FROM users WHERE age >= $majority",
-                        {$majority:18},
-                        function (row){console.log(row.name + " is a grown-up.")}
-                    );
+    @example <caption>Read values from a table</caption>
+    db.each("SELECT name,age FROM users WHERE age >= $majority", {$majority:18},
+            function (row){console.log(row.name + " is a grown-up.")}
+    );
      */
     Database.prototype["each"] = function each(sql, params, callback, done) {
         var stmt;
@@ -780,12 +776,12 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return undefined;
     };
 
-    /* Prepare an SQL statement
-    @param sql [String] a string of SQL, that can contain placeholders
-    ('?', ':VVV', ':AAA', '@AAA')
-    @param params [Array] (*optional*) values to bind to placeholders
-    @return [Statement] the resulting statement
-    @throw [String] SQLite error
+    /** Prepare an SQL statement
+    @param {string} sql a string of SQL, that can contain placeholders
+    (`?`, `:VVV`, `:AAA`, `@AAA`)
+    @param {Statement.BindParams} [params] values to bind to placeholders
+    @return {Statement} the resulting statement
+    @throws {String} SQLite error
      */
     Database.prototype["prepare"] = function prepare(sql, params) {
         var pStmt;
@@ -805,8 +801,8 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return stmt;
     };
 
-    /* Exports the contents of the database to a binary array
-    @return [Uint8Array] An array of bytes of the SQLite3 database file
+    /** Exports the contents of the database to a binary array
+    @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
     Database.prototype["export"] = function exportDatabase() {
         var binaryDb;
@@ -824,16 +820,15 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         return binaryDb;
     };
 
-    /* Close the database, and all associated prepared statements.
-
-    The memory associated to the database and all associated statements
-    will be freed.
-
-    **Warning**: A statement belonging to a database that has been closed cannot
-    be used anymore.
-
-    Databases **must** be closed, when you're finished with them, or the
-    memory consumption will grow forever
+    /** Close the database, and all associated prepared statements.
+    * The memory associated to the database and all associated statements
+    * will be freed.
+    *
+    * **Warning**: A statement belonging to a database that has been closed cannot
+    * be used anymore.
+    *
+    * Databases **must** be closed when you're finished with them, or the
+    * memory consumption will grow forever
      */
     Database.prototype["close"] = function close() {
         Object.values(this.statements).forEach(function each(stmt) {
@@ -846,7 +841,7 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         this.db = null;
     };
 
-    /* Analyze a result code, return null if no error occured, and throw
+    /** Analyze a result code, return null if no error occured, and throw
     an error with a descriptive message otherwise
     @nodoc
      */
@@ -859,24 +854,25 @@ Module["onRuntimeInitialized"] = (function onRuntimeInitialized() {
         throw new Error(errmsg);
     };
 
-    /* Returns the number of rows modified, inserted or deleted by the
-    most recently completed INSERT, UPDATE or DELETE statement on the
-    database Executing any other type of SQL statement does not modify
+    /** Returns the number of changed rows (modified, inserted or deleted) by the
+    latest completed INSERT, UPDATE or DELETE statement on the
+    database. Executing any other type of SQL statement does not modify
     the value returned by this function.
 
-    @return [Number] the number of rows modified
-     */
+    @return {number} the number of rows modified
+    */
     Database.prototype["getRowsModified"] = function getRowsModified() {
         return sqlite3_changes(this.db);
     };
 
-    /* Register a custom function with SQLite
+    /** Register a custom function with SQLite
     @example Register a simple function
         db.create_function("addOne", function (x) {return x+1;})
         db.exec("SELECT addOne(1)") // = 2
 
-    @param name [String] the name of the function as referenced in SQL statements.
-    @param func [Function] the actual function to be executed.
+    @param {string} name the name of the function as referenced in SQL statements.
+    @param {function} func the actual function to be executed.
+    @return {Database} The database object. Useful for method chaining
      */
     Database.prototype["create_function"] = function create_function(name, func) {
         // TODO : add type arguments for compatibility with the llvm backend
