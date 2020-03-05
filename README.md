@@ -265,7 +265,7 @@ initSqlJs().then(function(SQL){
 `NOTHING` is now a reserved word in SQLite, whereas previously it was not. This could cause errors like `Error: near "nothing": syntax error`
 
 ### Downloading/Using: ###
-Although asm.js files were distributed as a single Javascript file, WebAssembly libraries are most efficiently distributed as a pair of files, the `.js`  loader and the `.wasm` file, like [dist/sql-wasm.js]([dist/sql-wasm.js]) and [dist/sql-wasm.wasm]([dist/sql-wasm.wasm]). The `.js` file is responsible for wrapping/loading the `.wasm` file.
+Although asm.js files were distributed as a single Javascript file, WebAssembly libraries are most efficiently distributed as a pair of files, the `.js`  loader and the `.wasm` file, like [dist/sql-wasm.js](dist/sql-wasm.js) and [dist/sql-wasm.wasm](dist/sql-wasm.wasm). The `.js` file is responsible for wrapping/loading the `.wasm` file.
 
 
 
