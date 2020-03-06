@@ -14,7 +14,7 @@ exports.test = function(SQL, assert) {
 	var res = db.exec("SELECT * FROM test WHERE id = 0");
 	assert.deepEqual(res,
 									[{"columns":["id","content"],"values":[[0,"hello"]]}],
-									"One should be able to read the contents of an SQLite database file read from disk");
+									"One should be able to read the contents of a SQLite database file read from disk");
 	db.close();
 }
 

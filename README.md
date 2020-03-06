@@ -35,7 +35,7 @@ const SQL = await initSqlJs({
 // Create a database
 var db = new SQL.Database();
 // NOTE: You can also use new SQL.Database(data) where
-// data is an Uint8Array representing an SQLite database file
+// data is an Uint8Array representing a SQLite database file
 
 // Execute some sql
 sqlstr = "CREATE TABLE hello (a int, b char);";
@@ -50,7 +50,7 @@ var res = db.exec("SELECT * FROM hello");
 ]
 */
 
-// Prepare an sql statement
+// Prepare a sql statement
 var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
 
 // Bind values to the parameters and fetch the results of the query
@@ -214,7 +214,7 @@ Example:
   worker.postMessage({
     id:1,
     action:"open",
-    buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
+    buffer:buf, /*Optional. An ArrayBuffer representing a SQLite Database file*/
   });
 </script>
 ```
