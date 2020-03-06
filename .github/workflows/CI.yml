@@ -8,8 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
-      with:
-        version: 'tot'
+      with: {version: '1.39.8'}
     - uses: actions/cache@v1
       id: cache
       with:
