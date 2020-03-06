@@ -90,7 +90,7 @@ exports.test = async function test(SQL, assert) {
   var header = "SQLite format 3\0";
   var actual = "";
   for (let i = 0; i < header.length; i++) actual += String.fromCharCode(data.buffer[i]);
-  assert.equal(actual, header, 'Data returned is a SQLite database file');
+  assert.equal(actual, header, 'Data returned is an SQLite database file');
 }
 
 function obj2array(obj) {

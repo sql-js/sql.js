@@ -586,13 +586,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
 
     /** @classdesc
-    * Represents a SQLite database
+    * Represents an SQLite database
     * @constructs Database
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing one,
     * stored in the byte array passed in first argument
     * @param {number[]} data An array of bytes representing
-    * a SQLite database file
+    * an SQLite database file
     */
     function Database(data) {
         this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
@@ -609,11 +609,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.functions = {};
     }
 
-    /** Execute a SQL query, ignoring the rows it returns.
+    /** Execute an SQL query, ignoring the rows it returns.
     @param {string} sql a string containing some SQL text to execute
     @param {any[]} [params=[]] When the SQL statement contains placeholders,
     you can pass them in here. They will be bound to the statement
-    before it is executed. If you use the params argument, you **cannot** provide a sql string
+    before it is executed. If you use the params argument, you **cannot** provide an sql string
     that contains several queries (separated by `;`)
 
     @example
@@ -647,7 +647,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * @property {Database.SqlValue[][]} values one array per row, containing the column values
      */
 
-    /** Execute a SQL query, and returns the result.
+    /** Execute an SQL query, and returns the result.
     *
     * This is a wrapper against
     * {@link Database.prepare},
@@ -698,7 +698,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @param {any[]} [params=[]] When the SQL statement contains placeholders,
     you can pass them in here. They will be bound to the statement
     before it is executed. If you use the params argument as an array,
-    you **cannot** provide a sql string that contains several queries
+    you **cannot** provide an sql string that contains several queries
     (separated by `;`). This limitation does not apply to params as an object.
     * @return {Database.QueryExecResult[]} The results of each statement
     */
@@ -757,7 +757,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
     };
 
-    /** Execute a sql statement, and call a callback for each row of result.
+    /** Execute an sql statement, and call a callback for each row of result.
 
     **Currently** this method is synchronous, it will not return until the callback
     has been called on every row of the result. But this might change.
@@ -796,7 +796,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return undefined;
     };
 
-    /** Prepare a SQL statement
+    /** Prepare an SQL statement
     @param {string} sql a string of SQL, that can contain placeholders
     (`?`, `:VVV`, `:AAA`, `@AAA`)
     @param {Statement.BindParams} [params] values to bind to placeholders

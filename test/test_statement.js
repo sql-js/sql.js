@@ -41,7 +41,7 @@ exports.test = function(sql, assert){
     stmt = db.prepare("SELECT str FROM data WHERE str=?");
     assert.deepEqual(stmt.getAsObject(['粵語😄']), {'str':'粵語😄'}, "UTF8 support in prepared statements");
 
-    // Prepare a sql statement
+    // Prepare an sql statement
     stmt = db.prepare("SELECT * FROM alphabet WHERE code BETWEEN :start AND :end ORDER BY code");
     // Bind values to the parameters
     stmt.bind([0, 256]);
