@@ -7,10 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: mymindstorm/setup-emsdk@v1
-      with: {version: '1.39.8'}
-    - name: update emsdk to tip of tree
-      run: cd "$EMSDK" && ./emsdk update-tags && ./emsdk install tot && ./emsdk activate tot
+    - uses: mymindstorm/setup-emsdk@b6b33c4
+      with: {version: 'tot'}
     - uses: actions/cache@v1
       id: cache
       with:
