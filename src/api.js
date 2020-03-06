@@ -661,38 +661,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * by a semicolon)
     *
     * ## Example use
-    * We will create following table, named *test* and query it with a
+    * We will create the following table, named *test* and query it with a
     * multi-line statement using params:
     *
     * | id | age |  name  |
     * |:--:|:---:|:------:|
     * | 1  |  1  | Ling   |
     * | 2  |  18 | Paul   |
-    * | 3  |  3  | Markus |
     *
     * We query it like that:
     * ```javascript
     * var db = new SQL.Database();
     * var res = db.exec(
-    *     (
-    *         "DROP TABLE IF EXISTS test;\n"
-    *         + "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);\n"
-    *         + "INSERT INTO test VALUES ($id1, :age1, @name1);\n"
-    *         + "INSERT INTO test VALUES ($id2, :age2, @name2);\n"
-    *         + "INSERT INTO test VALUES ($id3, :age3, @name3);\n"
-    *         + "SELECT id FROM test;\n"
-    *         + "SELECT age,name FROM test;\n"
-    *     ),
+    *     "DROP TABLE IF EXISTS test;\n"
+    *     + "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);"
+    *     + "INSERT INTO test VALUES ($id1, :age1, @name1);"
+    *     + "INSERT INTO test VALUES ($id2, :age2, @name2);"
+    *     + "SELECT id FROM test;"
+    *     + "SELECT age,name FROM test WHERE id=$id1",
     *     {
-    *         "$id1": 1,
-    *         ":age1": 1,
-    *         "@name1": "Ling",
-    *         "$id2": 2,
-    *         ":age2": 18,
-    *         "@name2": "Paul",
-    *         "$id3": 3,
-    *         ":age3": 3,
-    *         "@name3": "Marcus"
+    *         "$id1": 1, ":age1": 1, "@name1": "Ling",
+    *         "$id2": 2, ":age2": 18, "@name2": "Paul"
     *     }
     * );
     * ```
@@ -700,8 +689,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * `res` is now :
     * ```javascript
     *     [
-    *         {"columns":["id"],"values":[[1],[2],[3]]},
-    *         {"columns":["age","name"],"values":[[1,"Ling"],[18,"Paul"],[3,"Marcus"]]}
+    *         {"columns":["id"],"values":[[1],[2]]},
+    *         {"columns":["age","name"],"values":[[1,"Ling"]]}
     *     ]
     * ```
     *
