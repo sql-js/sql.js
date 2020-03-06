@@ -204,15 +204,34 @@ Example:
 
     worker.postMessage({
       id: 2,
-      action: 'exec',
-      sql: 'SELECT * FROM test'
+      action: "exec",
+      sql: (
+        "DROP TABLE IF EXISTS test;\n"
+        + "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);\n"
+        + "INSERT INTO test VALUES ($id1, :age1, @name1);\n"
+        + "INSERT INTO test VALUES ($id2, :age2, @name2);\n"
+        + "INSERT INTO test VALUES ($id3, :age3, @name3);\n"
+        + "SELECT id FROM test;\n"
+        + "SELECT age,name FROM test;\n"
+      ),
+      params: {
+        "$id1": 1,
+        ":age1": 1,
+        "@name1": "Ling",
+        "$id2": 2,
+        ":age2": 18,
+        "@name2": "Paul",
+        "$id3": 3,
+        ":age3": 3,
+        "@name3": "Marcus"
+      }
     });
   };
 
   worker.onerror = e => console.log("Worker error: ", e);
   worker.postMessage({
     id:1,
-    action:'open',
+    action:"open",
     buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
   });
 </script>

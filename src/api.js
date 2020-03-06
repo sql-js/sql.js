@@ -651,6 +651,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     *
     * This is a wrapper against
     * {@link Database.prepare},
+    * {@link Statement.bind},
     * {@link Statement.step},
     * {@link Statement.get},
     * and {@link Statement.free}.
@@ -660,7 +661,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * by a semicolon)
     *
     * ## Example use
-    * We have the following table, named *test* :
+    * We will create following table, named *test* and query it with a
+    * multi-line statement using params:
     *
     * | id | age |  name  |
     * |:--:|:---:|:------:|
@@ -671,18 +673,44 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * We query it like that:
     * ```javascript
     * var db = new SQL.Database();
-    * var res = db.exec("SELECT id FROM test; SELECT age,name FROM test;");
+    * var res = db.exec(
+    *     (
+    *         "DROP TABLE IF EXISTS test;\n"
+    *         + "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);\n"
+    *         + "INSERT INTO test VALUES ($id1, :age1, @name1);\n"
+    *         + "INSERT INTO test VALUES ($id2, :age2, @name2);\n"
+    *         + "INSERT INTO test VALUES ($id3, :age3, @name3);\n"
+    *         + "SELECT id FROM test;\n"
+    *         + "SELECT age,name FROM test;\n"
+    *     ),
+    *     {
+    *         "$id1": 1,
+    *         ":age1": 1,
+    *         "@name1": "Ling",
+    *         "$id2": 2,
+    *         ":age2": 18,
+    *         "@name2": "Paul",
+    *         "$id3": 3,
+    *         ":age3": 3,
+    *         "@name3": "Marcus"
+    *     }
+    * );
     * ```
     *
     * `res` is now :
     * ```javascript
     *     [
-    *         {columns: ['id'], values:[[1],[2],[3]]},
-    *         {columns: ['age','name'], values:[[1,'Ling'],[18,'Paul'],[3,'Markus']]}
+    *         {"columns":["id"],"values":[[1],[2],[3]]},
+    *         {"columns":["age","name"],"values":[[1,"Ling"],[18,"Paul"],[3,"Marcus"]]}
     *     ]
     * ```
     *
-    * @param {string} sql a string containing some SQL text to execute
+    @param {string} sql a string containing some SQL text to execute
+    @param {any[]} [params=[]] When the SQL statement contains placeholders,
+    you can pass them in here. They will be bound to the statement
+    before it is executed. If you use the params argument as an array,
+    you **cannot** provide an sql string that contains several queries
+    (separated by `;`). This limitation does not apply to params as an object.
     * @return {Database.QueryExecResult[]} The results of each statement
     */
     Database.prototype["exec"] = function exec(sql, params) {
