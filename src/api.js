@@ -875,8 +875,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @return {Database} The database object. Useful for method chaining
      */
     Database.prototype["create_function"] = function create_function(name, func) {
-        // TODO : add type arguments for compatibility with the llvm backend
-        // https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
         var func_ptr;
         function wrapped_func(cx, argc, argv) {
             var result;

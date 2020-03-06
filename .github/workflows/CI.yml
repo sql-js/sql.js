@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: mymindstorm/setup-emsdk@v1
-      with: {version: '1.39.8-fastcomp'}
+    - uses: mymindstorm/setup-emsdk@b6b33c4
+      with: {version: '1.39.9'}
     - uses: actions/cache@v1
       id: cache
       with:
         path: ~/.emscripten_cache
-        key: emscripten-1.39.8-fastcomp
+        key: emscripten-1.39.9
     - name: make
       run: make
     - uses: actions/upload-artifact@master
