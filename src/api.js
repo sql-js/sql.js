@@ -939,7 +939,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             removeFunction(this.functions[name]);
             delete this.functions[name];
         }
-        func_ptr = addFunction(wrapped_func);
+        // The signature of the wrapped function is :
+        // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
+        func_ptr = addFunction(wrapped_func, "viii");
         this.functions[name] = func_ptr;
         this.handleError(sqlite3_create_function_v2(
             this.db,
