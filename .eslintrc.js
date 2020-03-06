@@ -31,7 +31,7 @@ module.exports = {
     "no-bitwise": "off",
     "camelcase": "off",
     "dot-notation": "off",
-    "indent": ["error", 4],
+    "indent": ["error", 4, { "SwitchCase": 1 }],
     "quotes": ["error", "double"],
   },
 };

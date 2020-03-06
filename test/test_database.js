@@ -1,9 +1,9 @@
-exports.test = function(sql, assert, done) {
-  assert.notEqual(sql.Database, undefined, "Should export a Database object");
+exports.test = function(SQL, assert, done) {
+  assert.notEqual(SQL.Database, undefined, "Should export a Database object");
 
   // Create a database
-  var db = new sql.Database();
-  assert.equal(Object.getPrototypeOf(db), sql.Database.prototype, "Creating a database object");
+  var db = new SQL.Database();
+  assert.equal(Object.getPrototypeOf(db), SQL.Database.prototype, "Creating a database object");
 
   // Execute some sql
   sqlstr = "CREATE TABLE test (a, b, c, d, e);";
