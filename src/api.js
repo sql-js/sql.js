@@ -685,7 +685,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @param {string} sql a string containing some SQL text to execute
     * @return {Database.QueryExecResult[]} The results of each statement
     */
-    Database.prototype["exec"] = function exec(sql) {
+    Database.prototype["exec"] = function exec(sql, params) {
         var curresult;
         var stmt;
         if (!this.db) {
@@ -713,6 +713,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 if (pStmt !== NULL) {
                     curresult = null;
                     stmt = new Statement(pStmt, this);
+                    if (params != null) {
+                        stmt.bind(params);
+                    }
                     while (stmt["step"]()) {
                         if (curresult === null) {
                             curresult = {
