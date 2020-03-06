@@ -9,6 +9,8 @@ jobs:
     - uses: actions/checkout@v1
     - uses: mymindstorm/setup-emsdk@v1
       with: {version: '1.39.8'}
+    - name: update emsdk to tip of tree
+      run: cd "$EMSDK" && ./emsdk update-tags && ./emsdk install tot && ./emsdk activate tot
     - uses: actions/cache@v1
       id: cache
       with:
