@@ -188,7 +188,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * **Warning**: When you close a database (using db.close()),
     * all its statements are closed too and become unusable.
     *
-    * Statements can't be created by the API user directly, only by Database::prepare
+    * Statements can't be created by the API user directly, only by
+    * Database::prepare
     *
     * @see Database.html#prepare-dynamic
     * @see https://en.wikipedia.org/wiki/Prepared_statement
@@ -321,7 +322,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Get one row of results of a statement.
     If the first parameter is not provided, step must have been called before.
-    @param {Statement.BindParams} [params=[]] If set, the values will be bound
+    @param {Statement.BindParams} [params] If set, the values will be bound
     to the statement before it is executed
     @return {Database.SqlValue[]} One row of result
 
@@ -381,8 +382,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return results1;
     };
 
-    /** Get one row of result as a javascript object, associating column names with
-    their value in the current row.
+    /** Get one row of result as a javascript object, associating column names
+    with their value in the current row.
     @param {Statement.BindParams} [params] If set, the values will be bound
     to the statement, and it will be executed
     @return {Object<string, Database.SqlValue>} The row of result
@@ -519,7 +520,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         );
     };
 
-    /** Bind names and values of an object to the named parameters of the statement
+    /** Bind names and values of an object to the named parameters of the
+    statement
     @param {Object<string, Database.SqlValue>} valuesObj
     @private
     @nodoc
@@ -589,8 +591,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * Represents an SQLite database
     * @constructs Database
     * @memberof module:SqlJs
-    * Open a new database either by creating a new one or opening an existing one,
-    * stored in the byte array passed in first argument
+    * Open a new database either by creating a new one or opening an existing
+    * one stored in the byte array passed in first argument
     * @param {number[]} data An array of bytes representing
     * an SQLite database file
     */
@@ -611,10 +613,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Execute an SQL query, ignoring the rows it returns.
     @param {string} sql a string containing some SQL text to execute
-    @param {any[]} [params=[]] When the SQL statement contains placeholders,
-    you can pass them in here. They will be bound to the statement
-    before it is executed. If you use the params argument, you **cannot** provide an sql string
-    that contains several queries (separated by `;`)
+    @param {Statement.BindParams} [params] When the SQL statement contains
+    placeholders, you can pass them in here. They will be bound to the statement
+    before it is executed. If you use the params argument, you **cannot**
+    provide an sql string that contains several statements (separated by `;`)
 
     @example
     // Insert values in a table
@@ -644,48 +646,66 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * @typedef {{columns:string[], values:Database.SqlValue[][]}} Database.QueryExecResult
      * @property {string[]} columns the name of the columns of the result
      * (as returned by {@link Statement.getColumnNames})
-     * @property {Database.SqlValue[][]} values one array per row, containing the column values
+     * @property {Database.SqlValue[][]} values one array per row, containing
+     * the column values
      */
 
     /** Execute an SQL query, and returns the result.
     *
     * This is a wrapper against
     * {@link Database.prepare},
+    * {@link Statement.bind},
     * {@link Statement.step},
     * {@link Statement.get},
     * and {@link Statement.free}.
     *
-    * The result is an array of result elements. There are as many result elements
-    * as the number of statements in your sql string (statements are separated
-    * by a semicolon)
+    * The result is an array of result elements. There are as many result
+    * elements as the number of statements in your sql string (statements are
+    * separated by a semicolon)
     *
     * ## Example use
-    * We have the following table, named *test* :
+    * We will create the following table, named *test* and query it with a
+    * multi-line statement using params:
     *
     * | id | age |  name  |
     * |:--:|:---:|:------:|
     * | 1  |  1  | Ling   |
     * | 2  |  18 | Paul   |
-    * | 3  |  3  | Markus |
     *
     * We query it like that:
     * ```javascript
     * var db = new SQL.Database();
-    * var res = db.exec("SELECT id FROM test; SELECT age,name FROM test;");
+    * var res = db.exec(
+    *     "DROP TABLE IF EXISTS test;\n"
+    *     + "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);"
+    *     + "INSERT INTO test VALUES ($id1, :age1, @name1);"
+    *     + "INSERT INTO test VALUES ($id2, :age2, @name2);"
+    *     + "SELECT id FROM test;"
+    *     + "SELECT age,name FROM test WHERE id=$id1",
+    *     {
+    *         "$id1": 1, ":age1": 1, "@name1": "Ling",
+    *         "$id2": 2, ":age2": 18, "@name2": "Paul"
+    *     }
+    * );
     * ```
     *
     * `res` is now :
     * ```javascript
     *     [
-    *         {columns: ['id'], values:[[1],[2],[3]]},
-    *         {columns: ['age','name'], values:[[1,'Ling'],[18,'Paul'],[3,'Markus']]}
+    *         {"columns":["id"],"values":[[1],[2]]},
+    *         {"columns":["age","name"],"values":[[1,"Ling"]]}
     *     ]
     * ```
     *
-    * @param {string} sql a string containing some SQL text to execute
+    @param {string} sql a string containing some SQL text to execute
+    @param {Statement.BindParams} [params] When the SQL statement contains
+    placeholders, you can pass them in here. They will be bound to the statement
+    before it is executed. If you use the params argument as an array,
+    you **cannot** provide an sql string that contains several statements
+    (separated by `;`). This limitation does not apply to params as an object.
     * @return {Database.QueryExecResult[]} The results of each statement
     */
-    Database.prototype["exec"] = function exec(sql) {
+    Database.prototype["exec"] = function exec(sql, params) {
         var curresult;
         var stmt;
         if (!this.db) {
@@ -713,6 +733,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 if (pStmt !== NULL) {
                     curresult = null;
                     stmt = new Statement(pStmt, this);
+                    if (params != null) {
+                        stmt.bind(params);
+                    }
                     while (stmt["step"]()) {
                         if (curresult === null) {
                             curresult = {
@@ -739,14 +762,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Execute an sql statement, and call a callback for each row of result.
 
-    **Currently** this method is synchronous, it will not return until the callback
-    has been called on every row of the result. But this might change.
+    **Currently** this method is synchronous, it will not return until the
+    callback has been called on every row of the result. But this might change.
 
     @param {string} sql A string of SQL text. Can contain placeholders
     that will be bound to the parameters given as the second argument
-    @param {Array<Database.SqlValue>} [params=[]] Parameters to bind to the query
-    @param {function({Object}):void} callback A function that will be called on each row of result
-    @param {function()} done A function that will be called when all rows have been retrieved
+    @param {Array<Database.SqlValue>} [params] Parameters to bind to the query
+    @param {function({Object}):void} callback A function that will be called on
+    each row of result
+    @param {function()} done A function that will be called when all rows have
+    been retrieved
 
     @return {Database} The database object. Useful for method chaining
 

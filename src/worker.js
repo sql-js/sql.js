@@ -31,7 +31,7 @@ function onModuleReady(SQL) {
             }
             return postMessage({
                 id: data["id"],
-                results: db.exec(data["sql"])
+                results: db.exec(data["sql"], data["params"])
             });
         case "each":
             if (db === null) {

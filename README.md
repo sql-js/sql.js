@@ -204,15 +204,16 @@ Example:
 
     worker.postMessage({
       id: 2,
-      action: 'exec',
-      sql: 'SELECT * FROM test'
+      action: "exec",
+      sql: "SELECT age,name FROM test WHERE id=$id",
+      params: { "$id": 1 }
     });
   };
 
   worker.onerror = e => console.log("Worker error: ", e);
   worker.postMessage({
     id:1,
-    action:'open',
+    action:"open",
     buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
   });
 </script>
