@@ -16,6 +16,32 @@
     stackSave
 */
 
+/**
+ * @typedef {{Database:Database}} SqlJs
+ * @property {Database} Database the database constructor
+ */
+
+/**
+ * @typedef {{locateFile:function(string):string}} SqlJsConfig
+ * @property {function(string):string} locateFile
+ * a function that returns the full path to a resource given its file name
+ * @see https://emscripten.org/docs/api_reference/module.html
+ */
+
+/**
+ * Asynchronously initializes sql.js
+ * @function initSqlJs
+ * @param {SqlJsConfig} config module inititialization parameters
+ * @returns {SqlJs}
+ * @example
+ * initSqlJs({
+ *  locateFile: name => '/path/to/assets/' + name
+ * }).then(SQL => {
+ *  const db = new SQL.Database();
+ *  const result = db.exec("select 'hello world'");
+ *  console.log(result);
+ * })
+ */
 
 /**
  * @module SqlJs
