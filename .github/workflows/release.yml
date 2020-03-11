@@ -39,7 +39,8 @@ jobs:
           asset_name: sqljs.zip
           asset_content_type: application/zip
       - name: publish the package to NPM
-        run: npm publish
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+          npm publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
- 
