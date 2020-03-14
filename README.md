@@ -15,6 +15,26 @@ SQLite is public domain, sql.js is MIT licensed.
 Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
 
 
+## CDN Download
+#### Production (minified)
+- [sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.js)
+- [sql-wasm.wasm](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.wasm)
+- [worker.sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm.js)
+#### Development (unminified)
+- [sql-wasm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm-debug.js)
+- [sql-wasm-debug.wasm](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm-debug.wasm)
+- [worker.sql-wasm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm-debug.js)
+#### Asm.js (minified)
+- [sql-asm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-asm.js)
+- [worker.sql-asm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-asm.js)
+#### Asm.js (unminified)
+- [sql-asm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-asm-debug.js)
+- [worker.sql-asm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-asm-debug.js)
+#### Asm.js (miscellaneous)
+- [sql-asm-memory-growth.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-asm-memory-growth.js)
+#### Older versions
+- [cdnjs.com/libraries/sql.js](https://cdnjs.com/libraries/sql.js)
+
 ## Documentation
 A [full documentation](https://sql-js.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
 
