@@ -98,7 +98,7 @@ There are a few examples [available here](https://sql-js.github.io/sql.js/index.
 ## Examples
 The test files provide up to date example of the use of the api.
 ### Inside the browser
-#### Example **HTML** file:
+#### Example **HTML** file using script from CDN (edit in [jsfiddle](https://jsfiddle.net/o91cj7ug/)):
 ```html
 <meta charset="utf8" />
 <html>
@@ -204,10 +204,12 @@ See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 If you don't want to run CPU-intensive SQL queries in your main application thread,
 you can use the *more limited* WebWorker API.
 
-Example using script from CDN:
+You will need to download [dist/worker.sql-wasm.js](dist/worker.sql-wasm.js) [dist/worker.sql-wasm.wasm](dist/worker.sql-wasm.wasm).
+
+Example:
 ```html
 <script>
-  var worker = new Worker("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm.js");
+  var worker = new Worker("/dist/worker.sql-wasm.js");
   worker.onmessage = () => {
     console.log("Database opened");
     worker.onmessage = event => {
