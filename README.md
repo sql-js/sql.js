@@ -6,7 +6,7 @@
 
 For the impatients, try the demo here: https://sql-js.github.io/sql.js/examples/GUI/
 
-*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html), with [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date) included. It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
+*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to WebAssembly, by compiling the SQLite C code with [Emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html), with [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date) included. It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
 There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3).
 
@@ -16,23 +16,15 @@ Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedi
 
 
 ## CDN Download
-#### Production (minified)
-- [sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.js)
-- [sql-wasm.wasm](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.wasm)
-- [worker.sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm.js)
-#### Development (unminified)
-- [sql-wasm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm-debug.js)
+#### Production using WebAssembly (minified)
+- [sql-wasm.wasm](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.wasm) - WebAssembly binary
+- [sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.js) - sql.js JavaScript library
+- [worker.sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm.js) - optional sql.js for WebWorker
+#### Development using WebAssembly (unminified)
 - [sql-wasm-debug.wasm](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm-debug.wasm)
+- [sql-wasm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm-debug.js)
 - [worker.sql-wasm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm-debug.js)
-#### Asm.js (minified)
-- [sql-asm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-asm.js)
-- [worker.sql-asm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-asm.js)
-#### Asm.js (unminified)
-- [sql-asm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-asm-debug.js)
-- [worker.sql-asm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-asm-debug.js)
-#### Asm.js (miscellaneous)
-- [sql-asm-memory-growth.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-asm-memory-growth.js)
-#### Older versions
+#### Other Downloads (including asm.js versions)
 - [cdnjs.com/libraries/sql.js](https://cdnjs.com/libraries/sql.js)
 
 ## Documentation
