@@ -42,7 +42,7 @@ const initSqlJs = require('sql.js');
 const SQL = await initSqlJs({
   // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
   // You can omit locateFile completely when running in node
-  locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.1.0/dist/${file}`
+  locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/${file}`
 });
 
 // Create a database
@@ -101,10 +101,10 @@ The test files provide up to date example of the use of the api.
 ```html
 <meta charset="utf8" />
 <html>
-  <script src='/dist/sql-wasm.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/sql-wasm.js'></script>
   <script>
     config = {
-      locateFile: filename => `/dist/${filename}`
+      locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/${filename}`
     }
     // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
     // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
@@ -203,12 +203,10 @@ See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 If you don't want to run CPU-intensive SQL queries in your main application thread,
 you can use the *more limited* WebWorker API.
 
-You will need to download [dist/worker.sql-wasm.js](dist/worker.sql-wasm.js) [dist/worker.sql-wasm.wasm](dist/worker.sql-wasm.wasm).
-
-Example:
+Example using script from CDN:
 ```html
 <script>
-  var worker = new Worker("/dist/worker.sql-wasm.js");
+  var worker = new Worker("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm.js");
   worker.onmessage = () => {
     console.log("Database opened");
     worker.onmessage = event => {
