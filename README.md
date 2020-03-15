@@ -26,6 +26,7 @@ Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedi
 - [worker.sql-wasm-debug.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.2.1/dist/worker.sql-wasm-debug.js)
 #### Other Downloads (including asm.js versions)
 - [cdnjs.com/libraries/sql.js](https://cdnjs.com/libraries/sql.js)
+- See section [Versions of sql.js included in the CDN](#versions-of-sqljs-included-in-the-cdn-and-distributed-artifacts) for detailed description all files.
 
 ## Documentation
 A [full documentation](https://sql-js.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
@@ -282,7 +283,7 @@ Although asm.js files were distributed as a single Javascript file, WebAssembly 
 
 
 
-## Versions of sql.js included in the [distributed artifacts](https://github.com/sql-js/sql.js/releases/latest)
+## Versions of sql.js included in the [CDN](https://cdnjs.com/libraries/sql.js) and [distributed artifacts](https://github.com/sql-js/sql.js/releases/latest)
 For each [relase](https://github.com/sql-js/sql.js/releases/), you will find a file called `sqljs.zip` in the *release assets*. It will contain:
  - `sql-wasm.js` : The Web Assembly version of Sql.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
  - `sql-wasm-debug.js` : The Web Assembly, Debug version of Sql.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.
