@@ -254,7 +254,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this["reset"]();
         if (Array.isArray(values)) return this.bindFromArray(values);
-        if (typeof values === "object") return this.bindFromObject(values);
+        if (values != null && typeof values === "object") return this.bindFromObject(values);
         return true;
     };
 
