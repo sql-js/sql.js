@@ -208,9 +208,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     }
 
     /** @typedef {string|number|null|Uint8Array} Database.SqlValue */
-    /** @typedef {Database.SqlValue[]|Object<string, Database.SqlValue>} Statement.BindParams */
+    /** @typedef {Database.SqlValue[]|Object<string, Database.SqlValue>|null} Statement.BindParams
+     */
 
-    /** Bind values to the parameters, after having reseted the statement
+    /** Bind values to the parameters, after having reseted the statement.
+    * If values is null, do nothing and return true.
     *
     * SQL statements can have parameters, named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
     * where NNN is a number and VVV a string.
@@ -251,10 +253,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             throw "Statement closed";
         }
         this["reset"]();
-        if (Array.isArray(values)) {
-            return this.bindFromArray(values);
-        }
-        return this.bindFromObject(values);
+        if (Array.isArray(values)) return this.bindFromArray(values);
+        if (values != null && typeof values === "object") return this.bindFromObject(values);
+        return true;
     };
 
     /** Execute the statement, fetching the the next line of result,

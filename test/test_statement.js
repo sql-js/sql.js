@@ -65,6 +65,14 @@ exports.test = function(sql, assert){
     result = stmt.get({':start':1, ':end':1});
     assert.deepEqual(result, ['a',1], "Binding named parameters");
 
+    // Prepare statement, pass null to bind() and check that it works
+    stmt = db.prepare("SELECT 'bind-with-null'");
+    result = stmt.bind(null);
+    assert.equal(result, true);
+    stmt.step();
+    result = stmt.get();
+    assert.equal(result,"bind-with-null")
+
     // Close the database and all associated statements
     db.close();
 };
