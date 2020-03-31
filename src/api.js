@@ -222,6 +222,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     *
     * @constructs Statement
     * @memberof module:SqlJs
+    * @param {number} stmt1 The SQLite statement reference
+    * @param {Database} db The database from which this statement was created
      */
     function Statement(stmt1, db) {
         this.stmt = stmt1;
@@ -303,7 +305,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             case SQLITE_DONE:
                 return false;
             default:
-                return this.db.handleError(ret);
+                throw this.db.handleError(ret);
         }
     };
 
@@ -554,8 +556,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @nodoc
      */
     Statement.prototype.bindFromObject = function bindFromObject(valuesObj) {
-        var that;
-        that = this;
+        var that = this;
         Object.keys(valuesObj).forEach(function each(name) {
             var num;
             num = sqlite3_bind_parameter_index(that.stmt, name);
@@ -567,7 +568,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Bind values to numbered parameters
-    @param {Database.SqlValue[]} valuesObj
+    @param {Database.SqlValue[]} values
     @private
     @nodoc
      */
@@ -789,16 +790,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Execute an sql statement, and call a callback for each row of result.
 
-    **Currently** this method is synchronous, it will not return until the
-    callback has been called on every row of the result. But this might change.
+    Currently this method is synchronous, it will not return until the callback
+    has been called on every row of the result. But this might change.
 
     @param {string} sql A string of SQL text. Can contain placeholders
     that will be bound to the parameters given as the second argument
-    @param {Array<Database.SqlValue>} [params] Parameters to bind to the query
-    @param {function({Object}):void} callback A function that will be called on
-    each row of result
-    @param {function()} done A function that will be called when all rows have
-    been retrieved
+    @param {Statement.BindParams} [params=[]] Parameters to bind to the query
+    @param {function(Object<string, Database.SqlValue>):void} callback
+    Function to call on each row of result
+    @param {function():void} done A function that will be called when all rows have been retrieved
 
     @return {Database} The database object. Useful for method chaining
 
