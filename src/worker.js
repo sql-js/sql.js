@@ -93,7 +93,7 @@
         });
     }
 
-    db = null;
+    // init web-worker onmessage event-handling
     self.onmessage = function onmessage(event) {
         return sqlModuleReady
             .then(onModuleReady.bind(event))
