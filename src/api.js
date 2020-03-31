@@ -253,15 +253,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             throw "Statement closed";
         }
         this["reset"]();
-        var bindResult = true;
-        if (values) {
-            if (Array.isArray(values)) {
-                bindResult = this.bindFromArray(values);
-            } else {
-                bindResult = this.bindFromObject(values);
-            }
-        }
-        return bindResult;
+        if (Array.isArray(values)) return this.bindFromArray(values);
+        if (typeof values === "object") return this.bindFromArray(values);
+        return true;
     };
 
     /** Execute the statement, fetching the the next line of result,
