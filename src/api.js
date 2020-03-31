@@ -208,9 +208,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     }
 
     /** @typedef {string|number|null|Uint8Array} Database.SqlValue */
-    /** @typedef {Database.SqlValue[]|Object<string, Database.SqlValue>} Statement.BindParams */
+    /** @typedef {Database.SqlValue[]|Object<string, Database.SqlValue>|null} Statement.BindParams
+     */
 
-    /** Bind values to the parameters, after having reseted the statement
+    /** Bind values to the parameters, after having reseted the statement.
+    * If values is null, do nothing and return true.
     *
     * SQL statements can have parameters, named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
     * where NNN is a number and VVV a string.
