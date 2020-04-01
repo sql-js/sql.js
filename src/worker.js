@@ -12,7 +12,7 @@
     if (!(
         typeof self === "object"
         && typeof importScripts === "function"
-        && typeof self
+        && self
         && self.importScripts === importScripts
     )) {
         return;

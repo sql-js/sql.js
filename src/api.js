@@ -51,6 +51,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     "use strict";
 
     // Declare toplevel variables
+    // variables to keep track of worker-callbacks
+    var workerCallbackDict = {};
+    var workerCallbackId = 0;
     // register, used for temporary stack values
     var apiTemp = stackAlloc(4);
     var cwrap = Module["cwrap"];
@@ -1007,7 +1010,74 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return this;
     };
 
+    /** @typedef {string} url */
+    /**
+    * @constructs Worker
+    * @memberof module:SqlJs
+    * @param {url} web-worker url
+    * @example
+    *     var worker = new SQL.Worker("/dist/sql-wasm.js");
+     */
+    function SqlWorker(url) {
+        this.worker = new Worker(url);
+        this.worker.onmessage = function onmessage(msg) {
+        /*
+         * this function will handle <msg> returned from web-worker
+         */
+            var callback = workerCallbackDict[msg.data.id];
+            delete workerCallbackDict[msg.data.id];
+            if (callback) {
+                callback(msg.data);
+            }
+        };
+    }
+
+    /** @typedef {Object} msg */
+    /**
+    * Asynchronously run sql-commands by posting them as web-worker messages
+    * @param {msg} web-worker message-object
+    * @example
+    *     var worker = new SQL.Worker("/dist/sql-wasm.js");
+    *     try {
+    *         var data = await worker.postMessage({
+    *             action: "exec",
+    *             params: {"@id": 1},
+    *             sql: "SELECT * FROM myTable WHERE id = @id"
+    *         });
+    *         console.log(data.results[0]);
+    *     } catch (sqlError) {
+    *         console.error(sqlError);
+    *     }
+     */
+    SqlWorker.prototype["postMessage"] = function postMessage(msg) {
+        var callback;
+        var error;
+        var that;
+        that = this;
+        // preserve stack-trace, in case of error
+        error = new Error();
+        return new Promise(function onpromise(resolve, reject) {
+            callback = function _callback(data) {
+                // if <data>.error, then prepend it to <error>.stack and reject
+                if (data.error) {
+                    error.message = data.error;
+                    error.stack = data.error + "\n" + error.stack;
+                    reject(error);
+                    return;
+                }
+                resolve(data);
+            };
+            // increment workerCallbackId
+            // and cycle back to 0 if it overflows past 32-bits
+            workerCallbackId = (workerCallbackId + 1) | 0;
+            msg.id = workerCallbackId;
+            workerCallbackDict[msg.id] = callback;
+            that.worker.postMessage(msg);
+        });
+    };
 
     // export Database to Module
     Module.Database = Database;
+    // export Worker to Module
+    Module.Worker = SqlWorker;
 };

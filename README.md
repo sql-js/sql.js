@@ -191,32 +191,32 @@ See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 If you don't want to run CPU-intensive SQL queries in your main application thread,
 you can use the *more limited* WebWorker API.
 
-You will need to download [dist/worker.sql-wasm.js](dist/worker.sql-wasm.js) [dist/worker.sql-wasm.wasm](dist/worker.sql-wasm.wasm).
+You will need to download [dist/sql-wasm.js](dist/sql-wasm.js) [dist/sql-wasm.wasm](dist/sql-wasm.wasm).
 
 Example:
 ```html
+<script src="/dist/sql-wasm.js"></script>
 <script>
-  var worker = new Worker("/dist/worker.sql-wasm.js");
-  worker.onmessage = () => {
-    console.log("Database opened");
-    worker.onmessage = event => {
-      console.log(event.data); // The result of the query
-    };
-
-    worker.postMessage({
-      id: 2,
-      action: "exec",
-      sql: "SELECT age,name FROM test WHERE id=$id",
-      params: { "$id": 1 }
-    });
-  };
-
-  worker.onerror = e => console.log("Worker error: ", e);
-  worker.postMessage({
-    id:1,
-    action:"open",
-    buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
-  });
+(async function () {
+  var SQL = await initSqlJs({ locateFile: filename => `/dist/${filename}` });
+  var worker = new SQL.Worker("/dist/sql-wasm.js");
+  try {
+      await worker.postMessage({
+        id:1,
+        action:"open",
+        buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
+      });
+      var data = await worker.postMessage({
+        id: 2,
+        action: "exec",
+        sql: "SELECT age,name FROM test WHERE id=$id",
+        params: { "$id": 1 }
+      });
+      console.log(data);
+  } catch (sqlError) {
+      console.error(sqlError);
+  }
+}());
 </script>
 ```
 

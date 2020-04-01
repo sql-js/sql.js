@@ -7,50 +7,45 @@ var puppeteer = require("puppeteer");
 var path = require("path");
 var fs = require("fs");
 
-class Worker {
-  constructor(handle) {
-    this.handle = handle;
-  }
-  static async fromFile(file) {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    const source = fs.readFileSync(file, 'utf8');
-    const worker = await page.evaluateHandle(x => {
-      const url = URL.createObjectURL(new Blob([x]), { type: 'application/javascript; charset=utf-8' });
-      return new Worker(url);
-    }, source);
-    return new Worker(worker);
-  }
-  async postMessage(msg) {
-    return await this.handle.evaluate((worker, msg) => {
-      return new Promise((accept, reject) => {
-        setTimeout(reject, 20000, new Error("time out"));
-        worker.onmessage = evt => accept(evt.data);
-        worker.onerror = reject;
-        worker.postMessage(msg);
-      })
-    }, msg);
-  }
-}
-
 exports.test = async function test(SQL, assert) {
   var target = process.argv[2];
+  // init file
   var file = target ? "sql-" + target : "sql-wasm";
   if (file.indexOf('wasm') > -1 || file.indexOf('memory-growth') > -1) {
     console.error("Skipping worker test for " + file + ". Not implemented yet");
     return;
   };
   // If we use puppeteer, we need to pass in this new cwd as the root of the file being loaded:
-  const filename = "../dist/" + file + ".js";
+  file = path.join(__dirname, "../dist/" + file + ".js");
   // test isomorphism - web-worker code can be safely loaded in nodejs
-  require(filename);
-  var worker = await Worker.fromFile(path.join(__dirname, filename));
-  var data = await worker.postMessage({ id: 1, action: 'open' });
+  require(file);
+  // init puppeteer
+  var browser = await puppeteer.launch({args:["--no-sandbox"]});
+  var page = await browser.newPage();
+  // inject file as <script> tag
+  page.addScriptTag({ path: file });
+  // wait 1 second for <script> tag to begin loading
+  await page.waitFor(1000);
+  // use builtin SQL.Worker
+  var worker = await page.evaluateHandle(function (source) {
+    return new Promise(async function (resolve) {
+        var SQL = await initSqlJs();
+        var url = URL.createObjectURL(new Blob([source]), { type: 'application/javascript; charset=utf-8' });
+        resolve(new SQL.Worker(url));
+    });
+  }, fs.readFileSync(file, 'utf8'));
+  // use builtin SQL.Worker.prototype.postMessage
+  worker.postMessage = async function (msg) {
+      return await worker.evaluate(function (worker, msg) {
+          return worker.postMessage(msg);
+      }, msg);
+  };
+  //!! console.error(worker);
+  var data = await worker.postMessage({ action: 'open' });
   assert.strictEqual(data.id, 1, "Return the given id in the correct format");
   assert.deepEqual(data, { id: 1, ready: true }, 'Correct data answered to the "open" query');
 
   data = await worker.postMessage({
-    id: 2,
     action: 'exec',
     params: {
         ":num2": 2,
