@@ -123,6 +123,7 @@
 
     // Save the db to a file
     async function savedb() {
+        tic();
         var data = await worker.postMessage({ action: 'export' });
         toc("Exporting the database");
         var arraybuff = data.buffer;
@@ -137,7 +138,6 @@
             }, 1500);
         };
         a.click();
-        tic();
     }
     savedbElm.addEventListener("click", savedb, true);
 }());
