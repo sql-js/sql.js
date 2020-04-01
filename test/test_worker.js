@@ -41,7 +41,9 @@ exports.test = async function test(SQL, assert) {
     return;
   };
   // If we use puppeteer, we need to pass in this new cwd as the root of the file being loaded:
-  const filename = "../dist/worker." + file + ".js";
+  const filename = "../dist/" + file + ".js";
+  // test isomorphism - web-worker code can be safely loaded in nodejs
+  require(filename);
   var worker = await Worker.fromFile(path.join(__dirname, filename));
   var data = await worker.postMessage({ id: 1, action: 'open' });
   assert.strictEqual(data.id, 1, "Return the given id in the correct format");

@@ -80,13 +80,13 @@ debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
 dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js src/worker.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js src/worker.js > $@
 	rm out/tmp-raw.js
 
 .PHONY: optimized
@@ -95,13 +95,13 @@ optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
 dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js src/worker.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js src/worker.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
@@ -110,21 +110,22 @@ dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
+# alias dist/worker.sql-xxx.js to dist/sql-xxx.js for legacy-compatibility
 # Web worker API
 .PHONY: worker
 worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
 
-dist/worker.sql-asm.js: dist/sql-asm.js src/worker.js
-	cat $^ > $@
+dist/worker.sql-asm.js: dist/sql-asm.js
+	cp $^ $@
 
-dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js src/worker.js
-	cat $^ > $@
+dist/worker.sql-asm-debug.js: dist/sql-asm-debug.js
+	cp $^ $@
 
-dist/worker.sql-wasm.js: dist/sql-wasm.js src/worker.js
-	cat $^ > $@
+dist/worker.sql-wasm.js: dist/sql-wasm.js
+	cp $^ $@
 
-dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js src/worker.js
-	cat $^ > $@
+dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js
+	cp $^ $@
 
 # Building it this way gets us a wrapper that _knows_ it's in worker mode, which is nice.
 # However, since we can't tell emcc that we don't need the wasm generated, and just want the wrapper, we have to pay to have the .wasm generated
