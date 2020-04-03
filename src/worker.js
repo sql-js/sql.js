@@ -63,7 +63,12 @@ function onModuleReady(SQL) {
                 return postMessage(result);
             }
         case "close":
-            return db && db.close();
+            if (db) {
+                db.close();
+            }
+            return postMessage({
+                id: data["id"]
+            });
         default:
             throw new Error("Invalid action : " + (data && data["action"]));
     }
