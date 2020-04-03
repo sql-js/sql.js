@@ -883,6 +883,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * memory consumption will grow forever
      */
     Database.prototype["close"] = function close() {
+        // do nothing if db is null or already closed
+        if (this.db === null) {
+            return;
+        }
         Object.values(this.statements).forEach(function each(stmt) {
             stmt["free"]();
         });

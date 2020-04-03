@@ -91,6 +91,12 @@ exports.test = async function test(SQL, assert) {
   var actual = "";
   for (let i = 0; i < header.length; i++) actual += String.fromCharCode(data.buffer[i]);
   assert.equal(actual, header, 'Data returned is an SQLite database file');
+
+  // test worker properly opens db after closing
+  await worker.postMessage({ action: "close" });
+  await worker.postMessage({ action: "open" });
+  data = await worker.postMessage({ action: "exec", sql: "SELECT 1" });
+  assert.deepEqual(data.results, [{"columns":["1"],"values":[[1]]}]);
 }
 
 function obj2array(obj) {
