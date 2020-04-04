@@ -26,17 +26,58 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-      - name: zip artifacts
-        run: zip --junk-paths ./sqljs.zip dist/*
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.1
+      - run: cd dist && zip sqljs-wasm.zip sql-wasm.{js,wasm}
+      - name: Upload Release Asset (wasm)
+        uses: lovasoa/upload-release-asset@851d9cc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./sqljs.zip
-          asset_name: sqljs.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/sqljs-wasm.zip
+          asset_name: sqljs-wasm.zip
+          asset_label: wasm version, best runtime performance, smaller assets, requires configuration
+          asset_content_type: application/zip
+      - name: Upload Release Asset (asm)
+        uses: lovasoa/upload-release-asset@851d9cc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/sql-asm.js
+          asset_name: sql.js
+          asset_label: asm.js version, slower, easy to integrate and compatible with old browsers 
+          asset_content_type: text/javascript
+      - run: cd dist && zip sqljs-worker-wasm.zip worker.sql-wasm.js sql-wasm.wasm
+      - name: Upload Release Asset (worker wasm)
+        uses: lovasoa/upload-release-asset@851d9cc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/sqljs-worker-wasm.zip
+          asset_name: sqljs-worker-wasm.zip
+          asset_label: webworker wasm version, to be loaded as a web worker
+          asset_content_type: application/zip
+      - name: Upload Release Asset (worker asm)
+        uses: lovasoa/upload-release-asset@851d9cc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/worker.sql-asm.js
+          asset_name: worker.sql-asm.js
+          asset_label: webworker asm version, to be loaded as a web worker
+          asset_content_type: text/javascript
+      - run: cd dist && zip sqljs-all.zip *.{js,wasm}
+      - name: Upload Release Asset (all)
+        uses: lovasoa/upload-release-asset@851d9cc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/sqljs-all.zip
+          asset_name: sqljs-all.zip
+          asset_label: all versions, including non-minified javascript 
           asset_content_type: application/zip
       - name: publish the package to NPM
         run: |
