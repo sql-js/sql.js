@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: mymindstorm/setup-emsdk@v1
-        with: {version: '1.39.9'}
+        with: {version: '1.39.11'}
       - name: make
         run: make
       - name: Create Release
