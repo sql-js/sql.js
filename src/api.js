@@ -768,7 +768,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                         if (curresult === null) {
                             curresult = {
                                 columns: stmt["getColumnNames"](),
-                                values: []
+                                values: [],
                             };
                             results.push(curresult);
                         }
