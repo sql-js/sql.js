@@ -27,7 +27,7 @@ module.exports = {
     },
     rules: {
         camelcase: "off",
-        "comma-dangle": ["error", "never"],
+        "comma-dangle": "off",
         "dot-notation": "off",
         indent: ["error", 4, { SwitchCase: 1 }],
         "no-bitwise": "off",
