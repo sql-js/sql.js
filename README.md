@@ -14,6 +14,9 @@ SQLite is public domain, sql.js is MIT licensed.
 
 Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
 
+## Why sql.js?
+
+sql.js is currently the only way to run SQL queries against a standard relational database on the client side on the web. There are many different use cases for this. If you want some examples, you can give a glance at the list of the [many github repositories](https://github.com/sql-js/sql.js/network/dependents?package_id=UGFja2FnZS0xMzgwNDgwOQ%3D%3D) that depend on sql.js.
 
 ## Documentation
 A [full documentation](https://sql-js.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
