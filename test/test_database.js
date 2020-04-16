@@ -37,8 +37,10 @@ exports.test = function(SQL, assert, done) {
   db2.close();
 
   db = new SQL.Database();
-  assert.deepEqual(db.exec("SELECT * FROM sqlite_master"),
-                   [],
+  result = db.exec("SELECT * FROM sqlite_master");
+  assert.strictEqual(result.length, 1,
+                     "db.exec() should return array length 1 for single select");
+  assert.deepEqual(result[0].values, [],
                    "Newly created databases should be empty");
   // Testing db.each
   db.run("CREATE TABLE test (a,b); INSERT INTO test VALUES (1,'a'),(2,'b')");

@@ -13,6 +13,7 @@
 "_sqlite3_bind_int",
 "_sqlite3_bind_parameter_index",
 "_sqlite3_step",
+"_sqlite3_column_count",
 "_sqlite3_data_count",
 "_sqlite3_column_double",
 "_sqlite3_column_text",

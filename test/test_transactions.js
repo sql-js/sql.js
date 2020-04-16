@@ -12,8 +12,10 @@ exports.test = function(SQL, assert){
   db.exec("ROLLBACK;");
 
   var res = db.exec("SELECT data FROM test WHERE data = 4;");
+  assert.strictEqual(res.length, 1,
+                     "db.exec() should return array length 1 for single select");
   var expectedResult =  [];
-  assert.deepEqual(res, expectedResult, "transaction rollbacks work");
+  assert.deepEqual(res[0].values, expectedResult, "transaction rollbacks work");
 
   // Open a transaction
   db.exec("BEGIN TRANSACTION;");

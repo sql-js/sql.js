@@ -112,6 +112,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
     var sqlite3_step = cwrap("sqlite3_step", "number", ["number"]);
     var sqlite3_errmsg = cwrap("sqlite3_errmsg", "string", ["number"]);
+    var sqlite3_column_count = cwrap("sqlite3_column_count", "number", ["number"]);
     var sqlite3_data_count = cwrap("sqlite3_data_count", "number", ["number"]);
     var sqlite3_column_double = cwrap(
         "sqlite3_column_double",
@@ -393,7 +394,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @return {string[]} The names of the columns
     @example
     var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
-    stmt.step(); // Execute the statement
+    // No need to execute the statement with stmt.step()
     console.log(stmt.getColumnNames());
     // Will print ['nbr','data','null_value']
      */
@@ -403,7 +404,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var results1;
         results1 = [];
         i = 0;
-        ref = sqlite3_data_count(this.stmt);
+        ref = sqlite3_column_count(this.stmt);
         while (i < ref) {
             results1.push(sqlite3_column_name(this.stmt, i));
             i += 1;
@@ -688,8 +689,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * and {@link Statement.free}.
     *
     * The result is an array of result elements. There are as many result
-    * elements as the number of statements in your sql string (statements are
-    * separated by a semicolon)
+    * elements as the number of statements which return a result set in your
+    * SQL string. In all likelihood this is the number of SELECT statements in
+    * your SQL string. Statements are separated by a semicolon.
+    *
+    * *Changed in version 2.0*: Prior to version 2.0, the result array would
+    * contain as many elements as statements returned at least one row, meaning
+    * it would not contain elements for SELECT statements which returned an
+    * empty result set. In practice this is likely to mean that previously code
+    * might have run `res = exec("SELECT ...")` and then check for an empty
+    * result set with `res.length === 0` will have to be updated to check
+    * `res[0].values.length === 0`.
     *
     * ## Example use
     * We will create the following table, named *test* and query it with a
@@ -759,20 +769,25 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 nextSqlPtr = getValue(pzTail, "i32");
                 // Empty statement
                 if (pStmt !== NULL) {
-                    curresult = null;
                     stmt = new Statement(pStmt, this);
                     if (params != null) {
                         stmt.bind(params);
                     }
-                    while (stmt["step"]()) {
-                        if (curresult === null) {
-                            curresult = {
-                                columns: stmt["getColumnNames"](),
-                                values: [],
-                            };
-                            results.push(curresult);
+                    var columns = stmt["getColumnNames"]();
+                    if (columns.length > 0) {
+                        curresult = {
+                            columns: columns,
+                            values: [],
+                        };
+                        results.push(curresult);
+                        while (stmt["step"]()) {
+                            curresult["values"].push(stmt["get"]());
                         }
-                        curresult["values"].push(stmt["get"]());
+                    } else if (stmt["step"]()) {
+                        throw (
+                            "Unexpected condition: got row from statement "
+                            + "with empty getColumnNames(...)."
+                        );
                     }
                     stmt["free"]();
                 }
