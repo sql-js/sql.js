@@ -11,7 +11,7 @@ jobs:
     name: Create a release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: mymindstorm/setup-emsdk@v1
         with: {version: '1.39.11'}
       - name: make
