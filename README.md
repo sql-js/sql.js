@@ -136,7 +136,7 @@ dbFileElm.onchange = () => {
   r.readAsArrayBuffer(f);
 }
 ```
-See : http://kripken.github.io/sql.js/examples/GUI/gui.js
+See : https://sql-js.github.io/sql.js/examples/GUI/gui.js
 
 #### Loading a database from a server
 
