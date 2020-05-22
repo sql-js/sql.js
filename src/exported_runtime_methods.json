@@ -2,5 +2,8 @@
 "cwrap",
 "stackAlloc",
 "stackSave",
-"stackRestore"
+"stackRestore",
+"FS",
+"MEMFS",
+"IDBFS"
 ]

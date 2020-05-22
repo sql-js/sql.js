@@ -621,13 +621,18 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing
     * one stored in the byte array passed in first argument
-    * @param {number[]} data An array of bytes representing
-    * an SQLite database file
+    * @param {number[]|string} data An array of bytes representing
+    * an SQLite database file. Alternatively, a file path representing the
+    * file to load if using IDBFS.
     */
     function Database(data) {
         this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
         if (data != null) {
-            FS.createDataFile("/", this.filename, data, true, true);
+            if (typeof data === "string") {
+                this.filename = data;
+            } else {
+                FS.createDataFile("/", this.filename, data, true, true);
+            }
         }
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
