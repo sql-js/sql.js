@@ -285,3 +285,17 @@ For each [release](https://github.com/sql-js/sql.js/releases/), you will find a 
 
 - Install the EMSDK, [as described here](https://emscripten.org/docs/getting_started/downloads.html)
 - Run `npm run rebuild`
+
+In order to enable extensions like JSON1 or FTS5, change the CFLAGS in the [Makefile](Makefile) and rebuild:
+
+``` diff
+CFLAGS = \
+        -O2 \
+        -DSQLITE_OMIT_LOAD_EXTENSION \
+        -DSQLITE_DISABLE_LFS \
+        -DSQLITE_ENABLE_FTS3 \
+        -DSQLITE_ENABLE_FTS3_PARENTHESIS \
++       -DSQLITE_ENABLE_FTS5 \
++       -DSQLITE_ENABLE_JSON1 \
+        -DSQLITE_THREADSAFE=0
+```
