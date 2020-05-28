@@ -859,14 +859,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     Database.prototype["export"] = function exportDatabase() {
         var binaryDb;
         Object.values(this.statements).forEach(function each(stmt) {
-            stmt["free"]();
+            stmt["reset"]();
         });
-        Object.values(this.functions).forEach(removeFunction);
-        this.functions = {};
-        this.handleError(sqlite3_close_v2(this.db));
-        binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this.handleError(sqlite3_open(this.filename, apiTemp));
-        this.db = getValue(apiTemp, "i32");
+        var exportFilename = "export_" + (0xffffffff * Math.random() >>> 0);
+        this.exec("VACUUM INTO ?", [exportFilename]);
+        binaryDb = FS.readFile(exportFilename, { encoding: "binary" });
+        FS.unlink(exportFilename);
         return binaryDb;
     };
 
