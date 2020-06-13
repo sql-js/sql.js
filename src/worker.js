@@ -1,11 +1,12 @@
 /* global initSqlJs */
 /* eslint-env worker */
 /* eslint no-restricted-globals: ["error"] */
+
+"use strict";
+
 var db;
 
 function onModuleReady(SQL) {
-    "use strict";
-
     function createDb(data) {
         if (db != null) db.close();
         db = new SQL.Database(data);
@@ -75,8 +76,6 @@ function onModuleReady(SQL) {
 }
 
 function onError(err) {
-    "use strict";
-
     return postMessage({
         id: this["data"]["id"],
         error: err["message"]
@@ -87,8 +86,6 @@ if (typeof importScripts === "function") {
     db = null;
     var sqlModuleReady = initSqlJs();
     self.onmessage = function onmessage(event) {
-        "use strict";
-
         return sqlModuleReady
             .then(onModuleReady.bind(event))
             .catch(onError.bind(event));

@@ -16,6 +16,8 @@
     stackSave
 */
 
+"use strict";
+
 /**
  * @typedef {{Database:Database}} SqlJs
  * @property {Database} Database the database constructor
@@ -48,8 +50,6 @@
  */
 // Wait for preRun to run, and then finish our initialization
 Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
-    "use strict";
-
     // Declare toplevel variables
     // register, used for temporary stack values
     var apiTemp = stackAlloc(4);
@@ -166,10 +166,18 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         ]
     );
     var sqlite3_value_type = cwrap("sqlite3_value_type", "number", ["number"]);
-    var sqlite3_value_bytes = cwrap("sqlite3_value_bytes", "number", ["number"]);
+    var sqlite3_value_bytes = cwrap(
+        "sqlite3_value_bytes",
+        "number",
+        ["number"]
+    );
     var sqlite3_value_text = cwrap("sqlite3_value_text", "string", ["number"]);
     var sqlite3_value_blob = cwrap("sqlite3_value_blob", "number", ["number"]);
-    var sqlite3_value_double = cwrap("sqlite3_value_double", "number", ["number"]);
+    var sqlite3_value_double = cwrap(
+        "sqlite3_value_double",
+        "number",
+        ["number"]
+    );
     var sqlite3_result_double = cwrap(
         "sqlite3_result_double",
         "",
@@ -190,7 +198,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "",
         ["number", "number", "number", "number"]
     );
-    var sqlite3_result_int = cwrap("sqlite3_result_int", "", ["number", "number"]);
+    var sqlite3_result_int = cwrap(
+        "sqlite3_result_int",
+        "",
+        ["number", "number"]
+    );
     var sqlite3_result_error = cwrap(
         "sqlite3_result_error",
         "",
@@ -236,13 +248,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     }
 
     /** @typedef {string|number|null|Uint8Array} Database.SqlValue */
-    /** @typedef {Database.SqlValue[]|Object<string, Database.SqlValue>|null} Statement.BindParams
+    /** @typedef {
+        Database.SqlValue[]|Object<string, Database.SqlValue>|null
+    } Statement.BindParams
      */
 
     /** Bind values to the parameters, after having reseted the statement.
     * If values is null, do nothing and return true.
     *
-    * SQL statements can have parameters, named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
+    * SQL statements can have parameters,
+    * named *'?', '?NNN', ':VVV', '@VVV', '$VVV'*,
     * where NNN is a number and VVV a string.
     * This function binds these parameters to the given values.
     *
@@ -282,7 +297,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this["reset"]();
         if (Array.isArray(values)) return this.bindFromArray(values);
-        if (values != null && typeof values === "object") return this.bindFromObject(values);
+        if (values != null && typeof values === "object") {
+            return this.bindFromObject(values);
+        }
         return true;
     };
 
@@ -355,7 +372,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     to the statement before it is executed
     @return {Database.SqlValue[]} One row of result
 
-    @example <caption>Print all the rows of the table test to the console</caption>
+    @example
+    <caption>Print all the rows of the table test to the console</caption>
     var stmt = db.prepare("SELECT * FROM test");
     while (stmt.step()) console.log(stmt.get());
      */
@@ -392,7 +410,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     /** Get the list of column names of a row of result of a statement.
     @return {string[]} The names of the columns
     @example
-    var stmt = db.prepare("SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;");
+    var stmt = db.prepare(
+        "SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;"
+    );
     stmt.step(); // Execute the statement
     console.log(stmt.getColumnNames());
     // Will print ['nbr','data','null_value']
@@ -648,7 +668,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     @example
     // Insert values in a table
-    db.run("INSERT INTO test VALUES (:age, :name)", { ':age' : 18, ':name' : 'John' });
+    db.run(
+        "INSERT INTO test VALUES (:age, :name)",
+        { ':age' : 18, ':name' : 'John' }
+    );
 
     @return {Database} The database object (useful for method chaining)
      */
@@ -671,7 +694,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /**
-     * @typedef {{columns:string[], values:Database.SqlValue[][]}} Database.QueryExecResult
+     * @typedef {{
+        columns:string[],
+        values:Database.SqlValue[][]
+    }} Database.QueryExecResult
      * @property {string[]} columns the name of the columns of the result
      * (as returned by {@link Statement.getColumnNames})
      * @property {Database.SqlValue[][]} values one array per row, containing
@@ -798,7 +824,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @param {Statement.BindParams} [params=[]] Parameters to bind to the query
     @param {function(Object<string, Database.SqlValue>):void} callback
     Function to call on each row of result
-    @param {function():void} done A function that will be called when all rows have been retrieved
+    @param {function():void} done A function that will be called when
+    all rows have been retrieved
 
     @return {Database} The database object. Useful for method chaining
 
@@ -874,8 +901,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * The memory associated to the database and all associated statements
     * will be freed.
     *
-    * **Warning**: A statement belonging to a database that has been closed cannot
-    * be used anymore.
+    * **Warning**: A statement belonging to a database that has been closed
+    * cannot be used anymore.
     *
     * Databases **must** be closed when you're finished with them, or the
     * memory consumption will grow forever
@@ -908,8 +935,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         throw new Error(errmsg);
     };
 
-    /** Returns the number of changed rows (modified, inserted or deleted) by the
-    latest completed INSERT, UPDATE or DELETE statement on the
+    /** Returns the number of changed rows (modified, inserted or deleted)
+    by the latest completed INSERT, UPDATE or DELETE statement on the
     database. Executing any other type of SQL statement does not modify
     the value returned by this function.
 
@@ -924,11 +951,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         db.create_function("addOne", function (x) {return x+1;})
         db.exec("SELECT addOne(1)") // = 2
 
-    @param {string} name the name of the function as referenced in SQL statements.
+    @param {string} name the name of the function as referenced in
+    SQL statements.
     @param {function} func the actual function to be executed.
     @return {Database} The database object. Useful for method chaining
      */
-    Database.prototype["create_function"] = function create_function(name, func) {
+    Database.prototype["create_function"] = function create_function(
+        name,
+        func
+    ) {
         var func_ptr;
         function wrapped_func(cx, argc, argv) {
             var result;
@@ -936,7 +967,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 var size = sqlite3_value_bytes(ptr);
                 var blob_ptr = sqlite3_value_blob(ptr);
                 var blob_arg = new Uint8Array(size);
-                for (var j = 0; j < size; j += 1) blob_arg[j] = HEAP8[blob_ptr + j];
+                for (var j = 0; j < size; j += 1) {
+                    blob_arg[j] = HEAP8[blob_ptr + j];
+                }
                 return blob_arg;
             }
             var args = [];
@@ -944,7 +977,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 var value_ptr = getValue(argv + (4 * i), "i32");
                 var value_type = sqlite3_value_type(value_ptr);
                 var arg;
-                if (value_type === SQLITE_INTEGER || value_type === SQLITE_FLOAT) {
+                if (
+                    value_type === SQLITE_INTEGER
+                    || value_type === SQLITE_FLOAT
+                ) {
                     arg = sqlite3_value_double(value_ptr);
                 } else if (value_type === SQLITE_TEXT) {
                     arg = sqlite3_value_text(value_ptr);
