@@ -27,7 +27,6 @@ module.exports = {
         "/test/test_database.js",
         "/test/test_errors.js",
         "/test/test_extension_functions.js",
-        "/test/test_functions.js",
         "/test/test_functions_recreate.js",
         "/test/test_issue128.js",
         "/test/test_issue325.js",
