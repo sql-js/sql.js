@@ -15,6 +15,7 @@
     stackRestore
     stackSave
 */
+/* eslint vars-on-top: 0 */
 
 "use strict";
 

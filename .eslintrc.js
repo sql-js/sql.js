@@ -20,7 +20,24 @@ module.exports = {
         "/out/",
         "/src/shell-post.js",
         "/src/shell-pre.js",
-        "/test/",
+        "/test/all.js",
+        "/test/disabled_test_memory_leak_on_error.js",
+        "/test/load_sql_lib.js",
+        "/test/test_blob.js",
+        "/test/test_database.js",
+        "/test/test_errors.js",
+        "/test/test_extension_functions.js",
+        "/test/test_functions.js",
+        "/test/test_functions_recreate.js",
+        "/test/test_issue128.js",
+        "/test/test_issue325.js",
+        "/test/test_issue55.js",
+        "/test/test_issue73.js",
+        "/test/test_issue76.js",
+        "/test/test_modularization.js",
+        "/test/test_node_file.js",
+        "/test/test_statement.js",
+        "/test/test_transactions.js",
         "!/.eslintrc.js"
     ],
     parserOptions: {
@@ -36,6 +53,10 @@ module.exports = {
         // reason - string-notation needed to prevent closure-minifier
         // from mangling property-name
         "dot-notation": "off",
+        // reason - test-cases use nameless, anonymous-functions for callbacks
+        "func-names": "off",
+        // reason - test-cases use lazy/conditional require
+        "global-require": "off",
         // reason - enforce 4-space indent
         indent: ["error", 4, { SwitchCase: 1 }],
         // reason - enforce 80-column-width limit
@@ -43,6 +64,8 @@ module.exports = {
         // reason - src/api.js uses bitwise-operators
         "no-bitwise": "off",
         "no-cond-assign": ["error", "except-parens"],
+        // reason - test-cases use console.log and console.error
+        "no-console": ["error", { allow: ["error", "log"] }],
         "no-param-reassign": "off",
         "no-throw-literal": "off",
         // reason - parserOptions is set to es5 language-syntax
@@ -61,7 +84,6 @@ module.exports = {
         // single-quotes
         quotes: ["error", "double"],
         // reason - allow top-level "use-strict" in commonjs-modules
-        strict: ["error", "safe"],
-        "vars-on-top": "off"
+        strict: ["error", "safe"]
     }
 };

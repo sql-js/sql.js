@@ -1,6 +1,7 @@
 /* global initSqlJs */
 /* eslint-env worker */
 /* eslint no-restricted-globals: ["error"] */
+/* eslint vars-on-top: 0 */
 
 "use strict";
 
