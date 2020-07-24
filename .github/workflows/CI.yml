@@ -7,16 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: mymindstorm/setup-emsdk@b6b33c4
-      with: {version: '1.39.14'}
     - uses: actions/cache@v1
       id: cache
       with:
-        path: ~/.emscripten_cache
-        key: emscripten-1.39.14
+        path: '.emsdk-cache'
+        key: emscripten-1.39.20
+    - uses: mymindstorm/setup-emsdk@2a4a91b
+      with:
+        version: '1.39.20'
+        actions-cache-folder: '.emsdk-cache'
     - name: make
       run: make
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v2
       with: {name: dist, path: dist}
     - name: test
       run: npm ci && npm test
