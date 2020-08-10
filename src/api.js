@@ -112,6 +112,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
     var sqlite3_step = cwrap("sqlite3_step", "number", ["number"]);
     var sqlite3_errmsg = cwrap("sqlite3_errmsg", "string", ["number"]);
+    var sqlite3_column_count = cwrap(
+        "sqlite3_column_count",
+        "number",
+        ["number"]
+    );
     var sqlite3_data_count = cwrap("sqlite3_data_count", "number", ["number"]);
     var sqlite3_column_double = cwrap(
         "sqlite3_column_double",
@@ -423,7 +428,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var results1;
         results1 = [];
         i = 0;
-        ref = sqlite3_data_count(this.stmt);
+        ref = sqlite3_column_count(this.stmt);
         while (i < ref) {
             results1.push(sqlite3_column_name(this.stmt, i));
             i += 1;
