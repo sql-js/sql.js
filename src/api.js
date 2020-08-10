@@ -113,8 +113,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var sqlite3_step = cwrap("sqlite3_step", "number", ["number"]);
     var sqlite3_errmsg = cwrap("sqlite3_errmsg", "string", ["number"]);
     var sqlite3_column_count = cwrap(
-        "sqlite3_column_count", 
-        "number", 
+        "sqlite3_column_count",
+        "number",
         ["number"]
     );
     var sqlite3_data_count = cwrap("sqlite3_data_count", "number", ["number"]);
