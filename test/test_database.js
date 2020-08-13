@@ -61,6 +61,20 @@ exports.test = function(SQL, assert, done) {
       done();
     }
   }, 3000);
+
+  // Prepare first of many statements
+  var thisSql;
+  var nextSql;
+  var sqlstr = "CREATE TABLE test (x integer); \n";
+  sqlstr = sqlstr + "INSERT INTO test VALUES (42), (77);";
+  sqlstr = sqlstr + "SELECT * FROM test";
+  [stmt, thisSql, nextSql] = db.prepareMany(sqlstr);
+  assert.strictEqual(thisSql, "CREATE TABLE test (x integer);",
+      "db.prepareMany extracts first statement");
+  assert.strictEqual(nextSql.trim(), "INSERT INTO test VALUES (42), (77);SELECT * FROM test",
+      "db.prepareMany extracts remaining statements");
+  [stmt, thisSql, nextSql] = db.prepareMany(" -- just a comment ");
+  assert.strictEqual(stmt, NULL, "db.prepareMany returns null Statement when no statement");
 };
 
 if (module == require.main) {

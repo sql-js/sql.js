@@ -85,6 +85,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "number",
         ["number", "number", "number", "number", "number"]
     );
+    var sqlite3_sql = cwrap("sqlite3_sql", "string", ["number"]);
     var sqlite3_bind_text = cwrap(
         "sqlite3_bind_text",
         "number",
@@ -883,6 +884,53 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this.statements[pStmt] = stmt;
         return stmt;
+    };
+
+    /** Prepare the first statement in a string containing multiple SQL
+     statements
+     @param {string} sql a string of SQL, with possibly multiple SQL statements
+     (separated by ;), without parameters
+     @return {[Statement, string, string]} an array containing the prepared
+     statement, the portion of the SQL prepared, and the remaining SQL
+     @throws {String} SQLite error
+     */
+    Database.prototype["prepareMany"] = function prepareMany(sql) {
+        var pStmt;
+        var pzTail;
+        var stmt;
+        var remainder;
+        var firstStatement;
+        var stack = stackSave();
+
+        try {
+            setValue(apiTemp, 0, "i32");
+            pzTail = stackAlloc(4);
+
+            this.handleError(sqlite3_prepare_v2(
+                this.db,
+                sql,
+                -1,
+                apiTemp,
+                pzTail
+            ));
+
+            // pointer to a statement, or null
+            pStmt = getValue(apiTemp, "i32");
+
+            if (pStmt === NULL) {
+                stackRestore(stack);
+                return [NULL, sql, NULL];
+            }
+
+            // unused portion of the SQL or null
+            remainder = UTF8ToString(getValue(pzTail, "i32"));
+            stmt = new Statement(pStmt, this);
+            firstStatement = sqlite3_sql(pStmt);
+            this.statements[pStmt] = stmt;
+            return [stmt, firstStatement, remainder];
+        } finally {
+            stackRestore(stack);
+        }
     };
 
     /** Exports the contents of the database to a binary array
