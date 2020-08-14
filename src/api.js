@@ -86,6 +86,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         ["number", "number", "number", "number", "number"]
     );
     var sqlite3_sql = cwrap("sqlite3_sql", "string", ["number"]);
+    var sqlite3_normalized_sql = cwrap("sqlite3_normalized_sql", "string", ["number"]);
     var sqlite3_bind_text = cwrap(
         "sqlite3_bind_text",
         "number",
@@ -720,8 +721,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * and {@link Statement.free}.
     *
     * The result is an array of result elements. There are as many result
-    * elements as the number of statements in your sql string (statements are
-    * separated by a semicolon)
+    * elements as the number of statements which return at least one row
+    * in your sql string (statements are separated by a semicolon)
     *
     * ## Example use
     * We will create the following table, named *test* and query it with a
@@ -732,7 +733,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * | 1  |  1  | Ling   |
     * | 2  |  18 | Paul   |
     *
-    * We query it like that:
+    * We query it like this:
     * ```javascript
     * var db = new SQL.Database();
     * var res = db.exec(
@@ -820,6 +821,196 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
     };
 
+    /** Execute multiple queries, with detailed results for each.
+     * Queries may not use parameters.
+     *
+     * The result is an array of objects of varying structure. There are as
+     * many result elements as the number of statements in your sql string
+     * (statements are separated by a semicolon).
+     *
+     * Result objects may contain the following members:
+     *     - success: true/false (all queries)
+     *     - error: error message if success is false
+     *     - columns: column headers, if query returns a result
+     *       (even if empty)
+     *     - values: query results, if query returns a
+     *       result (even if empty)
+     *     - rowsModified: rows affected, if query is INSERT, UPDATE, or DELETE
+     *     - sql: the SQL executed for this result (if no error)
+     *
+     * ## Example use
+     * We will create the following table, named *test* and query it with a
+     * multi-line statement:
+     *
+     * | id | age |  name  |
+     * |:--:|:---:|:------:|
+     * | 1  |  1  | Ling   |
+     * | 2  |  18 | Paul   |
+     *
+     * We query it like this:
+     * ```javascript
+     * var db = new SQL.Database();
+     * var res = db.execMany(
+     *     "DROP TABLE IF EXISTS test;"
+     *     + "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);"
+     *     + "INSERT INTO test VALUES (1, 1, 'Ling');"
+     *     + "INSERT INTO test VALUES (2, 18, 'Paul');"
+     *     + "SELECT id FROM test;"
+     *     + "SELECT age, name FROM test WHERE id = 1;"
+     *     + "SELECT age, name FROM test WHERE id = 4;"
+     *     + "INSERT INTO test (blah, foo) VALUES ('hello', 42);"
+     *     + "DELETE FROM test;"
+     * );
+     * ```
+     *
+     * `res` is now :
+     * ```javascript
+     *     [
+     *         {"success": true, "sql": "DROP TABLE IF EXISTS test;"},
+     *         {
+     *            "success": true,
+     *            "rowsModified": 1,
+     *            "sql":
+     *              "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);"
+     *         },
+     *         {
+     *            "success": true,
+     *            "rowsModified": 1
+     *            "sql": "INSERT INTO test VALUES (1, 1, 'Ling');"
+     *         },
+     *         {
+     *            "success": true,
+     *            "rowsModified": 1
+     *            "sql": "INSERT INTO test VALUES (2, 18, 'Paul');"
+     *         },
+     *         {
+     *            "success": true,
+     *            "columns": ["id"],
+     *            "values": [[1],[2]]},
+     *            "sql": "SELECT id FROM test;"
+     *         },
+     *         {
+     *            "success": true,
+     *            "columns": ["age","name"],
+     *            "values" :[[1,"Ling"]]},
+     *            "sql": "SELECT age, name FROM test WHERE id = 1;"
+     *         },
+     *         {
+     *            "success": true,
+     *            "columns": ["age","name"],
+     *            "values":[]
+     *            "sql": "SELECT age, name FROM test WHERE id = 4;"
+     *         },
+     *         {
+     *            "success": false,
+     *            "error": "table test has no column named blah",
+     *            "sql": "INSERT INTO test (blah, foo) VALUES ('hello', 42);"
+     *         },
+     *         {"success": true, "rowsModified": 2, "sql": "DELETE FROM test;"}
+     *     ]
+     * ```
+     *
+     @param {string} sql a string containing some SQL text to execute
+     @param {boolean} exitOnError whether or not to continue after error
+     @return {Object[]} as described above
+     */
+    Database.prototype["execMany"] = function execMany(sql, exitOnError) {
+        var answer = [];
+        var result;
+        var data;
+        var columns;
+        var stack;
+        var lastSql;
+        var nextSql;
+        var thisSql;
+        var normalizedSql;
+        var sqlType;
+        var stmt;
+        var pStmt;
+        var pzTail;
+        var returnCode;
+        var errorMessage;
+
+        if (!this.db) {
+            throw "Database closed";
+        }
+
+        stack = stackSave();
+
+        nextSql = sql;
+        pzTail = stackAlloc(4);
+
+        while (true) {
+            setValue(apiTemp, 0, "i32");
+            setValue(pzTail, 0, "i32");
+            returnCode = sqlite3_prepare_v2(this.db, nextSql, -1, apiTemp, pzTail);
+            lastSql = nextSql;
+            nextSql = UTF8ToString(getValue(pzTail, "i32"));
+            if (returnCode !== SQLITE_OK) {
+                errorMessage = sqlite3_errmsg(this.db);
+
+                // there's no valid statement pointer, so we have to do a hack to
+                // discover the most recent SQL statement:
+                thisSql = lastSql.substr(0, lastSql.length - nextSql.length);
+
+                answer.push({ success: false, error: errorMessage, sql: thisSql });
+
+                if (exitOnError) {
+                    stackRestore(stack);
+                    return answer;
+                }
+                continue;
+            }
+
+            // pointer to a statement, or NULL if nothing there
+            pStmt = getValue(apiTemp, "i32");
+            if (pStmt === NULL) break;
+
+            // get most recent sql statement
+            thisSql = sqlite3_sql(pStmt);
+
+            // wrap in a Statement so we can use existing methods
+            stmt = new Statement(pStmt, this);
+
+            // get column headers, if any
+            columns = stmt.getColumnNames();
+            data = [];
+            try {
+                while (stmt.step()) {
+                    data.push(stmt.get());
+                }
+            } catch (e) {
+                answer.push({ success: false, error: e.toString(), sql: thisSql });
+                if (exitOnError) {
+                    stackRestore(stack);
+                    return answer;
+                }
+                continue;
+            }
+
+            result = { success: true, sql: thisSql };
+
+            if (columns.length > 0) {
+                result.columns = columns;
+                result.values = data;
+            } else {
+                // bit of a kludge: determine if last query was modification query
+                normalizedSql = sqlite3_normalized_sql(pStmt);
+                console.log(normalizedSql);
+                sqlType = normalizedSql.trim().substr(0,6).toLowerCase();
+                if (sqlType === 'insert' || sqlType === 'update' || sqlType === 'delete') {
+                    result.rowsModified = this.getRowsModified();
+                }
+            }
+            answer.push(result);
+
+            // clean up
+            stmt.free();
+        }
+        stackRestore(stack);
+        return answer;
+    };
+
     /** Execute an sql statement, and call a callback for each row of result.
 
     Currently this method is synchronous, it will not return until the callback
@@ -884,53 +1075,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this.statements[pStmt] = stmt;
         return stmt;
-    };
-
-    /** Prepare the first statement in a string containing multiple SQL
-     statements
-     @param {string} sql a string of SQL, with possibly multiple SQL statements
-     (separated by ;), without parameters
-     @return {[Statement, string, string]} an array containing the prepared
-     statement, the portion of the SQL prepared, and the remaining SQL
-     @throws {String} SQLite error
-     */
-    Database.prototype["prepareMany"] = function prepareMany(sql) {
-        var pStmt;
-        var pzTail;
-        var stmt;
-        var remainder;
-        var firstStatement;
-        var stack = stackSave();
-
-        try {
-            setValue(apiTemp, 0, "i32");
-            pzTail = stackAlloc(4);
-
-            this.handleError(sqlite3_prepare_v2(
-                this.db,
-                sql,
-                -1,
-                apiTemp,
-                pzTail
-            ));
-
-            // pointer to a statement, or null
-            pStmt = getValue(apiTemp, "i32");
-
-            if (pStmt === NULL) {
-                stackRestore(stack);
-                return [NULL, sql, NULL];
-            }
-
-            // unused portion of the SQL or null
-            remainder = UTF8ToString(getValue(pzTail, "i32"));
-            stmt = new Statement(pStmt, this);
-            firstStatement = sqlite3_sql(pStmt);
-            this.statements[pStmt] = stmt;
-            return [stmt, firstStatement, remainder];
-        } finally {
-            stackRestore(stack);
-        }
     };
 
     /** Exports the contents of the database to a binary array
