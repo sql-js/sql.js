@@ -14,6 +14,7 @@
     stackAlloc
     stackRestore
     stackSave
+    UTF8ToString
 */
 
 "use strict";
