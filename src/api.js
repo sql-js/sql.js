@@ -869,7 +869,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      *         {"success": true, "sql": "DROP TABLE IF EXISTS test;"},
      *         {
      *            "success": true,
-     *            "rowsModified": 1,
      *            "sql":
      *              "CREATE TABLE test (id INTEGER, age INTEGER, name TEXT);"
      *         },
@@ -943,17 +942,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         while (true) {
             setValue(apiTemp, 0, "i32");
             setValue(pzTail, 0, "i32");
-            returnCode = sqlite3_prepare_v2(this.db, nextSql, -1, apiTemp, pzTail);
+            returnCode = sqlite3_prepare_v2(
+                this.db,
+                nextSql,
+                -1,
+                apiTemp,
+                pzTail)
+            ;
             lastSql = nextSql;
             nextSql = UTF8ToString(getValue(pzTail, "i32"));
             if (returnCode !== SQLITE_OK) {
                 errorMessage = sqlite3_errmsg(this.db);
 
-                // there's no valid statement pointer, so we have to do a hack to
-                // discover the most recent SQL statement:
+                // there's no valid statement pointer, so we have to do
+                // a hack to discover the most recent SQL statement:
                 thisSql = lastSql.substr(0, lastSql.length - nextSql.length);
 
-                answer.push({ success: false, error: errorMessage, sql: thisSql });
+                answer.push({
+                    "success": false,
+                    "error": errorMessage,
+                    "sql": thisSql
+                });
 
                 if (exitOnError) {
                     stackRestore(stack);
@@ -973,14 +982,18 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             stmt = new Statement(pStmt, this);
 
             // get column headers, if any
-            columns = stmt.getColumnNames();
+            columns = stmt["getColumnNames"]()
             data = [];
             try {
-                while (stmt.step()) {
-                    data.push(stmt.get());
+                while (stmt["step"]()) {
+                    data.push(stmt["get"]());
                 }
             } catch (e) {
-                answer.push({ success: false, error: e.toString(), sql: thisSql });
+                answer.push({
+                    "success": false,
+                    "error": e.toString(),
+                    "sql": thisSql
+                });
                 if (exitOnError) {
                     stackRestore(stack);
                     return answer;
@@ -988,24 +1001,26 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 continue;
             }
 
-            result = { success: true, sql: thisSql };
+            result = { "success": true, "sql": thisSql };
 
             if (columns.length > 0) {
-                result.columns = columns;
-                result.values = data;
+                result["columns"] = columns;
+                result["values"] = data;
             } else {
-                // bit of a kludge: determine if last query was modification query
+                // bit of a kludge: determine if last
+                // query was modification query
                 normalizedSql = sqlite3_normalized_sql(pStmt);
-                console.log(normalizedSql);
                 sqlType = normalizedSql.trim().substr(0,6).toLowerCase();
-                if (sqlType === 'insert' || sqlType === 'update' || sqlType === 'delete') {
-                    result.rowsModified = this.getRowsModified();
+                if (sqlType === "insert"
+                    || sqlType === "update"
+                    || sqlType === "delete") {
+                    result["rowsModified"] = this["getRowsModified"]();
                 }
             }
             answer.push(result);
 
             // clean up
-            stmt.free();
+            stmt["free"]();
         }
         stackRestore(stack);
         return answer;
