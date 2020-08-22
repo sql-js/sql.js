@@ -28,16 +28,6 @@
       var row = stmt.getAsObject();
       console.log('Here is a row: ' + JSON.stringify(row));
     }
-
-    // try new functionality
-    var thisSql;
-    var nextSql;
-    [stmt, thisSql, nextSql] = db.prepareMany("create table foo (x text); insert into foo values ('hello'), ('bonjour'); select * from foo;");
-    console.log(thisSql);
-    console.log(nextSql);
-
-    stmt.step();
-    console.log(db.getRowsModified());
   });
 </script>
 
