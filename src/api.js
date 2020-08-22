@@ -86,7 +86,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         ["number", "number", "number", "number", "number"]
     );
     var sqlite3_sql = cwrap("sqlite3_sql", "string", ["number"]);
-    var sqlite3_normalized_sql = cwrap("sqlite3_normalized_sql", "string", ["number"]);
+    var sqlite3_normalized_sql = cwrap(
+        "sqlite3_normalized_sql",
+        "string",
+        ["number"]
+    );
     var sqlite3_bind_text = cwrap(
         "sqlite3_bind_text",
         "number",
@@ -929,6 +933,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var pzTail;
         var returnCode;
         var errorMessage;
+        var errorAnswer;
 
         if (!this.db) {
             throw "Database closed";
@@ -939,6 +944,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         nextSql = sql;
         pzTail = stackAlloc(4);
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             setValue(apiTemp, 0, "i32");
             setValue(pzTail, 0, "i32");
@@ -947,8 +953,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 nextSql,
                 -1,
                 apiTemp,
-                pzTail)
-            ;
+                pzTail
+            );
             lastSql = nextSql;
             nextSql = UTF8ToString(getValue(pzTail, "i32"));
             if (returnCode !== SQLITE_OK) {
@@ -958,16 +964,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 // a hack to discover the most recent SQL statement:
                 thisSql = lastSql.substr(0, lastSql.length - nextSql.length);
 
-                answer.push({
-                    "success": false,
-                    "error": errorMessage,
-                    "sql": thisSql
-                });
+                errorAnswer = {};
+                errorAnswer["success"] = false;
+                errorAnswer["error"] = errorMessage;
+                errorAnswer["sql"] = thisSql;
+                answer.push(errorAnswer);
 
                 if (exitOnError) {
                     stackRestore(stack);
                     return answer;
                 }
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -982,26 +989,29 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             stmt = new Statement(pStmt, this);
 
             // get column headers, if any
-            columns = stmt["getColumnNames"]()
+            columns = stmt["getColumnNames"]();
             data = [];
             try {
                 while (stmt["step"]()) {
                     data.push(stmt["get"]());
                 }
             } catch (e) {
-                answer.push({
-                    "success": false,
-                    "error": e.toString(),
-                    "sql": thisSql
-                });
+                errorAnswer = {};
+                errorAnswer["success"] = false;
+                errorAnswer["error"] = e.toString();
+                errorAnswer["sql"] = thisSql;
+                answer.push(errorAnswer);
                 if (exitOnError) {
                     stackRestore(stack);
                     return answer;
                 }
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
-            result = { "success": true, "sql": thisSql };
+            result = {};
+            result["success"] = true;
+            result["sql"] = thisSql;
 
             if (columns.length > 0) {
                 result["columns"] = columns;
@@ -1010,7 +1020,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 // bit of a kludge: determine if last
                 // query was modification query
                 normalizedSql = sqlite3_normalized_sql(pStmt);
-                sqlType = normalizedSql.trim().substr(0,6).toLowerCase();
+                sqlType = normalizedSql.trim().substr(0, 6).toLowerCase();
                 if (sqlType === "insert"
                     || sqlType === "update"
                     || sqlType === "delete") {
