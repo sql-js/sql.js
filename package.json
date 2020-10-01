@@ -44,7 +44,6 @@
 		"eslint-config-airbnb-base": "^14.1.0",
 		"eslint-plugin-import": "^2.20.2",
 		"jsdoc": "^3.6.4",
-		"node-fetch": "^2.6.0",
 		"puppeteer": "^2.1.1",
 		"test": ">=0.6"
 	},
