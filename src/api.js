@@ -358,10 +358,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var size = sqlite3_column_bytes(this.stmt, pos);
         var ptr = sqlite3_column_blob(this.stmt, pos);
         var result = new Uint8Array(size);
-        var i = 0;
-        while (i < size) {
+        for (var i = 0; i < size; i += 1) {
             result[i] = HEAP8[ptr + i];
-            i += 1;
         }
         return result;
     };
@@ -382,9 +380,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this["step"]();
         }
         var results1 = [];
-        var field = 0;
         var ref = sqlite3_data_count(this.stmt);
-        while (field < ref) {
+        for (var field = 0; field < ref; field += 1) {
             switch (sqlite3_column_type(this.stmt, field)) {
                 case SQLITE_INTEGER:
                 case SQLITE_FLOAT:
@@ -399,7 +396,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 default:
                     results1.push(null);
             }
-            field += 1;
         }
         return results1;
     };
@@ -416,11 +412,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     Statement.prototype["getColumnNames"] = function getColumnNames() {
         var results1 = [];
-        var i = 0;
         var ref = sqlite3_column_count(this.stmt);
-        while (i < ref) {
+        for (var i = 0; i < ref; i += 1) {
             results1.push(sqlite3_column_name(this.stmt, i));
-            i += 1;
         }
         return results1;
     };
@@ -445,12 +439,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var values = this["get"](params);
         var names = this["getColumnNames"]();
         var rowObject = {};
-        var i = 0;
-        var len = names.length;
-        while (i < len) {
+        for (var i = 0; i < names.length; i += 1) {
             var name = names[i];
             rowObject[name] = values[i];
-            i += 1;
         }
         return rowObject;
     };
@@ -504,12 +495,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     Statement.prototype.bindNumber = function bindNumber(num, pos) {
-        var bindfunc;
         if (pos == null) {
             pos = this.pos;
             this.pos += 1;
         }
-        bindfunc = (
+        var bindfunc = (
             num === (num | 0)
                 ? sqlite3_bind_int
                 : sqlite3_bind_double
@@ -577,10 +567,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @nodoc
      */
     Statement.prototype.bindFromArray = function bindFromArray(values) {
-        var num = 0;
-        while (num < values.length) {
+        for (var num = 0; num < values.length; num += 1) {
             this.bindValue(values[num], num + 1);
-            num += 1;
         }
         return true;
     };
