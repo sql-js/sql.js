@@ -474,7 +474,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.pos += 1;
         }
         var bytes = intArrayFromString(string);
-        var strptr = allocate(bytes, "i8", ALLOC_NORMAL);
+        var strptr = allocate(bytes, ALLOC_NORMAL);
         this.allocatedmem.push(strptr);
         this.db.handleError(sqlite3_bind_text(
             this.stmt,
@@ -491,7 +491,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
-        var blobptr = allocate(array, "i8", ALLOC_NORMAL);
+        var blobptr = allocate(array, ALLOC_NORMAL);
         this.allocatedmem.push(blobptr);
         this.db.handleError(sqlite3_bind_blob(
             this.stmt,
@@ -983,7 +983,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                     if (result === null) {
                         sqlite3_result_null(cx);
                     } else if (result.length != null) {
-                        var blobptr = allocate(result, "i8", ALLOC_NORMAL);
+                        var blobptr = allocate(result, ALLOC_NORMAL);
                         sqlite3_result_blob(cx, blobptr, result.length, -1);
                         _free(blobptr);
                     } else {

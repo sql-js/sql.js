@@ -53,7 +53,6 @@ EMFLAGS_OPTIMIZED= \
 	-s INLINING_LIMIT=50 \
 	-O3 \
 	-flto \
-	--llvm-lto 1 \
 	--closure 1
 
 EMFLAGS_DEBUG = \
