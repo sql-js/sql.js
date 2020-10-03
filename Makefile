@@ -35,7 +35,8 @@ EMFLAGS = \
 	-s EXPORTED_FUNCTIONS=@src/exported_functions.json \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
 	-s SINGLE_FILE=0 \
-	-s NODEJS_CATCH_EXIT=0
+	-s NODEJS_CATCH_EXIT=0 \
+	-s NODEJS_CATCH_REJECTION=0
 
 EMFLAGS_ASM = \
 	-s WASM=0
