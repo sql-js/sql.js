@@ -151,7 +151,7 @@ xhr.onload = e => {
 };
 xhr.send();
 ```
-See: https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server
+See: https://github.com/sql-js/sql.js/wiki/Load-a-database-from-the-server
 
 
 ### Use from node.js
@@ -182,7 +182,7 @@ var buffer = new Buffer(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
-See : https://github.com/kripken/sql.js/blob/master/test/test_node_file.js
+See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 
 ### Use as web worker
 If you don't want to run CPU-intensive SQL queries in your main application thread,

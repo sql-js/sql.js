@@ -129,7 +129,7 @@ xhr.onload = function(e) {
   // contents is now [{columns:[&#39;col1&#39;,&#39;col2&#39;,...], values:[[first row], [second row], ...]}]
 };
 xhr.send();
-</code></pre><p>See: <a href="https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server">https://github.com/kripken/sql.js/wiki/Load-a-database-from-the-server</a></p><h3 id="use-from-node-js">Use from node.js</h3><p><code>sql.js</code> is <a href="https://www.npmjs.org/package/sql.js">hosted on npm</a>. To install it, you can simply run <code>npm install sql.js</code>.
+</code></pre><p>See: <a href="https://github.com/sql-js/sql.js/wiki/Load-a-database-from-the-server">https://github.com/sql-js/sql.js/wiki/Load-a-database-from-the-server</a></p><h3 id="use-from-node-js">Use from node.js</h3><p><code>sql.js</code> is <a href="https://www.npmjs.org/package/sql.js">hosted on npm</a>. To install it, you can simply run <code>npm install sql.js</code>.
 Alternatively, you can simply download the file <code>sql.js</code>, from the download link below.</p><h4 id="read-a-database-from-the-disk-">read a database from the disk:</h4>
 <pre><code class="lang-javascript">var fs = require(&#39;fs&#39;);
 var SQL = require(&#39;sql.js&#39;);
@@ -143,7 +143,7 @@ var db = new SQL.Database(filebuffer);
 var data = db.export();
 var buffer = new Buffer(data);
 fs.writeFileSync(&quot;filename.sqlite&quot;, buffer);
-</code></pre><p>See : <a href="https://github.com/kripken/sql.js/blob/master/test/test_node_file.js">https://github.com/kripken/sql.js/blob/master/test/test_node_file.js</a></p><h3 id="use-as-web-worker">Use as web worker</h3><p>If you don&#39;t want to run CPU-intensive SQL queries in your main application thread,
+</code></pre><p>See : <a href="https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js">https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js</a></p><h3 id="use-as-web-worker">Use as web worker</h3><p>If you don&#39;t want to run CPU-intensive SQL queries in your main application thread,
 you can use the <em>more limited</em> WebWorker API.</p><p>You will need to download <code>worker.sql.js</code></p><p>Example:</p><pre><code class="lang-html">&lt;script&gt;
 var worker = new Worker(&quot;js/worker.sql.js&quot;); // You can find worker.sql.js in this repo
 worker.onmessage = function() {
@@ -165,7 +165,7 @@ worker.postMessage({
     buffer:buf, /*Optional. An ArrayBuffer representing an SQLite Database file*/
 });
 &lt;/script&gt;
-</code></pre><p>See : <a href="https://github.com/kripken/sql.js/blob/master/test/test_worker.js">https://github.com/kripken/sql.js/blob/master/test/test_worker.js</a></p><h2 id="downloads">Downloads</h2>
+</code></pre><p>See : <a href="https://github.com/sql-js/sql.js/blob/master/test/test_worker.js">https://github.com/sql-js/sql.js/blob/master/test/test_worker.js</a></p><h2 id="downloads">Downloads</h2>
 <ul>
 <li>You can download <code>sql.js</code> here : <a href="https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js">https://raw.githubusercontent.com/kripken/sql.js/master/js/sql.js</a></li>
 <li>And the Web Worker version: <a href="https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js">https://raw.githubusercontent.com/kripken/sql.js/master/js/worker.sql.js</a></li>
