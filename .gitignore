@@ -4,6 +4,7 @@ node_modules/
 # Intermediary files:
 cache/
 out/
+documentation/
 sqlite-src/
 tmp/
 c/
