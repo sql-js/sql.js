@@ -1,4 +1,6 @@
-# SQLite compiled to JavaScript <img src="https://user-images.githubusercontent.com/552629/76405509-87025300-6388-11ea-86c9-af882abb00bd.png" width="40" height="40" />
+<img src="https://user-images.githubusercontent.com/552629/76405509-87025300-6388-11ea-86c9-af882abb00bd.png" width="40" height="40" />
+
+# SQLite compiled to JavaScript
 
 [![CI status](https://github.com/sql-js/sql.js/workflows/CI/badge.svg)](https://github.com/sql-js/sql.js/actions)
 [![npm](https://img.shields.io/npm/v/sql.js)](https://www.npmjs.com/package/sql.js)
@@ -271,7 +273,9 @@ Although asm.js files were distributed as a single Javascript file, WebAssembly 
 
 
 
-## Versions of sql.js included in the [distributed artifacts](https://github.com/sql-js/sql.js/releases/latest)
+## Versions of sql.js included in the distributed artifacts
+You can always find the latest published artifacts on https://github.com/sql-js/sql.js/releases/latest.
+
 For each [release](https://github.com/sql-js/sql.js/releases/), you will find a file called `sqljs.zip` in the *release assets*. It will contain:
  - `sql-wasm.js` : The Web Assembly version of Sql.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
  - `sql-wasm-debug.js` : The Web Assembly, Debug version of Sql.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.

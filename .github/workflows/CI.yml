@@ -22,3 +22,14 @@ jobs:
       with: {name: dist, path: dist}
     - name: test
       run: npm ci && npm test
+    - name: generate documentation
+      # We need the symbolic links to avoid breaking old URLs 
+      run: npm run doc && mkdir -p documentation/class && ln -s documentation/* documentation/class/
+    - name: Update github pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@3.6.2
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: "." # The folder the action should deploy.
+        CLEAN: false # Automatically remove deleted files from the deploy branch
