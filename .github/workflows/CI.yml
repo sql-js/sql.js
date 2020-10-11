@@ -23,8 +23,7 @@ jobs:
     - name: test
       run: npm ci && npm test
     - name: generate documentation
-      # We need the symbolic links to avoid breaking old URLs 
-      run: npm run doc && mkdir -p documentation/class && ln -s documentation/* documentation/class/
+      run: npm run doc
     - name: Update github pages
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: JamesIves/github-pages-deploy-action@3.6.2
