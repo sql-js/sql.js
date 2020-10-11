@@ -32,6 +32,10 @@ function execute(commands) {
 	worker.onmessage = function (event) {
 		var results = event.data.results;
 		toc("Executing SQL");
+		if (!results) {
+			error({message: event.data.error});
+			return;
+		}
 
 		tic();
 		outputElm.innerHTML = "";

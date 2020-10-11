@@ -1,0 +1,176 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@1.0.0
+
+executors:
+  bionic:
+    docker:
+      - image: buildpack-deps:bionic
+
+jobs:
+  flake8:
+    executor: bionic
+    steps:
+      - checkout
+      - run:
+          name: install pip
+          command: |
+            apt-get update -q
+            apt-get install -q -y python-pip python3-pip
+      - run: python2 -m pip install --upgrade pip
+      - run: python3 -m pip install --upgrade pip
+      - run: python2 -m pip install flake8==3.7.8
+      - run: python3 -m pip install flake8==3.7.8
+      - run: python2 -m flake8 --show-source --statistics
+      - run: python3 -m flake8 --show-source --statistics
+  test-linux:
+    executor: bionic
+    environment:
+      EMSDK_NOTTY: "1"
+      # I don't know why circleci VMs pretent to have 36 cores but its a lie.
+      EMSDK_NUM_CORES: "4"
+    steps:
+      - checkout
+      - run:
+          name: Install debian packages
+          command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
+      - run: scripts/test.sh
+      - run: scripts/test_source_env.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            scripts/test.py
+  test-mac:
+    macos:
+      xcode: "9.0"
+    environment:
+      EMSDK_NOTTY: "1"
+      # Without this, any `brew installl` command will result in self-update of
+      # brew itself which takes more than 4 minutes.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - checkout
+      - run:
+          name: Install cmake
+          command: brew install cmake
+      - run: scripts/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            scripts/test.py
+  test-windows:
+    executor:
+      name: win/vs2019
+      shell: bash.exe
+    environment:
+      # We need python installed before we can test anytyhing.
+      # There seems to be undocument copy of python installed here. Hopefully
+      # if this disappears there will be another way of getting a re-installed
+      # version.
+      PYTHON_BIN: "C:\\Python27amd64"
+      PYTHONUNBUFFERED: "1"
+      EMSDK_NOTTY: "1"
+    steps:
+      - checkout
+      - run:
+          name: Add python to bash path
+          command: echo "export PATH=\"$PATH:/c/python27amd64/\"" >> $BASH_ENV
+      - run:
+          name: Install latest
+          shell: cmd.exe
+          command: scripts\test.bat
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            python scripts/test.py
+      - run:
+          name: --permanent test
+          shell: powershell.exe
+          command: |
+            scripts/test_permanent.ps1
+
+  build-docker-image:
+    executor: bionic
+    steps:
+      - checkout
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
+      - setup_remote_docker
+      # Build and test the tip-of-tree build of EMSDK
+      - run:
+          name: build
+          command: make -C ./docker version=tot build
+      - run:
+          name: test
+          command: make -C ./docker version=tot test
+
+  publish-docker-image:
+    executor: bionic
+    steps:
+      - checkout
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
+      - setup_remote_docker
+      - run:
+          name: build
+          command: make -C ./docker version=${CIRCLE_TAG} build
+      - run:
+          name: test
+          command: make -C ./docker version=${CIRCLE_TAG} test
+      - run:
+          name: push image
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            make -C ./docker version=${CIRCLE_TAG} alias=latest push
+
+  test-bazel:
+    executor: bionic
+    steps:
+      - checkout
+      - run: apt-get install -q -y curl gnupg
+      - run: curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
+      - run: mv bazel.gpg /etc/apt/trusted.gpg.d/
+      - run: echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
+      - run:
+          name: install pip
+          command: |
+            apt-get update -q
+            apt-get install -q -y python3-pip
+      - run: pip3 install absl-py
+      - run:
+          name: install bazel
+          command: |
+            apt-get install -q -y bazel
+      - run: scripts/test_bazel.sh
+
+workflows:
+  flake8:
+    jobs:
+      - flake8
+  test-linux:
+    jobs:
+      - test-linux
+  test-mac:
+    jobs:
+      - test-mac
+  test-windows:
+    jobs:
+      - test-windows
+  build-docker-image:
+    jobs:
+      - build-docker-image
+      - publish-docker-image:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+  test-bazel:
+    jobs:
+      - test-bazel

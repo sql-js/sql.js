@@ -1,0 +1,660 @@
+{
+  "tools": [
+  {
+    "id": "llvm-git",
+    "version": "master",
+    "bitness": 32,
+    "install_path": "llvm/git",
+    "git_branch": "master",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "llvm-git",
+    "version": "master",
+    "bitness": 64,
+    "install_path": "llvm/git",
+    "git_branch": "master",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+
+  {
+    "id": "clang",
+    "version": "tag-e%tag%",
+    "bitness": 32,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.tar.gz",
+    "windows_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.zip",
+    "unix_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.tar.gz",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "tag-e%tag%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.tar.gz",
+    "windows_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.zip",
+    "unix_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.tar.gz",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "master",
+    "bitness": 32,
+    "install_path": "clang/fastcomp",
+    "url": "https://github.com/kripken/emscripten-fastcomp.git",
+    "clang_url": "https://github.com/kripken/emscripten-fastcomp-clang.git",
+    "git_branch": "master",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "master",
+    "bitness": 64,
+    "install_path": "clang/fastcomp",
+    "git_branch": "master",
+    "url": "https://github.com/kripken/emscripten-fastcomp.git",
+    "clang_url": "https://github.com/kripken/emscripten-fastcomp-clang.git",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+
+  {
+    "id": "releases",
+    "version": "upstream-%releases-tag%",
+    "bitness": 64,
+    "arch": "x86_64",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/win/%releases-tag%/wasm-binaries.zip",
+    "zipfile_prefix": "%releases-tag%-",
+    "install_path": "upstream",
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten'",
+    "emscripten_releases_hash": "%releases-tag%"
+  },
+  {
+    "id": "releases",
+    "version": "fastcomp-%releases-tag%",
+    "bitness": 64,
+    "arch": "x86_64",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/win/%releases-tag%/wasm-binaries.zip",
+    "zipfile_prefix": "%releases-tag%-",
+    "install_path": "fastcomp",
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/bin/optimizer%.exe%'",
+    "emscripten_releases_hash": "%releases-tag%"
+  },
+
+  {
+    "id": "clang",
+    "version": "e%precompiled_tag32%",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "llvm/tag/win_64bit/emscripten-llvm-e%precompiled_tag32%.zip",
+    "macos_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "e%precompiled_tag64%",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/win/emscripten-llvm-e%precompiled_tag64%.zip",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/mac/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/linux/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
+  },
+  {
+    "id": "node",
+    "version": "8.9.1",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "node-v8.9.1-win-x86.zip",
+    "linux_url": "node-v8.9.1-linux-x86.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "8.9.1",
+    "arch": "arm",
+    "bitness": 32,
+    "linux_url": "https://nodejs.org/dist/v8.9.1/node-v8.9.1-linux-armv7l.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "8.9.1",
+    "bitness": 64,
+    "arch": "x86_64",
+    "macos_url": "node-v8.9.1-darwin-x64.tar.gz",
+    "windows_url": "node-v8.9.1-win-x64.zip",
+    "linux_url": "node-v8.9.1-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "8.9.1",
+    "arch": "aarch64",
+    "bitness": 64,
+    "linux_url": "node-v8.9.1-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "node-v12.18.1-win-x86.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "arch": "arm",
+    "bitness": 32,
+    "linux_url": "node-v12.18.1-linux-armv7l.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "bitness": 64,
+    "arch": "x86_64",
+    "macos_url": "node-v12.18.1-darwin-x64.tar.gz",
+    "windows_url": "node-v12.18.1-win-x64.zip",
+    "linux_url": "node-v12.18.1-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "arch": "aarch64",
+    "bitness": 64,
+    "linux_url": "node-v12.18.1-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "python",
+    "version": "2.7.13.1",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "WinPython-32bit-2.7.13.1Zero.zip",
+    "activated_path": "%installation_dir%/python-2.7.13",
+    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%"
+  },
+  {
+    "id": "python",
+    "version": "2.7.13.1",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
+    "activated_path": "%installation_dir%/python-2.7.13.amd64",
+    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%"
+  },
+  {
+    "id": "python",
+    "version": "3.7.4",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "python-3.7.4-embed-win32-patched.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
+    "version": "3.7.4",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "python-3.7.4-embed-amd64-patched.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
+    "version": "3.7.4-pywin32",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "python-3.7.4-embed-win32+pywin32.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
+    "version": "3.7.4-pywin32",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "python-3.7.4-embed-amd64+pywin32.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
+    "version": "3.7.4-2",
+    "bitness": 64,
+    "arch": "x86_64",
+    "macos_url": "python-3.7.4-2-macos.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3"
+  },
+  {
+    "id": "java",
+    "version": "8.152",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "portable_jre_8_update_152_32bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "JAVA_HOME=%installation_dir%",
+    "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
+  },
+  {
+    "id": "java",
+    "version": "8.152",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "portable_jre_8_update_152_64bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "JAVA_HOME=%installation_dir%",
+    "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
+  },
+  {
+    "id": "emscripten",
+    "version": "tag-%tag%",
+    "bitness": 32,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten/archive/%tag%.tar.gz",
+    "zipfile_prefix": "emscripten-e",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
+    "cmake_build_type": "Release",
+    "custom_install_script": "emscripten_post_install",
+    "custom_is_installed_script": "is_optimizer_installed",
+    "custom_uninstall_script": "uninstall_optimizer"
+  },
+  {
+    "id": "emscripten",
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten/archive/%tag%.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
+    "cmake_build_type": "Release",
+    "custom_install_script": "emscripten_post_install",
+    "custom_is_installed_script": "is_optimizer_installed",
+    "custom_uninstall_script": "uninstall_optimizer"
+  },
+  {
+    "id": "emscripten",
+    "version": "%precompiled_tag%",
+    "windows_url": "https://github.com/kripken/emscripten/archive/%precompiled_tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten/archive/%precompiled_tag%.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
+  },
+  {
+    "id": "binaryen",
+    "version": "tag-%binaryen_tag%",
+    "bitness": 32,
+    "append_bitness": false,
+    "windows_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.zip",
+    "unix_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.tar.gz",
+    "zipfile_prefix": "binaryen-e",
+    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_64bit_binaryen'",
+    "activated_path": "%installation_dir%%generator_prefix%_64bit_binaryen/bin",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_64bit_binaryen",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_binaryen",
+    "custom_is_installed_script": "is_binaryen_installed",
+    "custom_uninstall_script": "uninstall_binaryen"
+  },
+  {
+    "id": "binaryen",
+    "version": "tag-%binaryen_tag%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.zip",
+    "unix_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.tar.gz",
+    "zipfile_prefix": "binaryen-e",
+    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_64bit_binaryen'",
+    "activated_path": "%installation_dir%%generator_prefix%_64bit_binaryen/bin",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_64bit_binaryen",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_binaryen",
+    "custom_is_installed_script": "is_binaryen_installed",
+    "custom_uninstall_script": "uninstall_binaryen"
+  },
+  {
+    "id": "emscripten",
+    "version": "master",
+    "bitness": 32,
+    "append_bitness": false,
+    "url": "https://github.com/emscripten-core/emscripten.git",
+    "git_branch": "master",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "Release",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "id": "emscripten",
+    "version": "master",
+    "bitness": 64,
+    "append_bitness": false,
+    "url": "https://github.com/emscripten-core/emscripten.git",
+    "git_branch": "master",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "Release",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "id": "binaryen",
+    "version": "master",
+    "bitness": 32,
+    "append_bitness": false,
+    "url": "https://github.com/WebAssembly/binaryen.git",
+    "git_branch": "master",
+    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_32bit_binaryen'",
+    "activated_path": "%installation_dir%%generator_prefix%_32bit_binaryen/bin",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_32bit_binaryen",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_binaryen",
+    "custom_is_installed_script": "is_binaryen_installed",
+    "custom_uninstall_script": "uninstall_binaryen"
+  },
+  {
+    "id": "binaryen",
+    "version": "master",
+    "bitness": 64,
+    "append_bitness": false,
+    "url": "https://github.com/WebAssembly/binaryen.git",
+    "git_branch": "master",
+    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_64bit_binaryen'",
+    "activated_path": "%installation_dir%%generator_prefix%_64bit_binaryen/bin",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_64bit_binaryen",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_binaryen",
+    "custom_is_installed_script": "is_binaryen_installed",
+    "custom_uninstall_script": "uninstall_binaryen"
+  },
+  {
+    "id": "gnu",
+    "version": "2.5.4",
+    "windows_url": "grep-2.5.4.zip",
+    "activated_path": "%installation_dir%/bin"
+  },
+  {
+    "id": "mingw",
+    "version": "4.6.2",
+    "bitness": 32,
+    "windows_url": "mingw_4.6.2_32bit.zip",
+    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "is_old": true
+  },
+  {
+    "id": "mingw",
+    "version": "7.1.0",
+    "bitness": 64,
+    "windows_url": "mingw_7.1.0_64bit.zip",
+    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%/bin"
+  }
+  ],
+
+  "sdks": [
+  {
+    "version": "upstream-master",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "upstream-master",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "os": "macos"
+  },
+  {
+    "version": "upstream-master",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "os": "linux"
+  },
+  {
+    "version": "upstream-master",
+    "bitness": 32,
+    "uses": ["llvm-git-master-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "os": "linux"
+  },
+  {
+    "version": "fastcomp-master",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-master-32bit", "node-12.18.1-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "os": "win"
+  },
+  {
+    "version": "fastcomp-master",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "fastcomp-master",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "os": "macos"
+  },
+  {
+    "version": "fastcomp-master",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-master-32bit", "node-12.18.1-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "os": "linux"
+  },
+  {
+    "version": "fastcomp-master",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "os": "linux"
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "os": "win",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "os": "win",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "os": "linux",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "os": "unix",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },  
+  {
+    "version": "releases-upstream-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-12.18.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "linux",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-upstream-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-12.18.1-64bit", "python-3.7.4-2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "macos",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-upstream-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "win",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-12.18.1-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "linux",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-12.18.1-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "macos",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "win",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "fastcomp-%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag32%"],
+    "os": "macos",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "macos",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
+  }
+  ]
+}

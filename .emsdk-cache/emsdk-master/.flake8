@@ -1,0 +1,23 @@
+[flake8]
+ignore =
+   E111, # Indentation is not a multiple of four
+   E114, # Indentation is not a multiple of four (comment)
+   E501, # Line too long
+   E121, # Continuation line under-indented for hanging indent
+   E722  # bare excepts
+exclude =
+  ./llvm
+  ./gnu
+  ./upstream
+  ./fastcomp
+  ./fastcomp-clang
+  ./releases
+  ./clang
+  ./emscripten
+  ./binaryen
+  ./git
+  ./node
+  ./python
+  ./temp
+  ./zips
+  ./crunch

@@ -1,7 +1,16 @@
 test/
 c/
-coffee/
 gh-pages/
 node_modules/
 node-debug.log
+src/
+cache/
+out/
+examples/
+sqlite-src/
 .git/
+index.html
+.github
+Makefile
+emsdk_set_env.sh
+sqljs.zip

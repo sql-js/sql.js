@@ -1,0 +1,22 @@
+# Ignore all subdirectories
+*/*
+
+# Allow to run the test script inside the Docker container
+!/docker/test_dockerimage.sh
+
+# Ignore unnecessary files inside top-level directory
+*.bat
+*.csh
+*.fish
+*.ps1
+*.pyc
+.emscripten
+.emscripten.old
+.emscripten_cache
+.emscripten_cache__last_clear
+.emscripten_sanity
+.emscripten_sanity_wasm
+.flake8
+emscripten-releases-tot.txt
+legacy-*-tags.txt
+README.md

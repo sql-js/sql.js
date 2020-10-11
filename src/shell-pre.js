@@ -19,7 +19,7 @@ var initSqlJs = function (moduleConfig) {
       return initSqlJsPromise;
     }
     // If we're here, we've never called this function before
-    initSqlJsPromise = new Promise((resolveModule, reject) => {
+    initSqlJsPromise = new Promise(function (resolveModule, reject) {
 
         // We are modularizing this manually because the current modularize setting in Emscripten has some issues:
         // https://github.com/kripken/emscripten/issues/5820
@@ -66,6 +66,6 @@ var initSqlJs = function (moduleConfig) {
         // of the options, and has the side effect of reducing emcc's efforts to modify the module if its output were to change in the future.
         // That's a nice side effect since we're handling the modularization efforts ourselves
         module = undefined;
-        
+
         // The emcc-generated code and shell-post.js code goes below,
         // meaning that all of it runs inside of this promise. If anything throws an exception, our promise will abort

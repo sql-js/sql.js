@@ -13,6 +13,7 @@
 "_sqlite3_bind_int",
 "_sqlite3_bind_parameter_index",
 "_sqlite3_step",
+"_sqlite3_column_count",
 "_sqlite3_data_count",
 "_sqlite3_column_double",
 "_sqlite3_column_text",
@@ -34,5 +35,9 @@
 "_sqlite3_result_double",
 "_sqlite3_result_null",
 "_sqlite3_result_text",
+"_sqlite3_result_blob",
+"_sqlite3_result_int",
+"_sqlite3_result_int64",
+"_sqlite3_result_error",
 "_RegisterExtensionFunctions"
 ]
