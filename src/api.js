@@ -428,9 +428,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     @example
 
-        var stmt = db.prepare("SELECT 5 AS nbr;
-        var x'616200' AS data;
-        var NULL AS null_value;");
+        var stmt = db.prepare(
+            "SELECT 5 AS nbr, x'010203' AS data, NULL AS null_value;"
+        );
         stmt.step(); // Execute the statement
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
