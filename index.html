@@ -17,8 +17,9 @@
   <script>window.$docsify = { name: 'SQL.js', repo: 'https://github.com/sql-js/sql.js/' }</script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
   <script>
-    if (new URL(window.location).pathname === '/index.html')
-      window.location = '/'
+    let url = new URL(window.location);
+    url.pathname = url.pathname.replace(/\/index.html$/, '/');
+    if (window.location.toString() !== url.toString()) window.location = url;
   </script>
 </body>
 
