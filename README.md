@@ -6,7 +6,7 @@
 [![npm](https://img.shields.io/npm/v/sql.js)](https://www.npmjs.com/package/sql.js)
 [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
-For the impatients, try the demo here: https://sql-js.github.io/sql.js/examples/GUI/
+For the impatients, try the demo here: https://sql.js.org/examples/GUI/
 
 *sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html), with [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date) included. It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
@@ -18,7 +18,7 @@ Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedi
 
 
 ## Documentation
-A [full documentation](https://sql-js.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
+A [full documentation](https://sql.js.org/documentation/class/Database.html) generated from comments inside the source code, is available.
 
 ## Usage
 
@@ -32,7 +32,7 @@ const initSqlJs = require('sql.js');
 const SQL = await initSqlJs({
   // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
   // You can omit locateFile completely when running in node
-  locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.1.0/dist/${file}`
+  locateFile: file => `https://sql.js.org/dist/${file}`
 });
 
 // Create a database
