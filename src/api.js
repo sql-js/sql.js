@@ -983,7 +983,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             if (pStmt === NULL) {
                 return { value: null, done: true };
             }
-            var stmt = new Statement(pStmt, this.db);
+            var stmt = new Statement(pStmt, this);
+            this.statements[pStmt] = stmt;
             return { value: stmt, done: false };
         }
         var errmsg = sqlite3_errmsg(this.db);
