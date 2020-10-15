@@ -627,7 +627,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return res;
     };
 
-
     /**
      * @classdesc
      * Represents an iterator over multiple SQL statements in a string,
@@ -673,7 +672,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     StatementIterator.prototype["next"] = function next() {
         return this.db["advanceIterator"](this);
     };
-
 
     /** @classdesc
     * Represents an SQLite database
