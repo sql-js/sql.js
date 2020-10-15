@@ -7,6 +7,8 @@
 "_sqlite3_errmsg",
 "_sqlite3_changes",
 "_sqlite3_prepare_v2",
+"_sqlite3_sql",
+"_sqlite3_normalized_sql",
 "_sqlite3_bind_text",
 "_sqlite3_bind_blob",
 "_sqlite3_bind_double",

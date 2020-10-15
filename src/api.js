@@ -14,6 +14,7 @@
     stackAlloc
     stackRestore
     stackSave
+    UTF8ToString
 */
 
 "use strict";
@@ -79,6 +80,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "sqlite3_prepare_v2",
         "number",
         ["number", "string", "number", "number", "number"]
+    );
+    var sqlite3_sql = cwrap("sqlite3_sql", "string", ["number"]);
+    var sqlite3_normalized_sql = cwrap(
+        "sqlite3_normalized_sql",
+        "string",
+        ["number"]
     );
     var sqlite3_prepare_v2_sqlptr = cwrap(
         "sqlite3_prepare_v2",
@@ -467,6 +474,21 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return rowObject;
     };
 
+    /** Get the SQL string used in preparing this statement.
+     @return {string} The SQL string
+     */
+    Statement.prototype["getSQL"] = function getSQL() {
+        return sqlite3_sql(this.stmt);
+    };
+
+    /** Get the SQLite's normalized version of the SQL string used in
+    preparing this statement.
+     @return {string} The normalized SQL string
+     */
+    Statement.prototype["getNormalizedSQL"] = function getNormalizedSQL() {
+        return sqlite3_normalized_sql(this.stmt);
+    };
+
     /** Shorthand for bind + step + reset
     Bind the values, execute the statement, ignoring the rows it returns,
     and resets it
@@ -632,6 +654,53 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         delete this.db.statements[this.stmt];
         this.stmt = NULL;
         return res;
+    };
+
+
+    /**
+     * @classdesc
+     * Represents an iterator over multiple SQL statements in a string,
+     * preparing and returning a Statement object for the next SQL
+     * statement on each iteration.
+     *
+     * You can't instantiate this class directly, you have to use a
+     * {@link Database} object in order to create a statement.
+     *
+     * **Warning**: When you close a database (using db.close()),
+     * using any statement iterators created by the database will
+     * result in undefined behavior.
+     *
+     * StatementIterators can't be created by the API user directly,
+     * only by Database::iterateStatements
+     *
+     * @constructs StatementIterator
+     * @memberof module:SqlJs
+     * @param {string} sql A string containing multiple SQL statements
+     * @param {Database} db The database from which this iterator was created
+     */
+    function StatementIterator(sql, db) {
+        this.nextSql = sql;
+        this.db = db;
+        // No SQL has been previously prepared at this time
+        this.lastSql = "";
+    }
+
+    /**
+     * @typedef {{
+        value:Statement,
+        done:boolean
+    }} StatementIterator.StatementIteratorResult
+     * @property {Statement} the next available Statement
+     * (as returned by {@link Database.prepare})
+     * @property {boolean} true if there are no more available statements
+     */
+
+    /** Prepare the next available SQL statement
+     @return {StatementIterator.StatementIteratorResult}
+     @throws {String} SQLite error
+     */
+    StatementIterator.prototype["next"] = function next() {
+        return this.db["advanceIterator"](this);
     };
 
 
@@ -878,6 +947,47 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this.statements[pStmt] = stmt;
         return stmt;
+    };
+
+    /** Iterate over multiple SQL statements in a SQL string
+     @param {string} sql a string of SQL
+     @return {StatementIterator} the resulting statement iterator
+     */
+    Database.prototype["iterateStatements"] = function iterateStatements(sql) {
+        return new StatementIterator(sql, this);
+    };
+
+    /* Internal method to implement statement iteration */
+
+    Database.prototype["advanceIterator"] = function advanceIterator(iter) {
+        var stack = stackSave();
+        var pzTail = stackAlloc(4);
+        setValue(apiTemp, 0, "i32");
+        setValue(pzTail, 0, "i32");
+        var returnCode = sqlite3_prepare_v2(
+            this.db,
+            iter.nextSql,
+            -1,
+            apiTemp,
+            pzTail
+        );
+        var tail = UTF8ToString(getValue(pzTail, "i32"));
+        iter.lastSql = iter.nextSql.substr(
+            0,
+            iter.nextSql.length - tail.length
+        );
+        iter.nextSql = tail;
+        stackRestore(stack);
+        if (returnCode === SQLITE_OK) {
+            var pStmt = getValue(apiTemp, "i32");
+            if (pStmt === NULL) {
+                return { value: null, done: true };
+            }
+            var stmt = new Statement(pStmt, this.db);
+            return { value: stmt, done: false };
+        }
+        var errmsg = sqlite3_errmsg(this.db);
+        throw new Error(errmsg);
     };
 
     /** Exports the contents of the database to a binary array
