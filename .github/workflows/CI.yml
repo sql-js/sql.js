@@ -11,10 +11,10 @@ jobs:
       id: cache
       with:
         path: '.emsdk-cache'
-        key: emscripten-1.39.20
+        key: emscripten-2.0.6
     - uses: mymindstorm/setup-emsdk@2a4a91b
       with:
-        version: '1.39.20'
+        version: '2.0.6'
         actions-cache-folder: '.emsdk-cache'
     - name: make
       run: make
@@ -22,3 +22,13 @@ jobs:
       with: {name: dist, path: dist}
     - name: test
       run: npm ci && npm test
+    - name: generate documentation
+      run: npm run doc
+    - name: Update github pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@3.6.2
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: "." # The folder the action should deploy.
+        CLEAN: false # Automatically remove deleted files from the deploy branch

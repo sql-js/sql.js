@@ -6,5 +6,9 @@
         "include": [
             "src/api.js"
         ]
+    },
+    "opts": {
+        "encoding": "utf8",
+        "destination": "./documentation/"   
     }
 }

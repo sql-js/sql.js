@@ -1,14 +1,16 @@
-# SQLite compiled to JavaScript <img src="https://user-images.githubusercontent.com/552629/76405509-87025300-6388-11ea-86c9-af882abb00bd.png" width="40" height="40" />
+<img src="https://user-images.githubusercontent.com/552629/76405509-87025300-6388-11ea-86c9-af882abb00bd.png" width="40" height="40" />
+
+# SQLite compiled to JavaScript
 
 [![CI status](https://github.com/sql-js/sql.js/workflows/CI/badge.svg)](https://github.com/sql-js/sql.js/actions)
 [![npm](https://img.shields.io/npm/v/sql.js)](https://www.npmjs.com/package/sql.js)
 [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
-For the impatients, try the demo here: https://sql-js.github.io/sql.js/examples/GUI/
+For the impatients, try the demo here: https://sql.js.org/examples/GUI/
 
 *sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html), with [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date) included. It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
-There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3).
+There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3) to avoid out of memory errors and have better performances.
 
 SQLite is public domain, sql.js is MIT licensed.
 
@@ -16,7 +18,7 @@ Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedi
 
 
 ## Documentation
-A [full documentation](https://sql-js.github.io/sql.js/documentation/class/Database.html) generated from comments inside the source code, is available.
+A [full documentation](https://sql.js.org/documentation/class/Database.html) generated from comments inside the source code, is available.
 
 ## Usage
 
@@ -30,7 +32,7 @@ const initSqlJs = require('sql.js');
 const SQL = await initSqlJs({
   // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
   // You can omit locateFile completely when running in node
-  locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.1.0/dist/${file}`
+  locateFile: file => `https://sql.js.org/dist/${file}`
 });
 
 // Create a database
@@ -61,6 +63,10 @@ console.log(result); // Will print {a:1, b:'world'}
 // Bind other values
 stmt.bind([0, 'hello']);
 while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
+// free the memory used by the statement
+stmt.free();
+// You can not use your statement anymore once it has been freed.
+// But not freeing your statements causes memory leaks. You don't want that.
 
 // You can also use JavaScript functions inside your SQL code
 // Create the js function you need
@@ -69,11 +75,6 @@ function add(a, b) {return a+b;}
 db.create_function("add_js", add);
 // Run a query in which the function is used
 db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
-
-// free the memory used by the statement
-stmt.free();
-// You can not use your statement anymore once it has been freed.
-// But not freeing your statements causes memory leaks. You don't want that.
 
 // Export the database to an Uint8Array containing the SQLite database file
 var binaryArray = db.export();
@@ -272,7 +273,9 @@ Although asm.js files were distributed as a single Javascript file, WebAssembly 
 
 
 
-## Versions of sql.js included in the [distributed artifacts](https://github.com/sql-js/sql.js/releases/latest)
+## Versions of sql.js included in the distributed artifacts
+You can always find the latest published artifacts on https://github.com/sql-js/sql.js/releases/latest.
+
 For each [release](https://github.com/sql-js/sql.js/releases/), you will find a file called `sqljs.zip` in the *release assets*. It will contain:
  - `sql-wasm.js` : The Web Assembly version of Sql.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
  - `sql-wasm-debug.js` : The Web Assembly, Debug version of Sql.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.

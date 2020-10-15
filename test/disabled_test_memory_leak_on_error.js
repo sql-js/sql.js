@@ -1,4 +1,4 @@
-// See: https://github.com/kripken/sql.js/issues/306
+// See: https://github.com/sql-js/sql.js/issues/306
 exports.test = function(sql, assert) {
   var errors = 0, runs=10000;
   for (var i=0; i<runs; i++) {
