@@ -1,4 +1,4 @@
-exports.test = function(SQL, assert, done) {
+exports.test = function(SQL, assert) {
   // Create a database
   var db = new SQL.Database();
 
@@ -49,8 +49,8 @@ if (module == require.main) {
   const sql_loader = require('./load_sql_lib');
   sql_loader(target_file).then((sql)=>{
     require('test').run({
-      'test database': function(assert, done){
-        exports.test(sql, assert, done);
+      'test statement iterator': function(assert){
+        exports.test(sql, assert);
       }
     });
   })

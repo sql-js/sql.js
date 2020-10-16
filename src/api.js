@@ -3,6 +3,7 @@
     FS
     HEAP8
     Module
+    _malloc
     _free
     addFunction
     allocate
@@ -15,6 +16,8 @@
     stackRestore
     stackSave
     UTF8ToString
+    stringToUTF8
+    lengthBytesUTF8
 */
 
 "use strict";
@@ -461,7 +464,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Get the SQLite's normalized version of the SQL string used in
-    preparing this statement.
+    preparing this statement.  The meaning of "normlized" is not
+    well-defined: see {@link https://sqlite.org/c3ref/expanded_sql.html
+    the SQLite documentation}.
+
      @return {string} The normalized SQL string
      */
     Statement.prototype["getNormalizedSQL"] = function getNormalizedSQL() {
@@ -629,30 +635,36 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /**
      * @classdesc
-     * Represents an iterator over multiple SQL statements in a string,
+     * An iterator over multiple SQL statements in a string,
      * preparing and returning a Statement object for the next SQL
      * statement on each iteration.
      *
      * You can't instantiate this class directly, you have to use a
-     * {@link Database} object in order to create a statement.
+     * {@link Database} object in order to create a statement iterator
+     *
+     * {@see Database#iterateStatements}
      *
      * **Warning**: When you close a database (using db.close()),
      * using any statement iterators created by the database will
      * result in undefined behavior.
      *
-     * StatementIterators can't be created by the API user directly,
-     * only by Database::iterateStatements
-     *
+     * @example
      * @constructs StatementIterator
      * @memberof module:SqlJs
      * @param {string} sql A string containing multiple SQL statements
      * @param {Database} db The database from which this iterator was created
      */
     function StatementIterator(sql, db) {
-        this.nextSql = sql;
         this.db = db;
-        // No SQL has been previously prepared at this time
-        this.lastSql = "";
+        var sz = lengthBytesUTF8(sql) + 1;
+        this.sqlPtr = _malloc(sz);
+        if (this.sqlPtr === null) {
+            throw "Bad malloc";
+        }
+        stringToUTF8(sql, this.sqlPtr, sz);
+        this.nextSqlPtr = this.sqlPtr;
+        this.nextSqlString = null;
+        this.activeStatement = null;
     }
 
     /**
@@ -667,11 +679,29 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Prepare the next available SQL statement
      @return {StatementIterator.StatementIteratorResult}
-     @throws {String} SQLite error
+     @throws {String} SQLite error or bad iterator error
      */
     StatementIterator.prototype["next"] = function next() {
-        return this.db["advanceIterator"](this);
+        return this.db.advanceIterator(this);
     };
+
+    /** Get any un-executed portions remaining of the original SQL string
+     @return {String}
+     */
+    StatementIterator.prototype["getRemainingSql"] = function getRemainder() {
+        // iff an exception occurred, we set the nextSqlString
+        if (this.nextSqlString !== null) return this.nextSqlString;
+        // otherwise, convert from nextSqlPtr
+        return UTF8ToString(this.nextSqlPtr);
+    };
+
+    /* implement Iterable interface */
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+        StatementIterator.prototype[Symbol.iterator] = function iterator() {
+            return this;
+        };
+    }
 
     /** @classdesc
     * Represents an SQLite database
@@ -920,38 +950,53 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return new StatementIterator(sql, this);
     };
 
-    /* Internal method to implement statement iteration */
+    /* Internal methods to implement statement iteration */
 
-    Database.prototype["advanceIterator"] = function advanceIterator(iter) {
+    Database.prototype.advanceIterator = function advanceIterator(iter) {
+        if (iter.sqlPtr === null) {
+            throw "Invalid iterator";
+        }
+        if (iter.activeStatement !== null) {
+            iter.activeStatement["free"]();
+            iter.activeStatement = null;
+        }
+        if (!this.db) {
+            this.invalidateIterator(iter);
+            throw "Database closed";
+        }
         var stack = stackSave();
         var pzTail = stackAlloc(4);
         setValue(apiTemp, 0, "i32");
         setValue(pzTail, 0, "i32");
-        var returnCode = sqlite3_prepare_v2(
+        var returnCode = sqlite3_prepare_v2_sqlptr(
             this.db,
-            iter.nextSql,
+            iter.nextSqlPtr,
             -1,
             apiTemp,
             pzTail
         );
-        var tail = UTF8ToString(getValue(pzTail, "i32"));
-        iter.lastSql = iter.nextSql.substr(
-            0,
-            iter.nextSql.length - tail.length
-        );
-        iter.nextSql = tail;
+        if (returnCode === SQLITE_OK) {
+            iter.nextSqlPtr = getValue(pzTail, "i32");
+        }
         stackRestore(stack);
         if (returnCode === SQLITE_OK) {
             var pStmt = getValue(apiTemp, "i32");
             if (pStmt === NULL) {
-                return { value: null, done: true };
+                this.invalidateIterator(iter);
+                return { done: true };
             }
-            var stmt = new Statement(pStmt, this);
-            this.statements[pStmt] = stmt;
-            return { value: stmt, done: false };
+            iter.activeStatement = new Statement(pStmt, this);
+            this.statements[pStmt] = iter.activeStatement;
+            return { value: iter.activeStatement, done: false };
         }
-        var errmsg = sqlite3_errmsg(this.db);
-        throw new Error(errmsg);
+        iter.nextSqlString = UTF8ToString(iter.nextSqlPtr);
+        this.invalidateIterator(iter);
+        return this.handleError(returnCode);
+    };
+
+    Database.prototype.invalidateIterator = function invalidateIterator(iter) {
+        _free(iter.sqlPtr);
+        iter.sqlPtr = null;
     };
 
     /** Exports the contents of the database to a binary array
