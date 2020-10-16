@@ -649,6 +649,26 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * result in undefined behavior.
      *
      * @example
+     * // loop over and execute statements in string sql
+     * for (let statement of db.iterateStatements(sql) {
+     *     statement.step();
+     *     // get results, etc.
+     *     // do not call statement.free()
+     * }
+     *
+     * // capture any bad query exceptions with feedback
+     * // on the bad sql
+     * let it = db.iterateStatements(sql);
+     * try {
+     *     for (let statement of it) {
+     *         statement.step();
+     *     }
+     * } catch(e) {
+     *     console.log(e);  // error message
+     *     console.log(" occurred while executing:");
+     *     console.log(it.getRemainingSQL());
+     * }
+     *
      * @constructs StatementIterator
      * @memberof module:SqlJs
      * @param {string} sql A string containing multiple SQL statements
@@ -688,7 +708,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     /** Get any un-executed portions remaining of the original SQL string
      @return {String}
      */
-    StatementIterator.prototype["getRemainingSql"] = function getRemainder() {
+    StatementIterator.prototype["getRemainingSQL"] = function getRemainder() {
         // iff an exception occurred, we set the nextSqlString
         if (this.nextSqlString !== null) return this.nextSqlString;
         // otherwise, convert from nextSqlPtr
@@ -961,7 +981,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             iter.activeStatement = null;
         }
         if (!this.db) {
-            this.invalidateIterator(iter);
+            this.finalizeIterator(iter);
             throw "Database closed";
         }
         var stack = stackSave();
@@ -982,7 +1002,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (returnCode === SQLITE_OK) {
             var pStmt = getValue(apiTemp, "i32");
             if (pStmt === NULL) {
-                this.invalidateIterator(iter);
+                this.finalizeIterator(iter);
                 return { done: true };
             }
             iter.activeStatement = new Statement(pStmt, this);
@@ -990,11 +1010,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             return { value: iter.activeStatement, done: false };
         }
         iter.nextSqlString = UTF8ToString(iter.nextSqlPtr);
-        this.invalidateIterator(iter);
+        this.finalizeIterator(iter);
         return this.handleError(returnCode);
     };
 
-    Database.prototype.invalidateIterator = function invalidateIterator(iter) {
+    Database.prototype.finalizeIterator = function finalizeIterator(iter) {
         _free(iter.sqlPtr);
         iter.sqlPtr = null;
     };
