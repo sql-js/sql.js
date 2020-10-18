@@ -6,23 +6,20 @@
 [![npm](https://img.shields.io/npm/v/sql.js)](https://www.npmjs.com/package/sql.js)
 [![CDNJS version](https://img.shields.io/cdnjs/v/sql.js.svg)](https://cdnjs.com/libraries/sql.js)
 
-For the impatients, try the demo here: https://sql.js.org/examples/GUI/
+*sql.js* is an SQL database that works in the browser. It allows you to create a database and query it entirely in the browser. You can try it in [this online demo](https://sql.js.org/examples/GUI/). It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
-*sql.js* is a port of [SQLite](http://sqlite.org/about.html) to Webassembly, by compiling the SQLite C code with [Emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html), with [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date) included. It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
+*sql.js* uses [emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html) to compile [SQLite](http://sqlite.org/about.html) to webassembly (or to javascript code for compatibility with older browsers). It includes [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date).
 
-There are no C bindings or node-gyp compilation here, sql.js is a simple JavaScript file, that can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3) to avoid out of memory errors and have better performances.
+sql.js can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3). A native binding will not only be faster because it will run native code, but it will also be able to work on database files directly instead of having to load the entire database in memory, avoiding out of memory errors and further improving performances.
 
 SQLite is public domain, sql.js is MIT licensed.
 
-Sql.js predates WebAssembly, and thus started as an [asm.js](https://en.wikipedia.org/wiki/Asm.js) project. It still supports asm.js for backwards compatibility.
-
-
-## Documentation
-A [full documentation](https://sql.js.org/documentation/class/Database.html) generated from comments inside the source code, is available.
+## API documentation
+A [full API documentation](https://sql.js.org/documentation/class/Database.html) generated from comments inside the source code is available.
 
 ## Usage
 
-By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAssembly), and thus needs to load a `.wasm` file in addition to the javascript library. You can find this file in `./node_modules/sql.js/dist/sql-wasm.wasm` after installing sql.js from npm, and add it to your static assets or load it from [a CDN](https://cdnjs.com/libraries/sql.js). Then use the [`locateFile`](https://emscripten.org/docs/api_reference/module.html#Module.locateFile) property of the configuration object passed to `initSqlJs` to indicate where the file is. If you use an asset builder such as webpack, you can automate this. See [this demo of how to integrate sql.js with webpack (and react)](https://github.com/sql-js/react-sqljs-demo).
+By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAssembly), and thus needs to load a `.wasm` file in addition to the javascript library. You can find this file in `./node_modules/sql.js/dist/sql-wasm.wasm` after installing sql.js from npm, and instruct your bundler to add it to your static assets or load it from [a CDN](https://cdnjs.com/libraries/sql.js). Then use the [`locateFile`](https://emscripten.org/docs/api_reference/module.html#Module.locateFile) property of the configuration object passed to `initSqlJs` to indicate where the file is. If you use an asset builder such as webpack, you can automate this. See [this demo of how to integrate sql.js with webpack (and react)](https://github.com/sql-js/react-sqljs-demo).
 
 ```javascript
 const initSqlJs = require('sql.js');
