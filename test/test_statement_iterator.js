@@ -36,10 +36,11 @@ exports.test = function(SQL, assert) {
 
   // check for additional queries
   x = it.next();
-  assert.equal(x.done, true, "Done reported after last query");
+  assert.deepEqual(x, { done: true }, "Done reported after last query");
 
-  // no more iterations should be allowed
-  assert.throws(function(){ it.next(); }, "Invalid iterator", "Cannot iterate past end");
+  // additional iteration does nothing
+  x = it.next();
+  assert.deepEqual(x, { done: true }, "Done reported when iterating past completion");
 
   db.run("DROP TABLE test;");
 
@@ -51,14 +52,15 @@ exports.test = function(SQL, assert) {
   }
   assert.equal(count, 3, "For loop iterates correctly");
 
-  var badsql = "SELECT * FROM test;garbage in, garbage out";
+  var badsql = "SELECT 1 as x;garbage in, garbage out";
 
   // bad sql will stop iteration
-  assert.throws(function(){
-      for (let statement of db.iterateStatements(badsql)) {
-          statement.step();
-      }
-  }, "Bad SQL stops iteration");
+  it = db.iterateStatements(badsql);
+  x = it.next();
+  x.value.step();
+  assert.deepEqual(x.value.getAsObject(), {x : 1}, "SQL before bad statement executes successfully");
+  assert.throws(function() { it.next() }, /syntax error/, "Bad SQL stops iteration with exception");
+  assert.deepEqual(it.next(), { done: true }, "Done reported when iterating after exception");
 
   // valid SQL executes, remaining SQL accessible after exception
   it = db.iterateStatements(badsql);

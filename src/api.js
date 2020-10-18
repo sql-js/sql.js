@@ -464,9 +464,14 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Get the SQLite's normalized version of the SQL string used in
-    preparing this statement.  The meaning of "normlized" is not
+    preparing this statement.  The meaning of "normalized" is not
     well-defined: see {@link https://sqlite.org/c3ref/expanded_sql.html
     the SQLite documentation}.
+
+     @example
+     db.run("create table test (x integer);");
+     stmt = db.prepare("select * from test where x = 42");
+     // returns "SELECT*FROM test WHERE x=?;"
 
      @return {string} The normalized SQL string
      */
@@ -653,7 +658,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * for (let statement of db.iterateStatements(sql) {
      *     statement.step();
      *     // get results, etc.
-     *     // do not call statement.free()
+     *     // do not call statement.free() manually, each statement is freed
+     *     // before the next one is parsed
      * }
      *
      * // capture any bad query exceptions with feedback
@@ -664,9 +670,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      *         statement.step();
      *     }
      * } catch(e) {
-     *     console.log(e);  // error message
-     *     console.log(" occurred while executing:");
-     *     console.log(it.getRemainingSQL());
+     *     console.log(
+     *         `The SQL string "${it.getRemainingSQL()}" ` +
+     *         `contains the following error: ${e}`
+     *     );
      * }
      *
      * @constructs StatementIterator
@@ -679,7 +686,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var sz = lengthBytesUTF8(sql) + 1;
         this.sqlPtr = _malloc(sz);
         if (this.sqlPtr === null) {
-            throw "Bad malloc";
+            throw new Error("Unable to allocate memory for the SQL string");
         }
         stringToUTF8(sql, this.sqlPtr, sz);
         this.nextSqlPtr = this.sqlPtr;
@@ -699,10 +706,53 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Prepare the next available SQL statement
      @return {StatementIterator.StatementIteratorResult}
-     @throws {String} SQLite error or bad iterator error
+     @throws {String} SQLite error or invalid iterator error
      */
     StatementIterator.prototype["next"] = function next() {
-        return this.db.advanceIterator(this);
+        if (this.sqlPtr === null) {
+            return { done: true };
+        }
+        if (this.activeStatement !== null) {
+            this.activeStatement["free"]();
+            this.activeStatement = null;
+        }
+        if (!this.db.db) {
+            this.finalize();
+            throw new Error("Database closed");
+        }
+        var stack = stackSave();
+        var pzTail = stackAlloc(4);
+        setValue(apiTemp, 0, "i32");
+        setValue(pzTail, 0, "i32");
+        try {
+            this.db.handleError(sqlite3_prepare_v2_sqlptr(
+                this.db.db,
+                this.nextSqlPtr,
+                -1,
+                apiTemp,
+                pzTail
+            ));
+            this.nextSqlPtr = getValue(pzTail, "i32");
+            var pStmt = getValue(apiTemp, "i32");
+            if (pStmt === NULL) {
+                this.finalize();
+                return { done: true };
+            }
+            this.activeStatement = new Statement(pStmt, this.db);
+            this.db.statements[pStmt] = this.activeStatement;
+            return { value: this.activeStatement, done: false };
+        } catch (e) {
+            this.nextSqlString = UTF8ToString(this.nextSqlPtr);
+            this.finalize();
+            throw e;
+        } finally {
+            stackRestore(stack);
+        }
+    };
+
+    StatementIterator.prototype.finalize = function finalize() {
+        _free(this.sqlPtr);
+        this.sqlPtr = null;
     };
 
     /** Get any un-executed portions remaining of the original SQL string
@@ -968,55 +1018,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     Database.prototype["iterateStatements"] = function iterateStatements(sql) {
         return new StatementIterator(sql, this);
-    };
-
-    /* Internal methods to implement statement iteration */
-
-    Database.prototype.advanceIterator = function advanceIterator(iter) {
-        if (iter.sqlPtr === null) {
-            throw "Invalid iterator";
-        }
-        if (iter.activeStatement !== null) {
-            iter.activeStatement["free"]();
-            iter.activeStatement = null;
-        }
-        if (!this.db) {
-            this.finalizeIterator(iter);
-            throw "Database closed";
-        }
-        var stack = stackSave();
-        var pzTail = stackAlloc(4);
-        setValue(apiTemp, 0, "i32");
-        setValue(pzTail, 0, "i32");
-        var returnCode = sqlite3_prepare_v2_sqlptr(
-            this.db,
-            iter.nextSqlPtr,
-            -1,
-            apiTemp,
-            pzTail
-        );
-        if (returnCode === SQLITE_OK) {
-            iter.nextSqlPtr = getValue(pzTail, "i32");
-        }
-        stackRestore(stack);
-        if (returnCode === SQLITE_OK) {
-            var pStmt = getValue(apiTemp, "i32");
-            if (pStmt === NULL) {
-                this.finalizeIterator(iter);
-                return { done: true };
-            }
-            iter.activeStatement = new Statement(pStmt, this);
-            this.statements[pStmt] = iter.activeStatement;
-            return { value: iter.activeStatement, done: false };
-        }
-        iter.nextSqlString = UTF8ToString(iter.nextSqlPtr);
-        this.finalizeIterator(iter);
-        return this.handleError(returnCode);
-    };
-
-    Database.prototype.finalizeIterator = function finalizeIterator(iter) {
-        _free(iter.sqlPtr);
-        iter.sqlPtr = null;
     };
 
     /** Exports the contents of the database to a binary array
