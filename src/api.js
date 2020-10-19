@@ -693,12 +693,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     }
 
     /**
-     * @typedef {{ done:false, value:undefined } |
+     * @typedef {{ done:true, value:undefined } |
      *           { done:false, value:Statement}}
      *           StatementIterator.StatementIteratorResult
-     * @property {Statement} the next available Statement
+     * @property {Statement} value the next available Statement
      * (as returned by {@link Database.prepare})
-     * @property {boolean} true if there are no more available statements
+     * @property {boolean} done true if there are no more available statements
      */
 
     /** Prepare the next available SQL statement
