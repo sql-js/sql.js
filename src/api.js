@@ -649,10 +649,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      *
      * {@see Database#iterateStatements}
      *
-     * **Warning**: When you close a database (using db.close()),
-     * using any statement iterators created by the database will
-     * result in undefined behavior.
-     *
      * @example
      * // loop over and execute statements in string sql
      * for (let statement of db.iterateStatements(sql) {
@@ -695,10 +691,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     }
 
     /**
-     * @typedef {{
-        value:Statement,
-        done:boolean
-    }} StatementIterator.StatementIteratorResult
+     * @typedef {{ done:false, value:undefined } |
+     *           { done:false, value:Statement}}
+     *           StatementIterator.StatementIteratorResult
      * @property {Statement} the next available Statement
      * (as returned by {@link Database.prepare})
      * @property {boolean} true if there are no more available statements
