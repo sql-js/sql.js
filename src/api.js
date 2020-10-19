@@ -3,6 +3,7 @@
     FS
     HEAP8
     Module
+    _malloc
     _free
     addFunction
     allocate
@@ -14,6 +15,9 @@
     stackAlloc
     stackRestore
     stackSave
+    UTF8ToString
+    stringToUTF8
+    lengthBytesUTF8
 */
 
 "use strict";
@@ -79,6 +83,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "sqlite3_prepare_v2",
         "number",
         ["number", "string", "number", "number", "number"]
+    );
+    var sqlite3_sql = cwrap("sqlite3_sql", "string", ["number"]);
+    var sqlite3_normalized_sql = cwrap(
+        "sqlite3_normalized_sql",
+        "string",
+        ["number"]
     );
     var sqlite3_prepare_v2_sqlptr = cwrap(
         "sqlite3_prepare_v2",
@@ -446,6 +456,29 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return rowObject;
     };
 
+    /** Get the SQL string used in preparing this statement.
+     @return {string} The SQL string
+     */
+    Statement.prototype["getSQL"] = function getSQL() {
+        return sqlite3_sql(this.stmt);
+    };
+
+    /** Get the SQLite's normalized version of the SQL string used in
+    preparing this statement.  The meaning of "normalized" is not
+    well-defined: see {@link https://sqlite.org/c3ref/expanded_sql.html
+    the SQLite documentation}.
+
+     @example
+     db.run("create table test (x integer);");
+     stmt = db.prepare("select * from test where x = 42");
+     // returns "SELECT*FROM test WHERE x=?;"
+
+     @return {string} The normalized SQL string
+     */
+    Statement.prototype["getNormalizedSQL"] = function getNormalizedSQL() {
+        return sqlite3_normalized_sql(this.stmt);
+    };
+
     /** Shorthand for bind + step + reset
     Bind the values, execute the statement, ignoring the rows it returns,
     and resets it
@@ -604,6 +637,138 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.stmt = NULL;
         return res;
     };
+
+    /**
+     * @classdesc
+     * An iterator over multiple SQL statements in a string,
+     * preparing and returning a Statement object for the next SQL
+     * statement on each iteration.
+     *
+     * You can't instantiate this class directly, you have to use a
+     * {@link Database} object in order to create a statement iterator
+     *
+     * {@see Database#iterateStatements}
+     *
+     * @example
+     * // loop over and execute statements in string sql
+     * for (let statement of db.iterateStatements(sql) {
+     *     statement.step();
+     *     // get results, etc.
+     *     // do not call statement.free() manually, each statement is freed
+     *     // before the next one is parsed
+     * }
+     *
+     * // capture any bad query exceptions with feedback
+     * // on the bad sql
+     * let it = db.iterateStatements(sql);
+     * try {
+     *     for (let statement of it) {
+     *         statement.step();
+     *     }
+     * } catch(e) {
+     *     console.log(
+     *         `The SQL string "${it.getRemainingSQL()}" ` +
+     *         `contains the following error: ${e}`
+     *     );
+     * }
+     *
+     * @implements {Iterator<Statement>}
+     * @implements {Iterable<Statement>}
+     * @constructs StatementIterator
+     * @memberof module:SqlJs
+     * @param {string} sql A string containing multiple SQL statements
+     * @param {Database} db The database from which this iterator was created
+     */
+    function StatementIterator(sql, db) {
+        this.db = db;
+        var sz = lengthBytesUTF8(sql) + 1;
+        this.sqlPtr = _malloc(sz);
+        if (this.sqlPtr === null) {
+            throw new Error("Unable to allocate memory for the SQL string");
+        }
+        stringToUTF8(sql, this.sqlPtr, sz);
+        this.nextSqlPtr = this.sqlPtr;
+        this.nextSqlString = null;
+        this.activeStatement = null;
+    }
+
+    /**
+     * @typedef {{ done:true, value:undefined } |
+     *           { done:false, value:Statement}}
+     *           StatementIterator.StatementIteratorResult
+     * @property {Statement} value the next available Statement
+     * (as returned by {@link Database.prepare})
+     * @property {boolean} done true if there are no more available statements
+     */
+
+    /** Prepare the next available SQL statement
+     @return {StatementIterator.StatementIteratorResult}
+     @throws {String} SQLite error or invalid iterator error
+     */
+    StatementIterator.prototype["next"] = function next() {
+        if (this.sqlPtr === null) {
+            return { done: true };
+        }
+        if (this.activeStatement !== null) {
+            this.activeStatement["free"]();
+            this.activeStatement = null;
+        }
+        if (!this.db.db) {
+            this.finalize();
+            throw new Error("Database closed");
+        }
+        var stack = stackSave();
+        var pzTail = stackAlloc(4);
+        setValue(apiTemp, 0, "i32");
+        setValue(pzTail, 0, "i32");
+        try {
+            this.db.handleError(sqlite3_prepare_v2_sqlptr(
+                this.db.db,
+                this.nextSqlPtr,
+                -1,
+                apiTemp,
+                pzTail
+            ));
+            this.nextSqlPtr = getValue(pzTail, "i32");
+            var pStmt = getValue(apiTemp, "i32");
+            if (pStmt === NULL) {
+                this.finalize();
+                return { done: true };
+            }
+            this.activeStatement = new Statement(pStmt, this.db);
+            this.db.statements[pStmt] = this.activeStatement;
+            return { value: this.activeStatement, done: false };
+        } catch (e) {
+            this.nextSqlString = UTF8ToString(this.nextSqlPtr);
+            this.finalize();
+            throw e;
+        } finally {
+            stackRestore(stack);
+        }
+    };
+
+    StatementIterator.prototype.finalize = function finalize() {
+        _free(this.sqlPtr);
+        this.sqlPtr = null;
+    };
+
+    /** Get any un-executed portions remaining of the original SQL string
+     @return {String}
+     */
+    StatementIterator.prototype["getRemainingSQL"] = function getRemainder() {
+        // iff an exception occurred, we set the nextSqlString
+        if (this.nextSqlString !== null) return this.nextSqlString;
+        // otherwise, convert from nextSqlPtr
+        return UTF8ToString(this.nextSqlPtr);
+    };
+
+    /* implement Iterable interface */
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+        StatementIterator.prototype[Symbol.iterator] = function iterator() {
+            return this;
+        };
+    }
 
     /** @classdesc
     * Represents an SQLite database
@@ -842,6 +1007,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this.statements[pStmt] = stmt;
         return stmt;
+    };
+
+    /** Iterate over multiple SQL statements in a SQL string.
+     * This function returns an iterator over {@link Statement} objects.
+     * You can use a for..of loop to execute the returned statements one by one.
+     * @param {string} sql a string of SQL that can contain multiple statements
+     * @return {StatementIterator} the resulting statement iterator
+     * @example <caption>Get the results of multiple SQL queries</caption>
+     * const sql_queries = "SELECT 1 AS x; SELECT '2' as y";
+     * for (const statement of db.iterateStatements(sql_queries)) {
+     *     statement.step(); // Execute the statement
+     *     const sql = statement.getSQL(); // Get the SQL source
+     *     const result = statement.getAsObject(); // Get the row of data
+     *     console.log(sql, result);
+     * }
+     * // This will print:
+     * // 'SELECT 1 AS x;' { x: 1 }
+     * // " SELECT '2' as y" { y: '2' }
+     */
+    Database.prototype["iterateStatements"] = function iterateStatements(sql) {
+        return new StatementIterator(sql, this);
     };
 
     /** Exports the contents of the database to a binary array

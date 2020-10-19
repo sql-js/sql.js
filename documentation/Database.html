@@ -143,7 +143,7 @@ an SQLite database file</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line617">line 617</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line782">line 782</a>
     </li></ul></dd>
     
 
@@ -257,7 +257,7 @@ memory consumption will grow forever</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line873">line 873</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1059">line 1059</a>
     </li></ul></dd>
     
 
@@ -418,7 +418,7 @@ SQL statements.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line922">line 922</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1108">line 1108</a>
     </li></ul></dd>
     
 
@@ -715,7 +715,7 @@ all rows have been retrieved</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line803">line 803</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line968">line 968</a>
     </li></ul></dd>
     
 
@@ -984,7 +984,7 @@ you <strong>cannot</strong> provide an sql string that contains several statemen
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line731">line 731</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line896">line 896</a>
     </li></ul></dd>
     
 
@@ -1094,7 +1094,7 @@ you <strong>cannot</strong> provide an sql string that contains several statemen
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line850">line 850</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1036">line 1036</a>
     </li></ul></dd>
     
 
@@ -1207,7 +1207,7 @@ the value returned by this function.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line908">line 908</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1094">line 1094</a>
     </li></ul></dd>
     
 
@@ -1318,7 +1318,7 @@ an error with a descriptive message otherwise</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line892">line 892</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1078">line 1078</a>
     </li></ul></dd>
     
 
@@ -1345,6 +1345,183 @@ an error with a descriptive message otherwise</p>
 
 
 
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="%5B%22iterateStatements%22%5D"><span class="type-signature"></span>["iterateStatements"]<span class="signature">(sql)</span><span class="type-signature"> &rarr; {<a href="StatementIterator.html">StatementIterator</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Iterate over multiple SQL statements in a SQL string.
+This function returns an iterator over <a href="Statement.html">Statement</a> objects.
+You can use a for..of loop to execute the returned statements one by one.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sql</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>a string of SQL that can contain multiple statements</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1029">line 1029</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the resulting statement iterator</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="StatementIterator.html">StatementIterator</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+        <p class="code-caption">Get the results of multiple SQL queries</p>
+    
+    <pre class="prettyprint"><code>const sql_queries = "SELECT 1 AS x; SELECT '2' as y";
+for (const statement of db.iterateStatements(sql_queries)) {
+    statement.step(); // Execute the statement
+    const sql = statement.getSQL(); // Get the SQL source
+    const result = statement.getAsObject(); // Get the row of data
+    console.log(sql, result);
+}
+// This will print:
+// 'SELECT 1 AS x;' { x: 1 }
+// " SELECT '2' as y" { y: '2' }</code></pre>
 
 
 
@@ -1499,7 +1676,7 @@ an error with a descriptive message otherwise</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line831">line 831</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line996">line 996</a>
     </li></ul></dd>
     
 
@@ -1733,7 +1910,7 @@ provide an sql string that contains several statements (separated by <code>;</co
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line648">line 648</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line813">line 813</a>
     </li></ul></dd>
     
 
@@ -1931,7 +2108,7 @@ the column values</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line665">line 665</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line830">line 830</a>
     </li></ul></dd>
     
 
@@ -2008,7 +2185,7 @@ the column values</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line255">line 255</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line265">line 265</a>
     </li></ul></dd>
     
 
@@ -2038,13 +2215,13 @@ the column values</p></td>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a></li><li><a href="Statement.html">Statement</a></li></ul><h3>Global</h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a></li><li><a href="Statement.html">Statement</a></li><li><a href="StatementIterator.html">StatementIterator</a></li></ul><h3>Global</h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Sun Oct 18 2020 09:58:44 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Mon Oct 19 2020 19:33:16 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>

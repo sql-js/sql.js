@@ -174,7 +174,7 @@ Database::prepare</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line245">line 245</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line255">line 255</a>
     </li></ul></dd>
     
 
@@ -377,7 +377,7 @@ This function binds these parameters to the given values.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line299">line 299</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line309">line 309</a>
     </li></ul></dd>
     
 
@@ -542,7 +542,7 @@ stmt.bind([5, 10, 20]);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line599">line 599</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line632">line 632</a>
     </li></ul></dd>
     
 
@@ -652,7 +652,7 @@ stmt.bind([5, 10, 20]);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line589">line 589</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line622">line 622</a>
     </li></ul></dd>
     
 
@@ -803,7 +803,7 @@ to the statement before it is executed</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line378">line 378</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line388">line 388</a>
     </li></ul></dd>
     
 
@@ -984,7 +984,7 @@ to the statement, and it will be executed</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line438">line 438</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line448">line 448</a>
     </li></ul></dd>
     
 
@@ -1111,7 +1111,7 @@ to the statement, and it will be executed</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line413">line 413</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line423">line 423</a>
     </li></ul></dd>
     
 
@@ -1179,6 +1179,237 @@ to the statement, and it will be executed</p></td>
     
 
     
+    <h4 class="name" id="%5B%22getNormalizedSQL%22%5D"><span class="type-signature"></span>["getNormalizedSQL"]<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get the SQLite's normalized version of the SQL string used in
+preparing this statement.  The meaning of &quot;normalized&quot; is not
+well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLite documentation</a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line478">line 478</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The normalized SQL string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>db.run("create table test (x integer);");
+     stmt = db.prepare("select * from test where x = 42");
+     // returns "SELECT*FROM test WHERE x=?;"
+
+     </code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="%5B%22getSQL%22%5D"><span class="type-signature"></span>["getSQL"]<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get the SQL string used in preparing this statement.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line462">line 462</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The SQL string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="%5B%22reset%22%5D"><span class="type-signature"></span>["reset"]<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
@@ -1233,7 +1464,7 @@ by bound parameters.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line580">line 580</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line613">line 613</a>
     </li></ul></dd>
     
 
@@ -1384,7 +1615,7 @@ and resets it</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line454">line 454</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line487">line 487</a>
     </li></ul></dd>
     
 
@@ -1473,7 +1704,7 @@ that can be retrieved with Statement.get.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line317">line 317</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line327">line 327</a>
     </li></ul></dd>
     
 
@@ -1618,7 +1849,7 @@ that can be retrieved with Statement.get.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line256">line 256</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line266">line 266</a>
     </li></ul></dd>
     
 
@@ -1648,13 +1879,13 @@ that can be retrieved with Statement.get.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a></li><li><a href="Statement.html">Statement</a></li></ul><h3>Global</h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a></li><li><a href="Statement.html">Statement</a></li><li><a href="StatementIterator.html">StatementIterator</a></li></ul><h3>Global</h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Sun Oct 18 2020 09:58:44 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Mon Oct 19 2020 19:33:16 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
