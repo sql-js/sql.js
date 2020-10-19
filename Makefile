@@ -23,7 +23,8 @@ CFLAGS = \
 	-DSQLITE_DISABLE_LFS \
 	-DSQLITE_ENABLE_FTS3 \
 	-DSQLITE_ENABLE_FTS3_PARENTHESIS \
-	-DSQLITE_THREADSAFE=0
+	-DSQLITE_THREADSAFE=0 \
+	-DSQLITE_ENABLE_NORMALIZE
 
 # When compiling to WASM, enabling memory-growth is not expected to make much of an impact, so we enable it for all builds
 # Since tihs is a library and not a standalone executable, we don't want to catch unhandled Node process exceptions
