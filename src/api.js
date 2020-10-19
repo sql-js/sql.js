@@ -1007,9 +1007,22 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return stmt;
     };
 
-    /** Iterate over multiple SQL statements in a SQL string
-     @param {string} sql a string of SQL
-     @return {StatementIterator} the resulting statement iterator
+    /** Iterate over multiple SQL statements in a SQL string.
+     * This function returns an iterator over {@link Statement} objects.
+     * You can use a for..of loop to execute the returned statements one by one.
+     * @param {string} sql a string of SQL that can contain multiple statements
+     * @return {StatementIterator} the resulting statement iterator
+     * @example <caption>Get the results of multiple SQL queries</caption>
+     * const sql_queries = "SELECT 1 AS x; SELECT '2' as y";
+     * for (const statement of db.iterateStatements(sql_queries)) {
+     *     statement.step(); // Execute the statement
+     *     const sql = statement.getSQL(); // Get the SQL source
+     *     const result = statement.getAsObject(); // Get the row of data
+     *     console.log(sql, result);
+     * }
+     * // This will print:
+     * // 'SELECT 1 AS x;' { x: 1 }
+     * // " SELECT '2' as y" { y: '2' }
      */
     Database.prototype["iterateStatements"] = function iterateStatements(sql) {
         return new StatementIterator(sql, this);
