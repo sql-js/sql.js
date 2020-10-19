@@ -672,6 +672,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      *     );
      * }
      *
+     * @implements {Iterator<Statement>}
+     * @implements {Iterable<Statement>}
      * @constructs StatementIterator
      * @memberof module:SqlJs
      * @param {string} sql A string containing multiple SQL statements
