@@ -1,4 +1,4 @@
-exports.test = function(SQL, assert) {
+exports.test = function (SQL, assert) {
   // Create a database
   var db = new SQL.Database();
 
@@ -47,8 +47,8 @@ exports.test = function(SQL, assert) {
   // for...of
   var count = 0;
   for (let statement of db.iterateStatements(sqlstr)) {
-      statement.step();
-      count = count + 1;
+    statement.step();
+    count = count + 1;
   }
   assert.equal(count, 3, "For loop iterates correctly");
 
@@ -58,19 +58,19 @@ exports.test = function(SQL, assert) {
   it = db.iterateStatements(badsql);
   x = it.next();
   x.value.step();
-  assert.deepEqual(x.value.getAsObject(), {x : 1}, "SQL before bad statement executes successfully");
-  assert.throws(function() { it.next() }, /syntax error/, "Bad SQL stops iteration with exception");
+  assert.deepEqual(x.value.getAsObject(), { x: 1 }, "SQL before bad statement executes successfully");
+  assert.throws(function () { it.next() }, /syntax error/, "Bad SQL stops iteration with exception");
   assert.deepEqual(it.next(), { done: true }, "Done reported when iterating after exception");
 
   // valid SQL executes, remaining SQL accessible after exception
   it = db.iterateStatements(badsql);
   var remains = '';
   try {
-      for (let statement of it) {
-          statement.step();
-      }
+    for (let statement of it) {
+      statement.step();
+    }
   } catch {
-      remains = it.getRemainingSQL();
+    remains = it.getRemainingSQL();
   }
   assert.equal(remains, "garbage in, garbage out", "Remaining SQL accessible after exception");
 
@@ -78,11 +78,11 @@ exports.test = function(SQL, assert) {
   const results = [];
   const sql_queries = "SELECT 1 AS x; SELECT '2' as y";
   for (const statement of db.iterateStatements(sql_queries)) {
-      statement.step(); // Fetch one line of result from the statement
-      const sql = statement.getSQL();
-      const result = statement.getAsObject();
-      results.push({sql, result});
-    }
+    statement.step(); // Fetch one line of result from the statement
+    const sql = statement.getSQL();
+    const result = statement.getAsObject();
+    results.push({ sql, result });
+  }
   console.log(results);
   assert.deepEqual(results, [
     { sql: 'SELECT 1 AS x;', result: { x: 1 } },
@@ -91,17 +91,17 @@ exports.test = function(SQL, assert) {
 };
 
 if (module == require.main) {
-	const target_file = process.argv[2];
+  const target_file = process.argv[2];
   const sql_loader = require('./load_sql_lib');
-  sql_loader(target_file).then((sql)=>{
+  sql_loader(target_file).then((sql) => {
     require('test').run({
-      'test statement iterator': function(assert){
+      'test statement iterator': function (assert) {
         exports.test(sql, assert);
       }
     });
   })
-  .catch((e)=>{
-    console.error(e);
-    assert.fail(e);
-  });
+    .catch((e) => {
+      console.error(e);
+      assert.fail(e);
+    });
 }
