@@ -78,12 +78,10 @@ exports.test = function (SQL, assert) {
   const results = [];
   const sql_queries = "SELECT 1 AS x; SELECT '2' as y";
   for (const statement of db.iterateStatements(sql_queries)) {
-    statement.step(); // Fetch one line of result from the statement
     const sql = statement.getSQL();
-    const result = statement.getAsObject();
+    const result = statement.getAsObject({});
     results.push({ sql, result });
   }
-  console.log(results);
   assert.deepEqual(results, [
     { sql: 'SELECT 1 AS x;', result: { x: 1 } },
     { sql: " SELECT '2' as y", result: { y: '2' } }
