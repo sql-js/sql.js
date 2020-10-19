@@ -1017,9 +1017,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * @example <caption>Get the results of multiple SQL queries</caption>
      * const sql_queries = "SELECT 1 AS x; SELECT '2' as y";
      * for (const statement of db.iterateStatements(sql_queries)) {
-     *     statement.step(); // Execute the statement
      *     const sql = statement.getSQL(); // Get the SQL source
-     *     const result = statement.getAsObject(); // Get the row of data
+     *     const result = statement.getAsObject({}); // Get the row of data
      *     console.log(sql, result);
      * }
      * // This will print:
