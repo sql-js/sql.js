@@ -21,11 +21,12 @@
 	"scripts": {
 		"build": "make",
 		"rebuild": "make clean && make",
-		"test": "npm run lint && npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug",
+		"test": "npm run lint && npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
 		"lint": "eslint .",
 		"prettify": "eslint . --fix",
 		"test-asm": "node test/all.js asm",
 		"test-asm-debug": "node test/all.js asm-debug",
+		"test-asm-memory-growth": "node test/all.js asm-memory-growth",
 		"test-wasm": "node test/all.js wasm",
 		"test-wasm-debug": "node test/all.js wasm-debug",
 		"doc": "jsdoc -c .jsdoc.config.json"

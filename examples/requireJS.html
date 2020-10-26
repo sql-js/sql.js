@@ -8,7 +8,7 @@
     baseUrl: baseUrl
   });
 
-  // Options: 'sql-wasm', 'sql-asm', 'sql-wasm-debug', 'sql-asm-debug'
+  // Options: 'sql-wasm', 'sql-asm', 'sql-asm-memory-growth.js', 'sql-wasm-debug', 'sql-asm-debug'
   require(['sql-wasm'],
     function success(initSqlJs) {
       console.log(typeof initSqlJs);
