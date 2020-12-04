@@ -11,11 +11,17 @@ if [ -z "$EMSDK_PYTHON" ]; then
   PYTHON3=$(dirname $0)/python/3.7.4-2_64bit/bin/python3
   if [ -e $PYTHON3 ]; then
     EMSDK_PYTHON=$PYTHON3
+
     # When using our bundled python we never want the users
     # PYTHONHOME or PYTHONPATH
     # https://github.com/emscripten-core/emsdk/issues/598
     unset PYTHONHOME
     unset PYTHONPATH
+
+    # This is needed for MacOS.  Without this, the urlopen
+    # code will try to use /usr/local/etc/openssl/cert.pem
+    # which may or may not exist on the system.
+    export SSL_CERT_FILE=$(dirname $0)/python/3.7.4-2_64bit/lib/python3.7/site-packages/certifi/cacert.pem
   fi
 fi
 

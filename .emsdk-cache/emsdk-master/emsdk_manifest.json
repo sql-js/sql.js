@@ -294,7 +294,7 @@
     "macos_url": "python-3.7.4-2-macos.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"
   },
   {
     "id": "java",

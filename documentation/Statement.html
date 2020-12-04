@@ -2,22 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Statement</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+      
+        <meta name="author" content="Ophir Lojkine">
+      
+        <meta name="description" content="sql.js technical documentation">
+      
+    
+    <title>Statement</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/third-party/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/third-party/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
+    <link type="text/css" rel="stylesheet" href="styles/clean-jsdoc-theme-base.css">
+    <link type="text/css" rel="stylesheet" href="styles/clean-jsdoc-theme-light.css">
+    
+    
+    
+<svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none">
+    <defs>
+        <symbol id="copy-icon" viewbox="0 0 488.3 488.3">
+            <g>
+                <path d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z"/>
+                <path d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z"/>
+            </g>
+        </symbol>
+    </defs>
+</svg>
 
+</head>
 <body>
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html"><div class="text">sql.js</div></a></h2><div class="search-box"><input type="text" placeholder="Search..." id="search-box" /><div class="search-item-container" id="search-item-container"><ul class="search-item-ul" id="search-item-ul"></ul></div></div><div class="sidebar-list-div"><ul><li><a href='https://sql.js.org/' class='' id='' target=''>Website</a></li><li><a href='https://github.com/sql-js/sql.js' class='' id='' target=''>Github</a></li><li><a href='https://sql.js.org/examples/GUI/' class='' id='' target=''>Demo</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a><ul class='methods'><li data-type='method'><a href="Database.html#%255B%2522close%2522%255D">["close"]</a></li><li data-type='method'><a href="Database.html#%255B%2522create_function%2522%255D">["create_function"]</a></li><li data-type='method'><a href="Database.html#%255B%2522each%2522%255D">["each"]</a></li><li data-type='method'><a href="Database.html#%255B%2522exec%2522%255D">["exec"]</a></li><li data-type='method'><a href="Database.html#%255B%2522export%2522%255D">["export"]</a></li><li data-type='method'><a href="Database.html#%255B%2522getRowsModified%2522%255D">["getRowsModified"]</a></li><li data-type='method'><a href="Database.html#%255B%2522handleError%2522%255D">["handleError"]</a></li><li data-type='method'><a href="Database.html#%255B%2522iterateStatements%2522%255D">["iterateStatements"]</a></li><li data-type='method'><a href="Database.html#%255B%2522prepare%2522%255D">["prepare"]</a></li><li data-type='method'><a href="Database.html#%255B%2522run%2522%255D">["run"]</a></li></ul></li><li><a href="Statement.html">Statement</a><ul class='methods'><li data-type='method'><a href="Statement.html#%255B%2522bind%2522%255D">["bind"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522free%2522%255D">["free"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522freemem%2522%255D">["freemem"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522get%2522%255D">["get"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getAsObject%2522%255D">["getAsObject"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getColumnNames%2522%255D">["getColumnNames"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getNormalizedSQL%2522%255D">["getNormalizedSQL"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getSQL%2522%255D">["getSQL"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522reset%2522%255D">["reset"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522run%2522%255D">["run"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522step%2522%255D">["step"]</a></li></ul></li><li><a href="StatementIterator.html">StatementIterator</a><ul class='methods'><li data-type='method'><a href="StatementIterator.html#%255B%2522getRemainingSQL%2522%255D">["getRemainingSQL"]</a></li><li data-type='method'><a href="StatementIterator.html#%255B%2522next%2522%255D">["next"]</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3><a href="global.html">Global</a></h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul></div>
+</nav>
 
 <div id="main">
-
-    <h1 class="page-title">Class: Statement</h1>
+    
+    <h1 class="page-title">Statement</h1>
+    
 
     
 
@@ -26,10 +59,18 @@
 
 <section>
 
+
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-SqlJs.html">SqlJs</a></span>Statement<span class="signature">(stmt1, db)</span><span class="type-signature"></span></h2>
+        
+        <h2>
+        
+            <span class="ancestors"><a href="module-SqlJs.html">SqlJs</a></span>
+        
+        Statement
+        
+        </h2>
+        
         
             <div class="class-description"><p>Represents a prepared statement.
 Prepared statements allow you to have a template sql string,
@@ -40,9 +81,11 @@ that you can execute multiple times with different parameters.</p>
 all its statements are closed too and become unusable.</p>
 <p>Statements can't be created by the API user directly, only by
 Database::prepare</p></div>
+            <hr/>
         
     
 </header>
+
 
 <article>
     <div class="container-overview">
@@ -50,12 +93,13 @@ Database::prepare</p></div>
         
 
     
-    <h2>Constructor</h2>
+        <h2>Constructor</h2>
     
 
-    
-    <h4 class="name" id="Statement"><span class="type-signature"></span>new Statement<span class="signature">(stmt1, db)</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="Statement">
+        <a href="#Statement">#</a>
+        <span class="type-signature"></span>new Statement<span class="signature">(stmt1, db)</span><span class="type-signature"></span>
+    </h4>
 
     
 
@@ -69,8 +113,9 @@ Database::prepare</p></div>
 
 
 
-    <h5>Parameters:</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
 
 <table class="params">
     <thead>
@@ -140,6 +185,7 @@ Database::prepare</p></div>
     </tbody>
 </table>
 
+    </div>
 
 
 
@@ -172,31 +218,31 @@ Database::prepare</p></div>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line255">line 255</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line256">line 256</a>
+            </li></ul></dd>
+        </div>
     
 
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>Database.html#prepare-dynamic</li>
-        
-            <li><a href="https://en.wikipedia.org/wiki/Prepared_statement">https://en.wikipedia.org/wiki/Prepared_statement</a></li>
-        </ul>
-    </dd>
+        <div class="details-item-container">
+            <dt class="tag-see">See:</dt>
+            <dd class="tag-see">
+                <ul>
+                    <li>Database.html#prepare-dynamic</li>
+                
+                    <li><a href="https://en.wikipedia.org/wiki/Prepared_statement">https://en.wikipedia.org/wiki/Prepared_statement</a></li>
+                </ul>
+            </dd>
+        </div>
     
 
     
 </dl>
-
-
-
-
 
 
 
@@ -222,9 +268,7 @@ Database::prepare</p></div>
 
     
 
-    
-
-    
+     
 
     
 
@@ -238,16 +282,17 @@ Database::prepare</p></div>
 
     
 
-    
-    <h4 class="name" id="%5B%22bind%22%5D"><span class="type-signature"></span>["bind"]<span class="signature">(values)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-    
+    <h4 class="name" id="%5B%22bind%22%5D">
+        <a href="#%5B%22bind%22%5D">#</a>
+        <span class="type-signature"></span>["bind"]<span class="signature">(values)</span><span class="type-signature"> &rarr; {boolean}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Bind values to the parameters, after having reseted the statement.
+    <div class="description">
+        <p>Bind values to the parameters, after having reseted the statement.
 If values is null, do nothing and return true.</p>
 <p>SQL statements can have parameters,
 named <em>'?', '?NNN', ':VVV', '@VVV', '$VVV'</em>,
@@ -285,7 +330,7 @@ This function binds these parameters to the given values.</p>
 </tr>
 </tbody>
 </table>
-</div>
+    </div>
 
 
 
@@ -295,8 +340,9 @@ This function binds these parameters to the given values.</p>
 
 
 
-    <h5>Parameters:</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
 
 <table class="params">
     <thead>
@@ -343,6 +389,7 @@ This function binds these parameters to the given values.</p>
     </tbody>
 </table>
 
+    </div>
 
 
 
@@ -375,23 +422,27 @@ This function binds these parameters to the given values.</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line309">line 309</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line310">line 310</a>
+            </li></ul></dd>
+        </div>
     
 
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="http://www.sqlite.org/datatype3.html">http://www.sqlite.org/datatype3.html</a></li>
-        
-            <li><a href="http://www.sqlite.org/lang_expr.html#varparam">http://www.sqlite.org/lang_expr.html#varparam</a></li>
-        </ul>
-    </dd>
+        <div class="details-item-container">
+            <dt class="tag-see">See:</dt>
+            <dd class="tag-see">
+                <ul>
+                    <li><a href="http://www.sqlite.org/datatype3.html">http://www.sqlite.org/datatype3.html</a></li>
+                
+                    <li><a href="http://www.sqlite.org/lang_expr.html#varparam">http://www.sqlite.org/lang_expr.html#varparam</a></li>
+                </ul>
+            </dd>
+        </div>
     
 
     
@@ -407,10 +458,8 @@ This function binds these parameters to the given values.</p>
 
 
 
-
-
-<h5>Throws:</h5>
-
+    <strong>Throws:</strong>
+    
         
 
 <dl>
@@ -440,16 +489,17 @@ This function binds these parameters to the given values.</p>
     
 
 
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>true if it worked</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -461,13 +511,13 @@ This function binds these parameters to the given values.</p>
     </dd>
 </dl>
 
-    
+    </div>
 
 
 
-
-    <h5>Examples</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Examples</strong>
+        
         <p class="code-caption">Bind values to named parameters</p>
     
     <pre class="prettyprint"><code>    var stmt = db.prepare(
@@ -482,6 +532,7 @@ var stmt = db.prepare("UPDATE test SET a=? WHERE id BETWEEN ? AND ?");
 // Call Statement.bind with an array as parameter
 stmt.bind([5, 10, 20]);</code></pre>
 
+    </div>
 
 
         
@@ -489,17 +540,18 @@ stmt.bind([5, 10, 20]);</code></pre>
 
     
 
-    
-    <h4 class="name" id="%5B%22free%22%5D"><span class="type-signature"></span>["free"]<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-    
+    <h4 class="name" id="%5B%22free%22%5D">
+        <a href="#%5B%22free%22%5D">#</a>
+        <span class="type-signature"></span>["free"]<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Free the memory used by the statement</p>
-</div>
+    <div class="description">
+        <p>Free the memory used by the statement</p>
+    </div>
 
 
 
@@ -540,10 +592,12 @@ stmt.bind([5, 10, 20]);</code></pre>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line632">line 632</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line633">line 633</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -565,18 +619,17 @@ stmt.bind([5, 10, 20]);</code></pre>
 
 
 
-
-
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>true in case of success</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -588,8 +641,7 @@ stmt.bind([5, 10, 20]);</code></pre>
     </dd>
 </dl>
 
-    
-
+    </div>
 
 
 
@@ -599,17 +651,18 @@ stmt.bind([5, 10, 20]);</code></pre>
 
     
 
-    
-    <h4 class="name" id="%5B%22freemem%22%5D"><span class="type-signature"></span>["freemem"]<span class="signature">()</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="%5B%22freemem%22%5D">
+        <a href="#%5B%22freemem%22%5D">#</a>
+        <span class="type-signature"></span>["freemem"]<span class="signature">()</span><span class="type-signature"></span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Free the memory allocated during parameter binding</p>
-</div>
+    <div class="description">
+        <p>Free the memory allocated during parameter binding</p>
+    </div>
 
 
 
@@ -650,10 +703,12 @@ stmt.bind([5, 10, 20]);</code></pre>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line622">line 622</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line623">line 623</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -678,27 +733,24 @@ stmt.bind([5, 10, 20]);</code></pre>
 
 
 
-
-
-
-
         
             
 
     
 
-    
-    <h4 class="name" id="%5B%22get%22%5D"><span class="type-signature"></span>["get"]<span class="signature">(params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Database.html#.SqlValue">Database.SqlValue</a>>}</span></h4>
-    
+    <h4 class="name" id="%5B%22get%22%5D">
+        <a href="#%5B%22get%22%5D">#</a>
+        <span class="type-signature"></span>["get"]<span class="signature">(params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Database.html#.SqlValue">Database.SqlValue</a>>}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Get one row of results of a statement.
+    <div class="description">
+        <p>Get one row of results of a statement.
 If the first parameter is not provided, step must have been called before.</p>
-</div>
+    </div>
 
 
 
@@ -708,8 +760,9 @@ If the first parameter is not provided, step must have been called before.</p>
 
 
 
-    <h5>Parameters:</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
 
 <table class="params">
     <thead>
@@ -769,6 +822,7 @@ to the statement before it is executed</p></td>
     </tbody>
 </table>
 
+    </div>
 
 
 
@@ -801,10 +855,12 @@ to the statement before it is executed</p></td>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line388">line 388</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line389">line 389</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -826,18 +882,17 @@ to the statement before it is executed</p></td>
 
 
 
-
-
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>One row of result</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -849,18 +904,19 @@ to the statement before it is executed</p></td>
     </dd>
 </dl>
 
-    
+    </div>
 
 
 
-
-    <h5>Example</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
         <p class="code-caption">Print all the rows of the table test to the console</p>
     
     <pre class="prettyprint"><code>    var stmt = db.prepare("SELECT * FROM test");
     while (stmt.step()) console.log(stmt.get());</code></pre>
 
+    </div>
 
 
         
@@ -868,18 +924,19 @@ to the statement before it is executed</p></td>
 
     
 
-    
-    <h4 class="name" id="%5B%22getAsObject%22%5D"><span class="type-signature"></span>["getAsObject"]<span class="signature">(params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object.&lt;string, <a href="Database.html#.SqlValue">Database.SqlValue</a>>}</span></h4>
-    
+    <h4 class="name" id="%5B%22getAsObject%22%5D">
+        <a href="#%5B%22getAsObject%22%5D">#</a>
+        <span class="type-signature"></span>["getAsObject"]<span class="signature">(params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object.&lt;string, <a href="Database.html#.SqlValue">Database.SqlValue</a>>}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Get one row of result as a javascript object, associating column names
+    <div class="description">
+        <p>Get one row of result as a javascript object, associating column names
 with their value in the current row.</p>
-</div>
+    </div>
 
 
 
@@ -889,8 +946,9 @@ with their value in the current row.</p>
 
 
 
-    <h5>Parameters:</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
 
 <table class="params">
     <thead>
@@ -950,6 +1008,7 @@ to the statement, and it will be executed</p></td>
     </tbody>
 </table>
 
+    </div>
 
 
 
@@ -982,21 +1041,25 @@ to the statement, and it will be executed</p></td>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line448">line 448</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line449">line 449</a>
+            </li></ul></dd>
+        </div>
     
 
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>Statement.get</li>
-        </ul>
-    </dd>
+        <div class="details-item-container">
+            <dt class="tag-see">See:</dt>
+            <dd class="tag-see">
+                <ul>
+                    <li>Statement.get</li>
+                </ul>
+            </dd>
+        </div>
     
 
     
@@ -1014,18 +1077,17 @@ to the statement, and it will be executed</p></td>
 
 
 
-
-
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>The row of result</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1037,13 +1099,13 @@ to the statement, and it will be executed</p></td>
     </dd>
 </dl>
 
-    
+    </div>
 
 
 
-
-    <h5>Example</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
     <pre class="prettyprint"><code>var stmt = db.prepare(
             "SELECT 5 AS nbr, x'010203' AS data, NULL AS null_value;"
         );
@@ -1051,6 +1113,7 @@ to the statement, and it will be executed</p></td>
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}</code></pre>
 
+    </div>
 
 
         
@@ -1058,17 +1121,18 @@ to the statement, and it will be executed</p></td>
 
     
 
-    
-    <h4 class="name" id="%5B%22getColumnNames%22%5D"><span class="type-signature"></span>["getColumnNames"]<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
-    
+    <h4 class="name" id="%5B%22getColumnNames%22%5D">
+        <a href="#%5B%22getColumnNames%22%5D">#</a>
+        <span class="type-signature"></span>["getColumnNames"]<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Get the list of column names of a row of result of a statement.</p>
-</div>
+    <div class="description">
+        <p>Get the list of column names of a row of result of a statement.</p>
+    </div>
 
 
 
@@ -1109,10 +1173,12 @@ to the statement, and it will be executed</p></td>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line423">line 423</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line424">line 424</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1134,18 +1200,17 @@ to the statement, and it will be executed</p></td>
 
 
 
-
-
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>The names of the columns</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1157,13 +1222,13 @@ to the statement, and it will be executed</p></td>
     </dd>
 </dl>
 
-    
+    </div>
 
 
 
-
-    <h5>Example</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
     <pre class="prettyprint"><code>var stmt = db.prepare(
         "SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;"
     );
@@ -1171,6 +1236,7 @@ to the statement, and it will be executed</p></td>
     console.log(stmt.getColumnNames());
     // Will print ['nbr','data','null_value']</code></pre>
 
+    </div>
 
 
         
@@ -1178,19 +1244,20 @@ to the statement, and it will be executed</p></td>
 
     
 
-    
-    <h4 class="name" id="%5B%22getNormalizedSQL%22%5D"><span class="type-signature"></span>["getNormalizedSQL"]<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
-    
+    <h4 class="name" id="%5B%22getNormalizedSQL%22%5D">
+        <a href="#%5B%22getNormalizedSQL%22%5D">#</a>
+        <span class="type-signature"></span>["getNormalizedSQL"]<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Get the SQLite's normalized version of the SQL string used in
+    <div class="description">
+        <p>Get the SQLite's normalized version of the SQL string used in
 preparing this statement.  The meaning of &quot;normalized&quot; is not
 well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLite documentation</a>.</p>
-</div>
+    </div>
 
 
 
@@ -1231,10 +1298,12 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line478">line 478</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line479">line 479</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1256,18 +1325,17 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
 
 
 
-
-
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>The normalized SQL string</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1279,19 +1347,20 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
     </dd>
 </dl>
 
-    
+    </div>
 
 
 
-
-    <h5>Example</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
     <pre class="prettyprint"><code>db.run("create table test (x integer);");
      stmt = db.prepare("select * from test where x = 42");
      // returns "SELECT*FROM test WHERE x=?;"
 
      </code></pre>
 
+    </div>
 
 
         
@@ -1299,17 +1368,18 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
 
     
 
-    
-    <h4 class="name" id="%5B%22getSQL%22%5D"><span class="type-signature"></span>["getSQL"]<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
-    
+    <h4 class="name" id="%5B%22getSQL%22%5D">
+        <a href="#%5B%22getSQL%22%5D">#</a>
+        <span class="type-signature"></span>["getSQL"]<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Get the SQL string used in preparing this statement.</p>
-</div>
+    <div class="description">
+        <p>Get the SQL string used in preparing this statement.</p>
+    </div>
 
 
 
@@ -1350,10 +1420,12 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line462">line 462</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line463">line 463</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1375,18 +1447,17 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
 
 
 
-
-
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>The SQL string</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1398,8 +1469,7 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
     </dd>
 </dl>
 
-    
-
+    </div>
 
 
 
@@ -1409,19 +1479,20 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
 
     
 
-    
-    <h4 class="name" id="%5B%22reset%22%5D"><span class="type-signature"></span>["reset"]<span class="signature">()</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="%5B%22reset%22%5D">
+        <a href="#%5B%22reset%22%5D">#</a>
+        <span class="type-signature"></span>["reset"]<span class="signature">()</span><span class="type-signature"></span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Reset a statement, so that it's parameters can be bound to new values
+    <div class="description">
+        <p>Reset a statement, so that it's parameters can be bound to new values
 It also clears all previous bindings, freeing the memory used
 by bound parameters.</p>
-</div>
+    </div>
 
 
 
@@ -1462,10 +1533,12 @@ by bound parameters.</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line613">line 613</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line614">line 614</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1490,28 +1563,25 @@ by bound parameters.</p>
 
 
 
-
-
-
-
         
             
 
     
 
-    
-    <h4 class="name" id="%5B%22run%22%5D"><span class="type-signature"></span>["run"]<span class="signature">(values<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="%5B%22run%22%5D">
+        <a href="#%5B%22run%22%5D">#</a>
+        <span class="type-signature"></span>["run"]<span class="signature">(values<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Shorthand for bind + step + reset
+    <div class="description">
+        <p>Shorthand for bind + step + reset
 Bind the values, execute the statement, ignoring the rows it returns,
 and resets it</p>
-</div>
+    </div>
 
 
 
@@ -1521,8 +1591,9 @@ and resets it</p>
 
 
 
-    <h5>Parameters:</h5>
-    
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
 
 <table class="params">
     <thead>
@@ -1581,6 +1652,7 @@ and resets it</p>
     </tbody>
 </table>
 
+    </div>
 
 
 
@@ -1613,10 +1685,12 @@ and resets it</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line487">line 487</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line488">line 488</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1625,10 +1699,6 @@ and resets it</p>
 
     
 </dl>
-
-
-
-
 
 
 
@@ -1650,18 +1720,19 @@ and resets it</p>
 
     
 
-    
-    <h4 class="name" id="%5B%22step%22%5D"><span class="type-signature"></span>["step"]<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-    
+    <h4 class="name" id="%5B%22step%22%5D">
+        <a href="#%5B%22step%22%5D">#</a>
+        <span class="type-signature"></span>["step"]<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span>
+    </h4>
 
     
 
 
 
-<div class="description">
-    <p>Execute the statement, fetching the the next line of result,
+    <div class="description">
+        <p>Execute the statement, fetching the the next line of result,
 that can be retrieved with Statement.get.</p>
-</div>
+    </div>
 
 
 
@@ -1702,10 +1773,12 @@ that can be retrieved with Statement.get.</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line327">line 327</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line328">line 328</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1725,10 +1798,8 @@ that can be retrieved with Statement.get.</p>
 
 
 
-
-
-<h5>Throws:</h5>
-
+    <strong>Throws:</strong>
+    
         
 
 <dl>
@@ -1758,16 +1829,17 @@ that can be retrieved with Statement.get.</p>
     
 
 
-<h5>Returns:</h5>
-
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
         
+            
 <div class="param-desc">
     <p>true if a row of result available</p>
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1779,8 +1851,7 @@ that can be retrieved with Statement.get.</p>
     </dd>
 </dl>
 
-    
-
+    </div>
 
 
 
@@ -1793,17 +1864,21 @@ that can be retrieved with Statement.get.</p>
 
         
                 
-<h4 class="name" id=".BindParams">BindParams</h4>
+<h4 class="name" id=".BindParams">
+    <a href="#.BindParams">#</a>
+    BindParams
+</h4>
 
 
 
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
 <span class="param-type">Array.&lt;<a href="Database.html#.SqlValue">Database.SqlValue</a>></span>
 |
 
@@ -1813,8 +1888,9 @@ that can be retrieved with Statement.get.</p>
 <span class="param-type">null</span>
 
 
-        </li>
-    </ul>
+            </li>
+        </ul>
+    </div>
 
 
 
@@ -1847,10 +1923,12 @@ that can be retrieved with Statement.get.</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line266">line 266</a>
-    </li></ul></dd>
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line267">line 267</a>
+            </li></ul></dd>
+        </div>
     
 
     
@@ -1878,17 +1956,26 @@ that can be retrieved with Statement.get.</p>
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a></li><li><a href="Statement.html">Statement</a></li><li><a href="StatementIterator.html">StatementIterator</a></li></ul><h3>Global</h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Mon Oct 19 2020 19:39:54 GMT+0000 (Coordinated Universal Time)
+  
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script src="scripts/third-party/prettify.js"></script>
+<script src="scripts/third-party/lang-css.js"></script>
+<script src="scripts/search.js"></script>
+<script src="scripts/third-party/fuse.js"></script>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+<script src="scripts/fix-code-block.js"></script>
+<script>
+var list = [{"title":"Database","link":"<a href=\"Database.html\">Database</a>"},{"title":"Database#[\"close\"]","link":"<a href=\"Database.html#%255B%2522close%2522%255D\">Database &rtrif; [\"close\"]</a>"},{"title":"Database#[\"create_function\"]","link":"<a href=\"Database.html#%255B%2522create_function%2522%255D\">Database &rtrif; [\"create_function\"]</a>"},{"title":"Database#[\"each\"]","link":"<a href=\"Database.html#%255B%2522each%2522%255D\">Database &rtrif; [\"each\"]</a>"},{"title":"Database#[\"exec\"]","link":"<a href=\"Database.html#%255B%2522exec%2522%255D\">Database &rtrif; [\"exec\"]</a>"},{"title":"Database#[\"export\"]","link":"<a href=\"Database.html#%255B%2522export%2522%255D\">Database &rtrif; [\"export\"]</a>"},{"title":"Database#[\"getRowsModified\"]","link":"<a href=\"Database.html#%255B%2522getRowsModified%2522%255D\">Database &rtrif; [\"getRowsModified\"]</a>"},{"title":"Database#[\"handleError\"]","link":"<a href=\"Database.html#%255B%2522handleError%2522%255D\">Database &rtrif; [\"handleError\"]</a>"},{"title":"Database#[\"iterateStatements\"]","link":"<a href=\"Database.html#%255B%2522iterateStatements%2522%255D\">Database &rtrif; [\"iterateStatements\"]</a>"},{"title":"Database#[\"prepare\"]","link":"<a href=\"Database.html#%255B%2522prepare%2522%255D\">Database &rtrif; [\"prepare\"]</a>"},{"title":"Database#[\"run\"]","link":"<a href=\"Database.html#%255B%2522run%2522%255D\">Database &rtrif; [\"run\"]</a>"},{"title":"Statement","link":"<a href=\"Statement.html\">Statement</a>"},{"title":"Statement#[\"bind\"]","link":"<a href=\"Statement.html#%255B%2522bind%2522%255D\">Statement &rtrif; [\"bind\"]</a>"},{"title":"Statement#[\"free\"]","link":"<a href=\"Statement.html#%255B%2522free%2522%255D\">Statement &rtrif; [\"free\"]</a>"},{"title":"Statement#[\"freemem\"]","link":"<a href=\"Statement.html#%255B%2522freemem%2522%255D\">Statement &rtrif; [\"freemem\"]</a>"},{"title":"Statement#[\"get\"]","link":"<a href=\"Statement.html#%255B%2522get%2522%255D\">Statement &rtrif; [\"get\"]</a>"},{"title":"Statement#[\"getAsObject\"]","link":"<a href=\"Statement.html#%255B%2522getAsObject%2522%255D\">Statement &rtrif; [\"getAsObject\"]</a>"},{"title":"Statement#[\"getColumnNames\"]","link":"<a href=\"Statement.html#%255B%2522getColumnNames%2522%255D\">Statement &rtrif; [\"getColumnNames\"]</a>"},{"title":"Statement#[\"getNormalizedSQL\"]","link":"<a href=\"Statement.html#%255B%2522getNormalizedSQL%2522%255D\">Statement &rtrif; [\"getNormalizedSQL\"]</a>"},{"title":"Statement#[\"getSQL\"]","link":"<a href=\"Statement.html#%255B%2522getSQL%2522%255D\">Statement &rtrif; [\"getSQL\"]</a>"},{"title":"Statement#[\"reset\"]","link":"<a href=\"Statement.html#%255B%2522reset%2522%255D\">Statement &rtrif; [\"reset\"]</a>"},{"title":"Statement#[\"run\"]","link":"<a href=\"Statement.html#%255B%2522run%2522%255D\">Statement &rtrif; [\"run\"]</a>"},{"title":"Statement#[\"step\"]","link":"<a href=\"Statement.html#%255B%2522step%2522%255D\">Statement &rtrif; [\"step\"]</a>"},{"title":"StatementIterator","link":"<a href=\"StatementIterator.html\">StatementIterator</a>"},{"title":"StatementIterator#[\"getRemainingSQL\"]","link":"<a href=\"StatementIterator.html#%255B%2522getRemainingSQL%2522%255D\">StatementIterator &rtrif; [\"getRemainingSQL\"]</a>"},{"title":"StatementIterator#[\"next\"]","link":"<a href=\"StatementIterator.html#%255B%2522next%2522%255D\">StatementIterator &rtrif; [\"next\"]</a>"},{"title":"SqlJs","link":"<a href=\"module-SqlJs.html\">SqlJs</a>"},{"title":"initSqlJs","link":"<a href=\"global.html#initSqlJs\">Global &rtrif; initSqlJs</a>"}];
+setupSearch(list)
+</script>
+
+ 
+<script type="text/javascript" src="scripts/misc.js"></script>
 </body>
 </html>

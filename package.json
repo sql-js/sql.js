@@ -40,6 +40,7 @@
 		"url": "https://github.com/sql-js/sql.js/issues"
 	},
 	"devDependencies": {
+		"clean-jsdoc-theme": "^2.2.14",
 		"eslint": "^6.8.0",
 		"eslint-config-airbnb-base": "^14.2.0",
 		"eslint-plugin-import": "^2.22.1",

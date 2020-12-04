@@ -15,7 +15,8 @@ sql.js can be used like any traditional JavaScript library. If you are building 
 SQLite is public domain, sql.js is MIT licensed.
 
 ## API documentation
-A [full API documentation](https://sql.js.org/documentation/class/Database.html) generated from comments inside the source code is available.
+A [full API documentation](https://sql.js.org/documentation/) for all the available classes and methods is available.
+Is is generated from comments inside the source code, and is thus always up to date.
 
 ## Usage
 
@@ -37,19 +38,6 @@ var db = new SQL.Database();
 // NOTE: You can also use new SQL.Database(data) where
 // data is an Uint8Array representing an SQLite database file
 
-// Execute some sql
-sqlstr = "CREATE TABLE hello (a int, b char);";
-sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
-sqlstr += "INSERT INTO hello VALUES (1, 'world');"
-db.run(sqlstr); // Run the query without returning anything
-
-var res = db.exec("SELECT * FROM hello");
-/*
-[
-  {columns:['a','b'], values:[[0,'hello'],[1,'world']]}
-]
-*/
-
 // Prepare an sql statement
 var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
 
@@ -64,6 +52,19 @@ while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
 stmt.free();
 // You can not use your statement anymore once it has been freed.
 // But not freeing your statements causes memory leaks. You don't want that.
+
+// Execute a single SQL string that contains multiple statements
+sqlstr = "CREATE TABLE hello (a int, b char);";
+sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
+sqlstr += "INSERT INTO hello VALUES (1, 'world');"
+db.run(sqlstr); // Run the query without returning anything
+
+var res = db.exec("SELECT * FROM hello");
+/*
+[
+  {columns:['a','b'], values:[[0,'hello'],[1,'world']]}
+]
+*/
 
 // You can also use JavaScript functions inside your SQL code
 // Create the js function you need
