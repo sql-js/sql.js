@@ -23,8 +23,9 @@
 "use strict";
 
 /**
- * @typedef {{Database:Database}} SqlJs
- * @property {Database} Database the database constructor
+ * @typedef {{Database:Database, Statement:Statement}} SqlJs
+ * @property {Database} Database A class that represents an SQLite database
+ * @property {Statement} Statement The prepared statement class
  */
 
 /**
