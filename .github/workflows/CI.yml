@@ -12,7 +12,7 @@ jobs:
       with:
         path: '.emsdk-cache'
         key: emscripten-2.0.6
-    - uses: mymindstorm/setup-emsdk@2a4a91b
+    - uses: mymindstorm/setup-emsdk@ca33dc6
       with:
         version: '2.0.6'
         actions-cache-folder: '.emsdk-cache'
