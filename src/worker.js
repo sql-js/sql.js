@@ -84,7 +84,7 @@ function onError(err) {
 
 if (typeof importScripts === "function") {
     db = null;
-    var sqlModuleReady = initSqlJs();
+    var sqlModuleReady = initSqlJs(self['ModuleConfig']);
     self.onmessage = function onmessage(event) {
         return sqlModuleReady
             .then(onModuleReady.bind(event))
