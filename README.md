@@ -142,12 +142,12 @@ See : https://sql-js.github.io/sql.js/examples/GUI/gui.js
 ##### using fetch
 
 ```javascript
-  const SQL = await initSqlJs({
-    locateFile: file => `https://path/to/your/dist/folder/dist/${file}`
-  });
-  const dbres = await fetch("/path/to/databse.sqlite");
-  const buf = await dbres.arrayBuffer();
-  const db = new SQL.Database(new Uint8Array(buf));
+const sqlPromise = initSqlJs({
+  locateFile: file => `https://path/to/your/dist/folder/dist/${file}`
+});
+const dataPromise = fetch("/path/to/databse.sqlite").then(res => res.arrayBuffer());
+const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
+const db = new SQL.Database(new Uint8Array(buf));
 ```
 
 ##### using XMLHttpRequest
