@@ -239,10 +239,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * You can't instantiate this class directly, you have to use a
     * {@link Database} object in order to create a statement.
     *
-    * **Warnings**: 
+    * **Warnings** 
     * 1. When you close a database (using db.close()), all
     * its statements are closed too and become unusable.
-    * 2. After calling db.prepare() you must manually free the assigned memory
+    * 1. After calling db.prepare() you must manually free the assigned memory
     * by calling Statement.free(). Failure to do this will cause subsequent 'DROP TABLE ...'
     * statements to fail with 'Uncaught Error: database table is locked'.
     *
