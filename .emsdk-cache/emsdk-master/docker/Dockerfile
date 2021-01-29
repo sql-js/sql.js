@@ -101,6 +101,7 @@ RUN echo "## Update and install packages" \
         zip \
         unzip \
         git \
+        git-lfs \
         ssh-client \
         build-essential \
         make \

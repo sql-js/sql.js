@@ -917,7 +917,7 @@ def build_env(generator):
 
 def get_generator_for_sln_file(sln_file):
   contents = open(sln_file, 'r').read()
-  if '# Visual Studio 16' in contents:  # VS2019
+  if '# Visual Studio 16' in contents or '# Visual Studio Version 16' in contents:  # VS2019
     return 'Visual Studio 16'
   if '# Visual Studio 15' in contents:  # VS2017
     return 'Visual Studio 15'

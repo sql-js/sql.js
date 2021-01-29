@@ -46,7 +46,7 @@ def main(argv):
   stem = basename.split('.')[0]
 
   # Check the type of the input file
-  mimetype_bytes = subprocess.check_output(['file', '-Lib', FLAGS.archive])
+  mimetype_bytes = subprocess.check_output(['file', '-Lb', '--mime-type', '--mime-encoding', FLAGS.archive])
   mimetype = mimetype_bytes.decode(sys.stdout.encoding)
 
   # If we have a tar, extract all files. If we have just a single file, copy it.

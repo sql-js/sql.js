@@ -139,6 +139,19 @@ See : https://sql-js.github.io/sql.js/examples/GUI/gui.js
 
 #### Loading a database from a server
 
+##### using fetch
+
+```javascript
+const sqlPromise = initSqlJs({
+  locateFile: file => `https://path/to/your/dist/folder/dist/${file}`
+});
+const dataPromise = fetch("/path/to/databse.sqlite").then(res => res.arrayBuffer());
+const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
+const db = new SQL.Database(new Uint8Array(buf));
+```
+
+##### using XMLHttpRequest
+
 ```javascript
 var xhr = new XMLHttpRequest();
 // For example: https://github.com/lerocha/chinook-database/raw/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite
