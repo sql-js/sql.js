@@ -804,7 +804,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @param {string} fn filename for database file
     @return {Database} the created database instance
      */
-    Database.open = function(fn) {
+    Database["open"] = function(fn) {
         var obj = Object.create(Database.prototype);
         obj.filename = fn;
         obj.handleError(sqlite3_open(obj.filename, apiTemp));
@@ -1215,6 +1215,19 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         ));
         return this;
     };
+
+    var vfs = Module["FS"];
+
+    /** Create database instance
+    @param {string} fn filename for database file
+    @return {Database} the created database instance
+     */
+    Module["mount"] = function(vdir, osdir) {
+        if (vfs.mayCreate(vdir)) {
+            vfs.mkdir(vdir)
+        }
+        return vfs.mount(vfs.filesystems["NODEFS"], {root: osdir}, vdir);
+    }
 
     // export Database to Module
     Module.Database = Database;

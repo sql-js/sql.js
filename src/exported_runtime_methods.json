@@ -4,6 +4,5 @@
 "stackSave",
 "stackRestore",
 "FS",
-"NODEFS",
 "UTF8ToString"
 ]
