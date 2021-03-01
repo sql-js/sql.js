@@ -804,8 +804,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @param {string} fn filename for database file
     @return {Database} the created database instance
      */
-    Database["open"] = function(fn) {
+    Database["open"] = function open(fn) {
         var obj = Object.create(Database.prototype);
+        obj.filetype = "FS";
         obj.filename = fn;
         obj.handleError(sqlite3_open(obj.filename, apiTemp));
         obj.db = getValue(apiTemp, "i32");
@@ -816,7 +817,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // (created by create_function call)
         obj.functions = {};
         return obj;
-    }
+    };
 
     /** Execute an SQL query, ignoring the rows it returns.
     @param {string} sql a string containing some SQL text to execute
@@ -1090,7 +1091,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        FS.unlink("/" + this.filename);
+        if (this.filetype != "FS") {
+            FS.unlink("/" + this.filename);
+        }
         this.db = null;
     };
 
@@ -1219,15 +1222,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var vfs = Module["FS"];
 
     /** Create database instance
-    @param {string} fn filename for database file
-    @return {Database} the created database instance
+    @param {string} vdir directory name to mount for virtual fs
+    @param {string} osdir system directory to mount
      */
-    Module["mount"] = function(vdir, osdir) {
+    Module["mount"] = function mount(vdir, osdir) {
         if (vfs.mayCreate(vdir)) {
-            vfs.mkdir(vdir)
+            vfs.mkdir(vdir);
         }
-        return vfs.mount(vfs.filesystems["NODEFS"], {root: osdir}, vdir);
-    }
+        vfs.mount(vfs.filesystems["NODEFS"], { root: osdir }, vdir);
+    };
 
     // export Database to Module
     Module.Database = Database;
