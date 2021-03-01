@@ -70,9 +70,8 @@ def _impl(ctx):
 
     cc_target_os = "emscripten"
     emscripten_version = ctx.attr.emscripten_version
-    emscripten_root = "external/emscripten/" + emscripten_version
 
-    builtin_sysroot = None
+    builtin_sysroot = "external/emscripten/emscripten/cache/sysroot"
 
     ################################################################
     # Tools
@@ -513,14 +512,7 @@ def _impl(ctx):
         # Language Features
         flag_set(
             actions = all_cpp_compile_actions,
-            flags = [
-                "-std=gnu++17",
-                "-nostdinc",
-                "-Xclang",
-                "-nobuiltininc",
-                "-Xclang",
-                "-nostdsysteminc",
-            ],
+            flags = ["-std=gnu++17", "-nostdinc", "-nostdinc++",],
         ),
 
         # Emscripten-specific settings:
@@ -904,30 +896,10 @@ def _impl(ctx):
             actions = preprocessor_compile_actions +
                       [ACTION_NAMES.cc_flags_make_variable],
             flags = [
-                "-isystem",
-                emscripten_root + "/system/lib/libc/musl/arch/emscripten",
-                "-isystem",
-                emscripten_root + "/system/lib/libc/musl/arch/js",
-                "-isystem",
-                emscripten_root + "/system/local/include",
-                "-isystem",
-                emscripten_root + "/system/include/compat",
-                "-isystem",
-                emscripten_root + "/system/include",
-                "-isystem",
-                emscripten_root + "/system/include/libcxx",
-                "-isystem",
-                emscripten_root + "/system/lib/libcxxabi/include",
-                "-isystem",
-                emscripten_root + "/system/lib/compiler-rt/include",
-                "-isystem",
-                emscripten_root + "/system/include/libc",
-                "-isystem",
-                emscripten_root + "/system/include/gfx",
-                "-isystem",
-                emscripten_root + "/system/include/SDL",
-                "-isystem",
-                emscripten_root + "/lib/clang/12.0.0/include",
+                "-iwithsysroot" + "/include/c++/v1",
+                "-iwithsysroot" + "/include/compat",
+                "-iwithsysroot" + "/include",
+                "-isystem", "external/emscripten/lib/clang/13.0.0/include",
             ],
         ),
         # Inputs and outputs
@@ -1070,18 +1042,10 @@ def _impl(ctx):
     features.append(crosstool_default_flags_feature)
 
     cxx_builtin_include_directories = [
-        emscripten_version + "/system/lib/libc/musl/arch/emscripten",
-        emscripten_version + "/system/lib/libc/musl/arch/js",
-        emscripten_version + "/system/local/include",
-        emscripten_version + "/system/include/compat",
-        emscripten_version + "/system/include",
-        emscripten_version + "/system/include/libcxx",
-        emscripten_version + "/system/lib/compiler-rt/include",
-        emscripten_version + "/system/lib/libcxxabi/include",
-        emscripten_version + "/system/include/libc",
-        emscripten_version + "/system/include/gfx",
-        emscripten_version + "/system/include/SDL",
-        emscripten_version + "/lib/clang/12.0.0/include",
+        "external/emscripten/emscripten/cache/sysroot/include/c++/v1",
+        "external/emscripten/emscripten/cache/sysroot/include/compat",
+        "external/emscripten/emscripten/cache/sysroot/include",
+        "external/emscripten/lib/clang/13.0.0/include",
     ]
 
     artifact_name_patterns = []

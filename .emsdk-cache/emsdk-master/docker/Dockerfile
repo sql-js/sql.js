@@ -66,8 +66,8 @@ COPY --from=stage_build /emsdk /emsdk
 # (sub-stages) or with custom / no entrypoint
 ENV EMSDK=/emsdk \
     EM_CONFIG=/emsdk/.emscripten \
-    EMSDK_NODE=/emsdk/node/12.18.1_64bit/bin/node \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/12.18.1_64bit/bin:${PATH}"
+    EMSDK_NODE=/emsdk/node/14.15.5_64bit/bin/node \
+    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.15.5_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user

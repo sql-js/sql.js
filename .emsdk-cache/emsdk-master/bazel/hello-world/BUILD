@@ -6,7 +6,18 @@ cc_binary(
     srcs = ["hello-world.cc"],
 )
 
+cc_binary(
+    name = "hello-world-simd",
+    srcs = ["hello-world-simd.cc"],
+)
+
 wasm_cc_binary(
     name = "hello-world-wasm",
     cc_target = ":hello-world",
+)
+
+wasm_cc_binary(
+    name = "hello-world-wasm-simd",
+    cc_target = ":hello-world-simd",
+    simd = True,
 )

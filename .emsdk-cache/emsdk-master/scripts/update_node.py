@@ -16,8 +16,8 @@ import subprocess
 import os
 import shutil
 
-version = '12.18.1'
-base = 'https://nodejs.org/dist/latest-v12.x/'
+version = '14.15.5'
+base = 'https://nodejs.org/dist/latest-v14.x/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 suffixes = [
@@ -40,6 +40,7 @@ for suffix in suffixes:
       shutil.move(dirname, 'bin')
       os.mkdir(dirname)
       shutil.move('bin', dirname)
+      os.remove(filename)
       subprocess.check_call(['zip', '-rq', filename, dirname])
       shutil.rmtree(dirname)
 

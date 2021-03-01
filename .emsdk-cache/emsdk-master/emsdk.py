@@ -834,7 +834,6 @@ def git_clone_checkout_and_pull(url, dstpath, branch):
 # Each tool can have its own build type, or it can be overridden on the command
 # line.
 def decide_cmake_build_type(tool):
-  global CMAKE_BUILD_TYPE_OVERRIDE
   if CMAKE_BUILD_TYPE_OVERRIDE:
     return CMAKE_BUILD_TYPE_OVERRIDE
   else:
@@ -953,7 +952,6 @@ def find_msbuild(sln_file):
 
 def make_build(build_root, build_type, build_target_platform='x64'):
   debug_print('make_build(build_root=' + build_root + ', build_type=' + build_type + ', build_target_platform=' + build_target_platform + ')')
-  global CPU_CORES
   if CPU_CORES > 1:
     print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
   else:
@@ -1100,7 +1098,6 @@ def build_fastcomp(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
   tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
@@ -1156,7 +1153,6 @@ def build_llvm(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
   tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
@@ -1243,10 +1239,16 @@ def find_latest_installed_tool(name):
 def emscripten_npm_install(tool, directory):
   node_tool = find_latest_installed_tool('node')
   if not node_tool:
-    print('Failed to run "npm ci" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
-    return False
+    npm_fallback = which('npm')
+    if not npm_fallback:
+      print('Failed to find npm command!')
+      print('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
+      print('Please install node.js first!')
+      return False
+    node_path = os.path.dirname(npm_fallback)
+  else:
+    node_path = os.path.join(node_tool.installation_path(), 'bin')
 
-  node_path = os.path.join(node_tool.installation_path(), 'bin')
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
@@ -1716,6 +1718,8 @@ class Tool(object):
       # This tool does not contain downloadable elements, so it is installed by default.
       return True
 
+    content_exists = os.path.exists(self.installation_path()) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
+
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
     # the directory where the source tree exists. To distinguish between
@@ -1723,15 +1727,8 @@ class Tool(object):
     # clang-master-64bit, clang-master-32bit and clang-master-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
-    if hasattr(self, 'activated_path'):
-      activated_path = self.expand_vars(self.activated_path).split(';')
-    else:
-      activated_path = [self.installation_path()]
-
-    def each_path_exists(pathlist):
-      return all(os.path.exists(p) for p in pathlist)
-
-    content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
+    if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
+      content_exists = False
 
     # vs-tool is a special tool since all versions must be installed to the
     # same dir, so dir name will not differentiate the version.
@@ -1791,8 +1788,7 @@ class Tool(object):
         return False
 
     if hasattr(self, 'activated_path'):
-      path = self.expand_vars(self.activated_path).replace('\\', '/')
-      path = path.split(ENVPATH_SEPARATOR)
+      path = to_unix_path(self.expand_vars(self.activated_path))
       for p in path:
         path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
         if not normalized_contains(path_items, p):
@@ -2107,24 +2103,10 @@ def python_2_3_sorted(arr, cmp):
     return sorted(arr, cmp=cmp)
 
 
-def fetch_emscripten_tags():
-  git = GIT(must_succeed=False)
-
-  if git:
-    print('Fetching emscripten-releases repository...')
-    emscripten_releases_tot = get_emscripten_releases_tot()
-    open(tot_path(), 'w').write(emscripten_releases_tot)
-  else:
-    print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.')
-    if WINDOWS:
-      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
-    elif MACOS:
-      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
-    elif LINUX:
-      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
-    else:
-      print("Please install git.")
-    return
+def update_tags():
+  print('Fetching emscripten-releases repository...')
+  emscripten_releases_tot = get_emscripten_releases_tot()
+  open(tot_path(), 'w').write(emscripten_releases_tot)
 
 
 def is_emsdk_sourced_from_github():
@@ -2138,23 +2120,28 @@ def update_emsdk():
     sys.exit(1)
   if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
     sys.exit(1)
-  fetch_emscripten_tags()
+  if not GIT(must_succeed=False):
+    print('Update complete, however skipped update-tags, since git was not found.')
+    if WINDOWS:
+      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
+    elif MACOS:
+      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
+    elif LINUX:
+      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+    else:
+      print("Please install git.")
+    return
+  update_tags()
 
 
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
 # repositories. These we can pull and compile from source.
 def load_legacy_emscripten_tags():
-  try:
-    return open(sdk_path('legacy-emscripten-tags.txt'), 'r').read().split('\n')
-  except:
-    return []
+  return open(sdk_path('legacy-emscripten-tags.txt'), 'r').read().split('\n')
 
 
 def load_legacy_binaryen_tags():
-  try:
-    return open(sdk_path('legacy-binaryen-tags.txt'), 'r').read().split('\n')
-  except:
-    return []
+  return open(sdk_path('legacy-binaryen-tags.txt'), 'r').read().split('\n')
 
 
 def remove_prefix(s, prefix):
@@ -2173,25 +2160,13 @@ def remove_suffix(s, suffix):
 
 # filename should be one of: 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt'
 def load_file_index_list(filename):
-  try:
-    items = open(sdk_path(filename), 'r').read().split('\n')
-    items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip(), items)
-    items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
+  items = open(sdk_path(filename)).read().splitlines()
+  items = [remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip() for x in items]
+  items = [x for x in items if 'latest' not in x and len(x) > 0]
 
-    # Sort versions from oldest to newest (the default sort would be lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
-    items = sorted(items, key=version_key)[::-1]
-
-    return items
-  except:
-    return []
-
-
-def load_llvm_precompiled_tags_32bit():
-  return load_file_index_list('llvm-tags-32bit.txt')
-
-
-def load_llvm_precompiled_tags_64bit():
-  return load_file_index_list('llvm-tags-64bit.txt')
+  # Sort versions from oldest to newest (the default sort would be
+  # lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
+  return sorted(items, key=version_key)
 
 
 def exit_with_error(msg):
@@ -2214,14 +2189,22 @@ def load_releases_info():
 
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
+  tags = []
+  tags_fastcomp = []
   info = load_releases_info()
-  tags = list(info['releases'].values())
+  for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
+    tags.append(sha)
+    # Only include versions older than 1.39.0 in fastcomp releases
+    if version_key(version) < (2, 0, 0):
+      tags_fastcomp.append(sha)
+
   # Add the tip-of-tree, if it exists.
   if os.path.exists(tot_path()):
     tot = find_tot()
     if tot:
       tags.append(tot)
-  return tags
+
+  return tags, tags_fastcomp
 
 
 def load_releases_versions():
@@ -2237,7 +2220,6 @@ def is_string(s):
 
 
 def load_sdk_manifest():
-  global tools, sdks
   try:
     manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
   except Exception as e:
@@ -2246,11 +2228,11 @@ def load_sdk_manifest():
     return
 
   emscripten_tags = load_legacy_emscripten_tags()
-  llvm_precompiled_tags_32bit = list(reversed(load_llvm_precompiled_tags_32bit()))
-  llvm_precompiled_tags_64bit = list(reversed(load_llvm_precompiled_tags_64bit()))
+  llvm_precompiled_tags_32bit = []
+  llvm_precompiled_tags_64bit = load_file_index_list('llvm-tags-64bit.txt')
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
-  releases_tags = load_releases_tags()
+  releases_tags, releases_tags_fastcomp = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -2333,6 +2315,8 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
       elif '%binaryen_tag%' in t.version:
         expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
+      elif '%releases-tag%' in t.version and 'fastcomp' in t.version:
+        expand_category_param('%releases-tag%', releases_tags_fastcomp, t, is_sdk=False)
       elif '%releases-tag%' in t.version:
         expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
@@ -2353,6 +2337,8 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
       elif '%precompiled_tag64%' in sdk.version:
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
+      elif '%releases-tag%' in sdk.version and 'fastcomp' in sdk.version:
+        expand_category_param('%releases-tag%', releases_tags_fastcomp, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version:
         expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
@@ -2405,18 +2391,6 @@ def process_tool_list(tools_to_activate, log_errors=True):
       j += 1
     i += 1
   return tools_to_activate
-
-
-def run_emcc(tools_to_activate):
-  for tool in tools_to_activate:
-    activated_path = getattr(tool, 'activated_path', None)
-    if activated_path and activated_path.endswith('/emscripten'):
-      activated_path = to_native_path(tool.expand_vars(tool.activated_path))
-      emcc_path = os.path.join(activated_path, 'emcc.py')
-      if os.path.exists(emcc_path):
-        debug_print('Calling emcc to initialize it')
-        subprocess.call([sys.executable, emcc_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return
 
 
 def write_set_env_script(env_string):
@@ -2653,14 +2627,14 @@ def expand_sdk_name(name):
     elif '-fastcomp' in fullname:
       fullname = fullname.replace('-fastcomp', '')
       backend = 'fastcomp'
-    fullname = fullname.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
-    if backend == 'fastcomp' and version_key(fullname) >= (2, 0, 0):
-      exit_with_fastcomp_error()
+    version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
     releases_info = load_releases_info()['releases']
-    release_hash = get_release_hash(fullname, releases_info)
+    release_hash = get_release_hash(version, releases_info)
     if release_hash:
+      if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
+        exit_with_fastcomp_error()
       if backend is None:
-        if version_key(fullname) >= (1, 39, 0):
+        if version_key(version) >= (1, 39, 0):
           backend = 'upstream'
         else:
           backend = 'fastcomp'
@@ -2668,13 +2642,14 @@ def expand_sdk_name(name):
   return name
 
 
-def main():
-  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
-
-  if len(sys.argv) <= 1:
+def main(args):
+  if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
-  if sys.argv[1] in ('help', '--help', '-h'):
+
+  cmd = args.pop(0)
+
+  if cmd in ('help', '--help', '-h'):
     print(' emsdk: Available commands:')
 
     print('''
@@ -2790,11 +2765,12 @@ def main():
        which in and RelWithDebInfo.''')
     return 0
 
-  # Extracts a boolean command line argument from sys.argv and returns True if it was present
+  # Extracts a boolean command line argument from args and returns True if it was present
   def extract_bool_arg(name):
-    old_argv = sys.argv
-    sys.argv = list(filter(lambda a: a != name, sys.argv))
-    return len(sys.argv) != len(old_argv)
+    if name in args:
+      args.remove(name)
+      return True
+    return False
 
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
@@ -2814,30 +2790,25 @@ def main():
 
   arg_notty = extract_bool_arg('--notty')
   if arg_notty:
+    global TTY_OUTPUT
     TTY_OUTPUT = False
-
-  cmd = sys.argv[1]
-
-  # On first run when tag list is not present, populate it to bootstrap.
-  if (cmd == 'install' or cmd == 'list') and not os.path.isfile(sdk_path('llvm-tags-64bit.txt')):
-    fetch_emscripten_tags()
 
   load_dot_emscripten()
   load_sdk_manifest()
 
   # Process global args
-  for i in range(2, len(sys.argv)):
-    if sys.argv[i].startswith('--generator='):
-      build_generator = re.match(r'''^--generator=['"]?([^'"]+)['"]?$''', sys.argv[i])
+  for i in range(len(args)):
+    if args[i].startswith('--generator='):
+      build_generator = re.match(r'''^--generator=['"]?([^'"]+)['"]?$''', args[i])
       if build_generator:
         global CMAKE_GENERATOR
         CMAKE_GENERATOR = build_generator.group(1)
-        sys.argv[i] = ''
+        args[i] = ''
       else:
-        errlog("Cannot parse CMake generator string: " + sys.argv[i] + ". Try wrapping generator string with quotes")
+        errlog("Cannot parse CMake generator string: " + args[i] + ". Try wrapping generator string with quotes")
         return 1
-    elif sys.argv[i].startswith('--build='):
-      build_type = re.match(r'^--build=(.+)$', sys.argv[i])
+    elif args[i].startswith('--build='):
+      build_type = re.match(r'^--build=(.+)$', args[i])
       if build_type:
         global CMAKE_BUILD_TYPE_OVERRIDE
         build_type = build_type.group(1)
@@ -2845,19 +2816,18 @@ def main():
         try:
           build_type_index = [x.lower() for x in build_types].index(build_type.lower())
           CMAKE_BUILD_TYPE_OVERRIDE = build_types[build_type_index]
-          sys.argv[i] = ''
+          args[i] = ''
         except:
           errlog('Unknown CMake build type "' + build_type + '" specified! Please specify one of ' + str(build_types))
           return 1
       else:
-        errlog("Invalid command line parameter " + sys.argv[i] + ' specified!')
+        errlog("Invalid command line parameter " + args[i] + ' specified!')
         return 1
-  sys.argv = [x for x in sys.argv if not len(x) == 0]
+  args = [x for x in args if x]
 
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
-    for i in range(2, len(sys.argv)):
-      sys.argv[i] = expand_sdk_name(sys.argv[i])
+    args = [expand_sdk_name(a) for a in args]
 
   if cmd == 'list':
     print('')
@@ -2998,7 +2968,7 @@ def main():
       rmfile(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
-    fetch_emscripten_tags()
+    update_tags()
     return 0
   elif cmd == 'activate':
     if arg_permanent:
@@ -3006,7 +2976,7 @@ def main():
       print('')
 
     tools_to_activate = currently_active_tools()
-    args = [x for x in sys.argv[2:] if not x.startswith('--')]
+    args = [x for x in args if not x.startswith('--')]
     for arg in args:
       tool = find_tool(arg)
       if tool is None:
@@ -3025,35 +2995,36 @@ def main():
       errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
+    global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, CPU_CORES, GIT_CLONE_SHALLOW
+
     # Process args
-    for i in range(2, len(sys.argv)):
-      if sys.argv[i].startswith('-j'):
-        multicore = re.match(r'^-j(\d+)$', sys.argv[i])
+    for i in range(len(args)):
+      if args[i].startswith('-j'):
+        multicore = re.match(r'^-j(\d+)$', args[i])
         if multicore:
-          global CPU_CORES
           CPU_CORES = int(multicore.group(1))
-          sys.argv[i] = ''
+          args[i] = ''
         else:
-          errlog("Invalid command line parameter " + sys.argv[i] + ' specified!')
+          errlog("Invalid command line parameter " + args[i] + ' specified!')
           return 1
-      elif sys.argv[i] == '--shallow':
-        global GIT_CLONE_SHALLOW
+      elif args[i] == '--shallow':
         GIT_CLONE_SHALLOW = True
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--build-tests':
+        args[i] = ''
+      elif args[i] == '--build-tests':
         BUILD_FOR_TESTING = True
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--enable-assertions':
+        args[i] = ''
+      elif args[i] == '--enable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'ON'
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--disable-assertions':
+        args[i] = ''
+      elif args[i] == '--disable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'OFF'
-        sys.argv[i] = ''
-    sys.argv = [x for x in sys.argv if not len(x) == 0]
-    if len(sys.argv) <= 2:
+        args[i] = ''
+    args = [x for x in args if x]
+    if not args:
       errlog("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
-    for t in sys.argv[2:]:
+
+    for t in args:
       tool = find_tool(t)
       if tool is None:
         tool = find_sdk(t)
@@ -3064,12 +3035,12 @@ def main():
         return 1
     return 0
   elif cmd == 'uninstall':
-    if len(sys.argv) <= 2:
+    if not args:
       errlog("Syntax error. Call 'emsdk uninstall <tool name>'. Call 'emsdk list' to obtain a list of available tools.")
       return 1
-    tool = find_tool(sys.argv[2])
+    tool = find_tool(args[0])
     if tool is None:
-      errlog("Error: Tool by name '" + sys.argv[2] + "' was not found.")
+      errlog("Error: Tool by name '" + args[0] + "' was not found.")
       return 1
     tool.uninstall()
     return 0
@@ -3079,4 +3050,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

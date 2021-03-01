@@ -13,7 +13,7 @@ VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
 HASH=$(grep "${VER}" emscripten-releases-tags.txt \
       | grep -v latest \
       | cut -f4 -d\")
-      
+
 FAILMSG="!!! scripts/update_bazel_toolchain.sh needs to be run !!!"
 
 # Ensure the WORKSPACE file is up to date with the latest version.
@@ -22,3 +22,4 @@ grep ${HASH} bazel/WORKSPACE || (echo ${FAILMSG} && false)
 
 cd bazel
 bazel build //hello-world:hello-world-wasm
+bazel build //hello-world:hello-world-wasm-simd

@@ -18,5 +18,4 @@
 .emscripten_sanity_wasm
 .flake8
 emscripten-releases-tot.txt
-legacy-*-tags.txt
 README.md

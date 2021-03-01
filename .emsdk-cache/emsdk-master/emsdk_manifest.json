@@ -2,7 +2,7 @@
   "tools": [
   {
     "id": "llvm-git",
-    "version": "master",
+    "version": "main",
     "bitness": 32,
     "install_path": "llvm/git",
     "git_branch": "main",
@@ -16,7 +16,7 @@
   },
   {
     "id": "llvm-git",
-    "version": "master",
+    "version": "main",
     "bitness": 64,
     "install_path": "llvm/git",
     "git_branch": "main",
@@ -186,42 +186,42 @@
   },
   {
     "id": "node",
-    "version": "12.18.1",
+    "version": "14.15.5",
     "bitness": 32,
     "arch": "x86",
-    "windows_url": "node-v12.18.1-win-x86.zip",
+    "windows_url": "node-v14.15.5-win-x86.zip",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
-    "version": "12.18.1",
+    "version": "14.15.5",
     "arch": "arm",
     "bitness": 32,
-    "linux_url": "node-v12.18.1-linux-armv7l.tar.xz",
+    "linux_url": "node-v14.15.5-linux-armv7l.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
-    "version": "12.18.1",
+    "version": "14.15.5",
     "bitness": 64,
     "arch": "x86_64",
-    "macos_url": "node-v12.18.1-darwin-x64.tar.gz",
-    "windows_url": "node-v12.18.1-win-x64.zip",
-    "linux_url": "node-v12.18.1-linux-x64.tar.xz",
+    "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
+    "windows_url": "node-v14.15.5-win-x64.zip",
+    "linux_url": "node-v14.15.5-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
-    "version": "12.18.1",
+    "version": "14.15.5",
     "arch": "aarch64",
     "bitness": 64,
-    "linux_url": "node-v12.18.1-linux-arm64.tar.xz",
+    "linux_url": "node-v14.15.5-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
@@ -232,7 +232,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "WinPython-32bit-2.7.13.1Zero.zip",
-    "activated_path": "%installation_dir%/python-2.7.13",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%"
   },
@@ -242,7 +241,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
-    "activated_path": "%installation_dir%/python-2.7.13.amd64",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%"
   },
@@ -252,7 +250,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "python-3.7.4-embed-win32-patched.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -262,7 +259,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "python-3.7.4-embed-amd64-patched.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -272,7 +268,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "python-3.7.4-embed-win32+pywin32.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -282,7 +277,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "python-3.7.4-embed-amd64+pywin32.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -292,7 +286,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "macos_url": "python-3.7.4-2-macos.tar.gz",
-    "activated_path": "%installation_dir%/bin",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"
   },
@@ -302,7 +295,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "portable_jre_8_update_152_32bit.zip",
-    "activated_path": "%installation_dir%/bin",
     "activated_env": "JAVA_HOME=%installation_dir%",
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
   },
@@ -312,7 +304,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "portable_jre_8_update_152_64bit.zip",
-    "activated_path": "%installation_dir%/bin",
     "activated_env": "JAVA_HOME=%installation_dir%",
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
   },
@@ -473,55 +464,55 @@
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "macos"
   },
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
     "version": "upstream-master",
     "bitness": 32,
-    "uses": ["llvm-git-master-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["llvm-git-main-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
     "version": "fastcomp-master",
     "bitness": 32,
-    "uses": ["fastcomp-clang-master-32bit", "node-12.18.1-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "win"
   },
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "macos"
   },
   {
     "version": "fastcomp-master",
     "bitness": 32,
-    "uses": ["fastcomp-clang-master-32bit", "node-12.18.1-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
@@ -563,42 +554,42 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.18.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.18.1-64bit", "python-3.7.4-2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "python-3.7.4-2-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "macos",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.18.1-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.18.1-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "macos",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   },
