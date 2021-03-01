@@ -800,6 +800,24 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.functions = {};
     }
 
+    /** Create database instance
+    @param {string} fn filename for database file
+    @return {Database} the created database instance
+     */
+    Database.open = function(fn) {
+        var obj = Object.create(Database.prototype);
+        obj.filename = fn;
+        obj.handleError(sqlite3_open(obj.filename, apiTemp));
+        obj.db = getValue(apiTemp, "i32");
+        registerExtensionFunctions(obj.db);
+        // A list of all prepared statements of the database
+        obj.statements = {};
+        // A list of all user function of the database
+        // (created by create_function call)
+        obj.functions = {};
+        return obj;
+    }
+
     /** Execute an SQL query, ignoring the rows it returns.
     @param {string} sql a string containing some SQL text to execute
     @param {Statement.BindParams} [params] When the SQL statement contains
