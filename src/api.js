@@ -1091,7 +1091,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        if (this.filetype != "FS") {
+        if (this.filetype !== "FS") {
             FS.unlink("/" + this.filename);
         }
         this.db = null;
