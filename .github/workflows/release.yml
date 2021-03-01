@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: mymindstorm/setup-emsdk@ca33dc6
+      - uses: mymindstorm/setup-emsdk@ca33dc66a6b178f65393989c12e9465baf053352
         with: {version: '2.0.6'}
       - name: make
         run: make
@@ -28,7 +28,7 @@ jobs:
           prerelease: false
       - run: cd dist && zip sqljs-wasm.zip sql-wasm.{js,wasm}
       - name: Upload Release Asset (wasm)
-        uses: lovasoa/upload-release-asset@851d9cc
+        uses: lovasoa/upload-release-asset@851d9cc59fe8113912edffbd8fddaa09470a5ac0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -38,7 +38,7 @@ jobs:
           asset_label: wasm version, best runtime performance, smaller assets, requires configuration
           asset_content_type: application/zip
       - name: Upload Release Asset (asm)
-        uses: lovasoa/upload-release-asset@851d9cc
+        uses: lovasoa/upload-release-asset@851d9cc59fe8113912edffbd8fddaa09470a5ac0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -49,7 +49,7 @@ jobs:
           asset_content_type: text/javascript
       - run: cd dist && zip sqljs-worker-wasm.zip worker.sql-wasm.js sql-wasm.wasm
       - name: Upload Release Asset (worker wasm)
-        uses: lovasoa/upload-release-asset@851d9cc
+        uses: lovasoa/upload-release-asset@851d9cc59fe8113912edffbd8fddaa09470a5ac0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -59,7 +59,7 @@ jobs:
           asset_label: webworker wasm version, to be loaded as a web worker
           asset_content_type: application/zip
       - name: Upload Release Asset (worker asm)
-        uses: lovasoa/upload-release-asset@851d9cc
+        uses: lovasoa/upload-release-asset@851d9cc59fe8113912edffbd8fddaa09470a5ac0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -70,7 +70,7 @@ jobs:
           asset_content_type: text/javascript
       - run: cd dist && zip sqljs-all.zip *.{js,wasm}
       - name: Upload Release Asset (all)
-        uses: lovasoa/upload-release-asset@851d9cc
+        uses: lovasoa/upload-release-asset@851d9cc59fe8113912edffbd8fddaa09470a5ac0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
