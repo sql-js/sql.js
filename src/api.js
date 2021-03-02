@@ -782,14 +782,20 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing
     * one stored in the byte array passed in first argument
-    * @param {number[]} data An array of bytes representing
+    * @param {number[]|string} data An array of bytes representing, or a string for mapped file name
     * an SQLite database file
     */
     function Database(data) {
-        this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
-        if (data != null) {
-            FS.createDataFile("/", this.filename, data, true, true);
+        if (data != null && typeof data === 'string') {
+            this.filename = data;
+            this.filetype = "FS";
+        } else {
+            this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
+            if (data != null) {
+                FS.createDataFile("/", this.filename, data, true, true);
+            }
         }
+
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
@@ -799,25 +805,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // (created by create_function call)
         this.functions = {};
     }
-
-    /** Create database instance
-    @param {string} fn filename for database file
-    @return {Database} the created database instance
-     */
-    Database["open"] = function open(fn) {
-        var obj = Object.create(Database.prototype);
-        obj.filetype = "FS";
-        obj.filename = fn;
-        obj.handleError(sqlite3_open(obj.filename, apiTemp));
-        obj.db = getValue(apiTemp, "i32");
-        registerExtensionFunctions(obj.db);
-        // A list of all prepared statements of the database
-        obj.statements = {};
-        // A list of all user function of the database
-        // (created by create_function call)
-        obj.functions = {};
-        return obj;
-    };
 
     /** Execute an SQL query, ignoring the rows it returns.
     @param {string} sql a string containing some SQL text to execute
@@ -1231,6 +1218,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         vfs.mount(vfs.filesystems["NODEFS"], { root: osdir }, vdir);
     };
+
+    var mountpoints = Module["fs"];
+    if (mountpoints) {
+        for (var mountpoint of Object.entries(mountpoints)) {
+            Module["mount"](mountpoint[0], mountpoint[1])
+        }
+    }
 
     // export Database to Module
     Module.Database = Database;
