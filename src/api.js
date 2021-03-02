@@ -782,11 +782,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing
     * one stored in the byte array passed in first argument
-    * @param {number[]|string} data An array of bytes representing, or a string for mapped file name
+    * @param {number[]|string} data An array of bytes representing,
+    * or a string for mapped file name
     * an SQLite database file
     */
     function Database(data) {
-        if (data != null && typeof data === 'string') {
+        if (data != null && typeof data === "string") {
             this.filename = data;
             this.filetype = "FS";
         } else {
@@ -1219,11 +1220,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         vfs.mount(vfs.filesystems["NODEFS"], { root: osdir }, vdir);
     };
 
-    var mountpoints = Module["fs"];
+    var mountpoints = Module["mountpoints"];
     if (mountpoints) {
-        for (var mountpoint of Object.entries(mountpoints)) {
-            Module["mount"](mountpoint[0], mountpoint[1])
-        }
+        Array.prototype.forEach.call(Object.keys(mountpoints),
+            function mount(mp) {
+                Module["mount"](mp, mountpoints[mp]);
+            });
     }
 
     // export Database to Module
