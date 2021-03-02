@@ -8,7 +8,7 @@ exports.test = function(SQL, assert) {
 	SQL.mount('/nfs', __dirname);
 
 	//Works
-	var db = SQL.Database.open('/nfs/test.sqlite');
+	var db = new SQL.Database('/nfs/test.sqlite');
 
 	//[{"columns":["id","content"],"values":[["0","hello"],["1","world"]]}]
 	var res = db.exec("SELECT * FROM test WHERE id = 0");
