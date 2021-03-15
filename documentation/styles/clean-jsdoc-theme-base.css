@@ -17,34 +17,36 @@ pre {
     position: relative;
 }
 
+.pre-top-bar-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    left: 0;
+    padding: 0.3125rem 1.5rem;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
 .code-copy-icon-container {
     align-items: center;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
-    height: 30px;
+    height: 1.875rem;
     justify-content: center;
-    position: absolute;
-    right: 15px;
-    top: 10px;
     transition: 0.3s;
-    width: 30px;
+    width: 1.875rem;
 }
 
 .code-copy-icon-container > div {
-    margin-top: 4px;
+    margin-top: 0.25rem;
     position: relative;
 }
 
 .sm-icon {
-    height: 16px;
-    width: 16px;
-}
-
-.code-lang-name-container {
-    left: 15px;
-    position: absolute;
-    top: 10px;
+    height: 1rem;
+    width: 1rem;
 }
 
 .code-lang-name {

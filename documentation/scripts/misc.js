@@ -23,11 +23,16 @@ function copyFunction(id) {
     // selecting the pre element
     var code = document.getElementById(id);
 
-    // selecting the code element of that pre element
-    code = code.childNodes[0];
+    // selecting the ol.linenums
+    var element = code.querySelector('.linenums');
+
+    if (!element) {
+        // selecting the code block
+        element = code.querySelector('code');
+    }
 
     // copy
-    copy(code.innerText);
+    copy(element.innerText);
 
     // show tooltip
     showTooltip('tooltip-' + id);
@@ -61,7 +66,7 @@ function copyFunction(id) {
         // else langNameDiv = '';
 
         // appending everything to the current pre element
-        allPre[i].innerHTML += langNameDiv + copyToClipboard;
+        allPre[i].innerHTML += '<div class="pre-top-bar-container">' + langNameDiv + copyToClipboard + '</div>';
         allPre[i].setAttribute('id', id);
     }
 })();

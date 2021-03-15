@@ -10,6 +10,10 @@ body {
     width: 100%;
 }
 
+html {
+    display: flex;
+}
+
 body {
     font-family: 'body';
     font-size: 16px;
@@ -372,10 +376,6 @@ footer {
     text-decoration: none;
 }
 
-.clear {
-    clear: both;
-}
-
 .important {
     font-weight: bold;
 }
@@ -467,9 +467,9 @@ footer {
 
 .prettyprint code {
     display: block;
-    font-size: 14px;
-    line-height: 16px;
-    padding: 30px;
+    font-size: 0.875rem;
+    line-height: 1rem;
+    padding: 2rem;
 }
 
 .prettyprint > code {

@@ -156,7 +156,8 @@ footer {
     color: #001628;
 }
 
-.prettyprint {
+.prettyprint,
+.pre-top-bar-container {
     background: #001628;
 }
 
