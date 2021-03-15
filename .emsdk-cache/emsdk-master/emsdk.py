@@ -37,9 +37,8 @@ else:
   from urlparse import urljoin
   from urllib2 import urlopen
 
-emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
-emsdk_packages_url = emsdk_master_server
+emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
@@ -48,6 +47,8 @@ emscripten_releases_download_url_template = "https://storage.googleapis.com/weba
 emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/master.zip'
 
 zips_subdir = 'zips/'
+
+extra_release_tag = None
 
 # Enable this to do very verbose printing about the different steps that are
 # being run. Useful for debugging.
@@ -162,9 +163,9 @@ def os_name_for_emscripten_releases():
     raise Exception('unknown OS')
 
 
-def debug_print(msg, **args):
+def debug_print(msg):
   if VERBOSE:
-    print(msg, **args)
+    errlog(msg)
 
 
 def to_unix_path(p):
@@ -359,7 +360,7 @@ def win_get_environment_variable(key, system=True, user=True, fallback=True):
 
 
 def win_set_environment_variable(key, value, system, user):
-  debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
+  debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system))
   previous_value = win_get_environment_variable(key, system=system, user=user)
   if previous_value == value:
     debug_print('  no need to set, since same value already exists.')
@@ -502,7 +503,7 @@ def run(cmd, cwd=None):
   process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
   process.communicate()
   if process.returncode != 0:
-    print(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
+    errlog(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
   return process.returncode
 
 
@@ -611,11 +612,11 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
       if common_subdir:
         remove_tree(unzip_to_dir)
   except zipfile.BadZipfile as e:
-    print("Unzipping file '" + source_filename + "' failed due to reason: " + str(e) + "! Removing the corrupted zip file.")
+    errlog("Unzipping file '" + source_filename + "' failed due to reason: " + str(e) + "! Removing the corrupted zip file.")
     rmfile(source_filename)
     return False
   except Exception as e:
-    print("Unzipping file '" + source_filename + "' failed due to reason: " + str(e))
+    errlog("Unzipping file '" + source_filename + "' failed due to reason: " + str(e))
     return False
 
   return True
@@ -785,7 +786,7 @@ def git_recent_commits(repo_path, n=20):
 def git_clone(url, dstpath):
   debug_print('git_clone(url=' + url + ', dstpath=' + dstpath + ')')
   if os.path.isdir(os.path.join(dstpath, '.git')):
-    print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
+    debug_print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
   mkdir_p(dstpath)
   git_clone_args = []
@@ -796,12 +797,12 @@ def git_clone(url, dstpath):
 
 def git_checkout_and_pull(repo_path, branch):
   debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
-  ret = run([GIT(), 'fetch', 'origin'], repo_path)
+  ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
   if ret != 0:
     return False
   try:
     print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
-    ret = run([GIT(), 'fetch', 'origin'], repo_path)
+    ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
     if ret != 0:
       return False
     #  run([GIT, 'checkout', '-b', branch, '--track', 'origin/'+branch], repo_path)
@@ -815,7 +816,7 @@ def git_checkout_and_pull(repo_path, branch):
     if ret != 0:
       return False
   except:
-    print('git operation failed!')
+    errlog('git operation failed!')
     return False
   print("Successfully updated and checked out branch '" + branch + "' on repository '" + repo_path + "'")
   print("Current repository version: " + git_repo_version(repo_path))
@@ -902,7 +903,29 @@ def build_env(generator):
       path = vswhere(16)
     else:
       path = vswhere(15)
-    build_env['VCTargetsPath'] = os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
+
+    # Configuring CMake for Visual Studio needs and env. var VCTargetsPath to be present.
+    # How this is supposed to work is unfortunately very undocumented. See
+    # https://discourse.cmake.org/t/cmake-failed-to-get-the-value-of-vctargetspath-with-vs2019-16-7/1839/16
+    # for some conversation. Try a couple of common paths if one of them would work.
+    # In the future as new versions of VS come out, we likely need to add new paths into this list.
+    if 'VCTargetsPath' not in build_env:
+      vctargets_paths = [
+        os.path.join(path, 'MSBuild\\Microsoft\\VC\\v160\\'),
+        os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
+      ]
+      for p in vctargets_paths:
+        if os.path.isfile(os.path.join(p, 'Microsoft.Cpp.Default.props')):
+          debug_print('Set env. var VCTargetsPath=' + p + ' for CMake.')
+          build_env['VCTargetsPath'] = p
+          break
+        else:
+          debug_print('Searched path ' + p + ' as candidate for VCTargetsPath, not working.')
+
+      if 'VCTargetsPath' not in build_env:
+        errlog('Unable to locate Visual Studio compiler installation for generator "' + generator + '"!')
+        errlog('Either rerun installation in Visual Studio Command Prompt, or locate directory to Microsoft.Cpp.Default.props manually')
+        sys.exit(1)
 
     # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
     vc_bin_paths = [vs_filewhere(path, 'amd64', 'cl.exe'),
@@ -1206,6 +1229,111 @@ def build_llvm(tool):
   return success
 
 
+def build_ninja(tool):
+  debug_print('build_ninja(' + str(tool) + ')')
+  root = os.path.normpath(tool.installation_path())
+  src_root = os.path.join(root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  if not success:
+    return False
+
+  build_dir = llvm_build_dir(tool)
+  build_root = os.path.join(root, build_dir)
+
+  build_type = decide_cmake_build_type(tool)
+
+  # Configure
+  cmake_generator = CMAKE_GENERATOR
+  args = []
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-Thost=x64']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+    args += ['-Thost=x64']
+
+  cmakelists_dir = os.path.join(src_root)
+  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  if not success:
+    return False
+
+  # Make
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+
+  if success:
+    bin_dir = os.path.join(root, 'bin')
+    mkdir_p(bin_dir)
+    exe_paths = [os.path.join(build_root, 'Release', 'ninja'), os.path.join(build_root, 'ninja')]
+    for e in exe_paths:
+      for s in ['.exe', '']:
+        ninja = e + s
+        if os.path.isfile(ninja):
+          dst = os.path.join(bin_dir, 'ninja' + s)
+          shutil.copyfile(ninja, dst)
+          os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
+
+  return success
+
+
+def build_ccache(tool):
+  debug_print('build_ccache(' + str(tool) + ')')
+  root = os.path.normpath(tool.installation_path())
+  src_root = os.path.join(root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  if not success:
+    return False
+
+  build_dir = llvm_build_dir(tool)
+  build_root = os.path.join(root, build_dir)
+
+  build_type = decide_cmake_build_type(tool)
+
+  # Configure
+  cmake_generator = CMAKE_GENERATOR
+  args = ['-DZSTD_FROM_INTERNET=ON']
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-Thost=x64']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+    args += ['-Thost=x64']
+
+  cmakelists_dir = os.path.join(src_root)
+  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  if not success:
+    return False
+
+  # Make
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+
+  if success:
+    bin_dir = os.path.join(root, 'bin')
+    mkdir_p(bin_dir)
+    exe_paths = [os.path.join(build_root, 'Release', 'ccache'), os.path.join(build_root, 'ccache')]
+    for e in exe_paths:
+      for s in ['.exe', '']:
+        ccache = e + s
+        if os.path.isfile(ccache):
+          dst = os.path.join(bin_dir, 'ccache' + s)
+          shutil.copyfile(ccache, dst)
+          os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
+
+    cache_dir = os.path.join(root, 'cache')
+    open(os.path.join(root, 'emcc_ccache.conf'), 'w').write('''# Set maximum cache size to 10 GB:
+max_size = 10G
+cache_dir = %s
+''' % cache_dir)
+    mkdir_p(cache_dir)
+
+  return success
+
+
 # Emscripten asm.js optimizer build scripts:
 def optimizer_build_root(tool):
   build_root = tool.installation_path().strip()
@@ -1241,9 +1369,9 @@ def emscripten_npm_install(tool, directory):
   if not node_tool:
     npm_fallback = which('npm')
     if not npm_fallback:
-      print('Failed to find npm command!')
-      print('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
-      print('Please install node.js first!')
+      errlog('Failed to find npm command!')
+      errlog('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
+      errlog('Please install node.js first!')
       return False
     node_path = os.path.dirname(npm_fallback)
   else:
@@ -1259,7 +1387,7 @@ def emscripten_npm_install(tool, directory):
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
   except subprocess.CalledProcessError as e:
-    print('Error running %s:\n%s' % (e.cmd, e.output))
+    errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
 
   # Manually install the appropriate native Closure Compiler package
@@ -1287,7 +1415,7 @@ def emscripten_npm_install(tool, directory):
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
     except subprocess.CalledProcessError as e:
-      print('Error running %s:\n%s' % (e.cmd, e.output))
+      errlog('Error running %s:\n%s' % (e.cmd, e.output))
       return False
 
   print('Done running: npm ci')
@@ -1471,7 +1599,6 @@ def load_dot_emscripten():
       key, value = parse_key_value(line)
       if value != '':
         dot_emscripten[key] = value
-      # print("Got '" + key + "' = '" + value + "'")
     except:
       pass
 
@@ -1548,13 +1675,6 @@ def find_msbuild_dir():
     return MSBUILD_DIR
   # No MSbuild installed.
   return ''
-
-
-def get_installed_vstool_version(installed_path):
-  try:
-    return open(installed_path + "/version.txt", "r").read()
-  except:
-    return None
 
 
 class Tool(object):
@@ -1694,12 +1814,12 @@ class Tool(object):
     version_file_path = self.get_version_file_path()
     if os.path.isfile(version_file_path):
       with open(version_file_path, 'r') as version_file:
-        return version_file.read() == self.name
+        return version_file.read().strip() == self.name
     return False
 
   def update_installed_version(self):
     with open(self.get_version_file_path(), 'w') as version_file:
-      version_file.write(self.name)
+      version_file.write(self.name + '\n')
     return None
 
   def is_installed(self, skip_version_check=False):
@@ -1709,7 +1829,7 @@ class Tool(object):
       for tool_name in self.uses:
         tool = find_tool(tool_name)
         if tool is None:
-          print("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+          errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
           return False
         if not tool.is_installed():
           return False
@@ -1723,17 +1843,12 @@ class Tool(object):
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
     # the directory where the source tree exists. To distinguish between
-    # multiple packages sharing the same source (clang-master-32bit,
-    # clang-master-64bit, clang-master-32bit and clang-master-64bit each
+    # multiple packages sharing the same source (clang-main-32bit,
+    # clang-main-64bit, clang-main-32bit and clang-main-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
     if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
       content_exists = False
-
-    # vs-tool is a special tool since all versions must be installed to the
-    # same dir, so dir name will not differentiate the version.
-    if self.id == 'vs-tool':
-      return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
 
     if hasattr(self, 'custom_is_installed_script'):
       if self.custom_is_installed_script == 'is_optimizer_installed':
@@ -1828,9 +1943,11 @@ class Tool(object):
       return None
 
   def install(self):
+    """Returns True if the Tool was installed of False if was skipped due to
+    already being installed.
+    """
     if self.can_be_installed() is not True:
-      print("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
-      return False
+      exit_with_error("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
 
     if self.id == 'sdk':
       return self.install_sdk()
@@ -1838,33 +1955,46 @@ class Tool(object):
       return self.install_tool()
 
   def install_sdk(self):
+    """Returns True if any SDK component was installed of False all componented
+    were already installed.
+    """
     print("Installing SDK '" + str(self) + "'..")
+    installed = False
 
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool is None:
-        print("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
-      success = tool.install()
-      if not success:
-        return False
+        exit_with_error("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+      installed |= tool.install()
+
+    if not installed:
+      print("All SDK components already installed: '" + str(self) + "'.")
+      return False
+
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
       install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-      success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
-      if not success:
-        return False
+      emscripten_dir = os.path.join(emsdk_path(), install_path, 'emscripten')
+      # Older versions of the sdk did not include the node_modules directory
+      # and require `npm ci` to be run post-install
+      if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
+        if not emscripten_npm_install(self, emscripten_dir):
+          exit_with_error('post-install step failed: emscripten_npm_install')
 
     print("Done installing SDK '" + str(self) + "'.")
     return True
 
   def install_tool(self):
+    """Returns True if the SDK was installed of False if was skipped due to
+    already being installed.
+    """
     # Avoid doing a redundant reinstall of the tool, if it has already been installed.
     # However all tools that are sourced directly from git branches do need to be
     # installed every time when requested, since the install step is then used to git
     # pull the tool to a newer version.
     if self.is_installed() and not hasattr(self, 'git_branch'):
       print("Skipped installing " + self.name + ", already installed.")
-      return True
+      return False
 
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
@@ -1873,6 +2003,10 @@ class Tool(object):
       success = build_fastcomp(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
       success = build_llvm(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ninja':
+      success = build_ninja(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
+      success = build_ccache(self)
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
@@ -1892,45 +2026,44 @@ class Tool(object):
       else:
         success = False
 
-    if success:
-      if hasattr(self, 'custom_install_script'):
-        if self.custom_install_script == 'emscripten_post_install':
-          success = emscripten_post_install(self)
-        elif self.custom_install_script == 'emscripten_npm_install':
-          success = emscripten_npm_install(self, self.installation_path())
-        elif self.custom_install_script in ('build_fastcomp', 'build_llvm'):
-          # 'build_fastcomp' is a special one that does the download on its
-          # own, others do the download manually.
-          pass
-        elif self.custom_install_script == 'build_binaryen':
-          success = build_binaryen_tool(self)
-        else:
-          raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+    if not success:
+      exit_with_error("Installation failed!")
 
-      # Install an emscripten-version.txt file if told to, and if there is one.
-      # (If this is not an actual release, but some other build, then we do not
-      # write anything.)
-      if hasattr(self, 'emscripten_releases_hash'):
-        emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
-        version = get_emscripten_release_version(self.emscripten_releases_hash)
-        if version:
-          open(emscripten_version_file_path, 'w').write('"%s"' % version)
+    if hasattr(self, 'custom_install_script'):
+      if self.custom_install_script == 'emscripten_post_install':
+        success = emscripten_post_install(self)
+      elif self.custom_install_script == 'emscripten_npm_install':
+        success = emscripten_npm_install(self, self.installation_path())
+      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ninja', 'build_ccache'):
+        # 'build_fastcomp' is a special one that does the download on its
+        # own, others do the download manually.
+        pass
+      elif self.custom_install_script == 'build_binaryen':
+        success = build_binaryen_tool(self)
+      else:
+        raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
     if not success:
-      print("Installation failed!")
-      return False
+      exit_with_error("Installation failed!")
+
+    # Install an emscripten-version.txt file if told to, and if there is one.
+    # (If this is not an actual release, but some other build, then we do not
+    # write anything.)
+    if hasattr(self, 'emscripten_releases_hash'):
+      emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
+      version = get_emscripten_release_version(self.emscripten_releases_hash)
+      if version:
+        open(emscripten_version_file_path, 'w').write('"%s"' % version)
 
     print("Done installing tool '" + str(self) + "'.")
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
-    if self.is_installed(skip_version_check=True):
-      self.cleanup_temp_install_files()
-      self.update_installed_version()
-    else:
-      print("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
-      return False
+    if not self.is_installed(skip_version_check=True):
+      exit_with_error("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
 
+    self.cleanup_temp_install_files()
+    self.update_installed_version()
     return True
 
   def cleanup_temp_install_files(self):
@@ -2035,19 +2168,11 @@ def find_latest_releases_sdk(which):
   return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
 
 
-def find_tot():
-  return open(tot_path()).read().strip()
-
-
-def find_tot_sdk(which):
-  if not os.path.exists(tot_path()):
-    print('Tip-of-tree information was not found, run emsdk update-tags')
-    sys.exit(1)
-  tot = find_tot()
-  if not tot:
-    print('Tip-of-tree build was not found, run emsdk update-tags (however, if there is no recent tip-of-tree build, you may need to wait)')
-    sys.exit(1)
-  return 'sdk-releases-%s-%s-64bit' % (which, tot)
+def find_tot_sdk():
+  debug_print('Fetching emscripten-releases repository...')
+  global extra_release_tag
+  extra_release_tag = get_emscripten_releases_tot()
+  return 'sdk-releases-upstream-%s-64bit' % (extra_release_tag)
 
 
 # Given a git hash in emscripten-releases, find the emscripten
@@ -2059,10 +2184,6 @@ def get_emscripten_release_version(emscripten_releases_hash):
     if value == emscripten_releases_hash:
       return key
   return None
-
-
-def tot_path():
-  return sdk_path('emscripten-releases-tot.txt')
 
 
 # Get the tip-of-tree build identifier.
@@ -2103,12 +2224,6 @@ def python_2_3_sorted(arr, cmp):
     return sorted(arr, cmp=cmp)
 
 
-def update_tags():
-  print('Fetching emscripten-releases repository...')
-  emscripten_releases_tot = get_emscripten_releases_tot()
-  open(tot_path(), 'w').write(emscripten_releases_tot)
-
-
 def is_emsdk_sourced_from_github():
   return os.path.exists(os.path.join(emsdk_path(), '.git'))
 
@@ -2116,22 +2231,9 @@ def is_emsdk_sourced_from_github():
 def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
-    errlog('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.')
     sys.exit(1)
   if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
     sys.exit(1)
-  if not GIT(must_succeed=False):
-    print('Update complete, however skipped update-tags, since git was not found.')
-    if WINDOWS:
-      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
-    elif MACOS:
-      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
-    elif LINUX:
-      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
-    else:
-      print("Please install git.")
-    return
-  update_tags()
 
 
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
@@ -2187,22 +2289,35 @@ def load_releases_info():
   return load_releases_info.cached_info
 
 
+def get_installed_sdk_version():
+  version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
+  if not os.path.exists(version_file):
+    return None
+  with open(version_file) as f:
+    version = f.read()
+  return version.split('-')[2]
+
+
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
   tags = []
   tags_fastcomp = []
   info = load_releases_info()
+
   for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
     tags.append(sha)
     # Only include versions older than 1.39.0 in fastcomp releases
     if version_key(version) < (2, 0, 0):
       tags_fastcomp.append(sha)
 
-  # Add the tip-of-tree, if it exists.
-  if os.path.exists(tot_path()):
-    tot = find_tot()
-    if tot:
-      tags.append(tot)
+  if extra_release_tag:
+    tags.append(extra_release_tag)
+
+  # Explicitly add the currently installed SDK version.  This could be a custom
+  # version (installed explicitly) so it might not be part of the main list loaded above.
+  installed = get_installed_sdk_version()
+  if installed and installed not in tags:
+    tags.append(installed)
 
   return tags, tags_fastcomp
 
@@ -2238,6 +2353,7 @@ def load_sdk_manifest():
     for tool_name in sdk.uses:
       tool = find_tool(tool_name)
       if not tool:
+        debug_print('missing dependency: ' + tool_name)
         return False
     return True
 
@@ -2601,7 +2717,10 @@ def exit_with_fastcomp_error():
     exit_with_error('The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
 
 
-def expand_sdk_name(name):
+def expand_sdk_name(name, activating):
+  if 'upstream-master' in name:
+    errlog('upstream-master SDK has been renamed upstream-main')
+    name = name.replace('upstream-master', 'upstream-main')
   if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
     exit_with_fastcomp_error()
   if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
@@ -2609,10 +2728,17 @@ def expand_sdk_name(name):
     return str(find_latest_releases_sdk('upstream'))
   elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
     return str(find_latest_releases_sdk('upstream'))
-  elif name in ('tot', 'sdk-tot'):
-    return str(find_tot_sdk('upstream'))
-  elif name == 'tot-upstream':
-    return str(find_tot_sdk('upstream'))
+  elif name in ('tot', 'sdk-tot', 'tot-upstream'):
+    if activating:
+      # When we are activating a tot release, assume that the currently
+      # installed SDK, if any, is the tot release we want to activate.
+      # Without this `install tot && activate tot` will race with the builders
+      # that are producing new builds.
+      installed = get_installed_sdk_version()
+      if installed:
+        debug_print('activating currently installed SDK; not updating tot version')
+        return 'sdk-releases-upstream-%s-64bit' % installed
+    return str(find_tot_sdk())
   else:
     # check if it's a release handled by an emscripten-releases version,
     # and if so use that by using the right hash. we support a few notations,
@@ -2631,6 +2757,7 @@ def expand_sdk_name(name):
     releases_info = load_releases_info()['releases']
     release_hash = get_release_hash(version, releases_info)
     if release_hash:
+      # Known release hash
       if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
         exit_with_fastcomp_error()
       if backend is None:
@@ -2639,6 +2766,10 @@ def expand_sdk_name(name):
         else:
           backend = 'fastcomp'
       return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
+    elif len(version) == 40:
+      global extra_release_tag
+      extra_release_tag = version
+      return 'sdk-releases-%s-%s-64bit' % (backend, version)
   return name
 
 
@@ -2660,14 +2791,9 @@ def main(args):
                                   composition of different SDK packages and
                                   dependencies.
 
-   emsdk update                 - Updates emsdk to the newest version, and also
-                                  runs 'update-tags' (below). If you have
+   emsdk update                 - Updates emsdk to the newest version. If you have
                                   bootstrapped emsdk via cloning directly from
                                   GitHub, call "git pull" instead to update emsdk.
-
-   emsdk update-tags            - Fetches the most up to date list of available
-                                  Emscripten tagged and other releases from the
-                                  servers.
 
    emsdk install [options] <tool 1> <tool 2> <tool 3> ...
                                 - Downloads and installs given tools or SDKs.
@@ -2793,6 +2919,11 @@ def main(args):
     global TTY_OUTPUT
     TTY_OUTPUT = False
 
+  # Replace meta-packages with the real package names.
+  if cmd in ('update', 'install', 'activate'):
+    activating = cmd == 'activate'
+    args = [expand_sdk_name(a, activating=activating) for a in args]
+
   load_dot_emscripten()
   load_sdk_manifest()
 
@@ -2824,10 +2955,6 @@ def main(args):
         errlog("Invalid command line parameter " + args[i] + ' specified!')
         return 1
   args = [x for x in args if x]
-
-  # Replace meta-packages with the real package names.
-  if cmd in ('update', 'install', 'activate'):
-    args = [expand_sdk_name(a) for a in args]
 
   if cmd == 'list':
     print('')
@@ -2929,7 +3056,7 @@ def main(args):
       print_tools(find_tools(needs_compilation=True))
     else:
       if is_emsdk_sourced_from_github():
-        print("There are no tools available. Run 'git pull' followed by 'emsdk update-tags' to fetch the latest set of tools.")
+        print("There are no tools available. Run 'git pull' to fetch the latest set of tools.")
       else:
         print("There are no tools available. Run 'emsdk update' to fetch the latest set of tools.")
       print('')
@@ -2944,7 +3071,7 @@ def main(args):
 
     print('')
     if is_emsdk_sourced_from_github():
-      print('Run "git pull" followed by "./emsdk update-tags" to pull in the latest list.')
+      print('Run "git pull" to pull in the latest list.')
     else:
       print('Run "./emsdk update" to pull in the latest list.')
 
@@ -2968,7 +3095,7 @@ def main(args):
       rmfile(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
-    update_tags()
+    errlog('`update-tags` is not longer needed.  To install the latest tot release just run `install tot`')
     return 0
   elif cmd == 'activate':
     if arg_permanent:
@@ -3030,9 +3157,7 @@ def main(args):
         tool = find_sdk(t)
       if tool is None:
         return error_on_missing_tool(t)
-      success = tool.install()
-      if not success:
-        return 1
+      tool.install()
     return 0
   elif cmd == 'uninstall':
     if not args:

@@ -24,15 +24,17 @@ macOS recipe:
 import glob
 import multiprocessing
 import os
+import platform
 import urllib.request
 import shutil
 import subprocess
 import sys
 from subprocess import check_call
 
-version = '3.7.4'
+version = '3.9.2'
+major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 base = 'https://www.python.org/ftp/python/%s/' % version
-revision = '2'
+revision = '1'
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
@@ -42,9 +44,9 @@ upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 def make_python_patch(arch):
     if arch == 'amd64':
-      pywin32_filename = 'pywin32-%s.win-%s-py3.7.exe' % (pywin32_version, arch)
+      pywin32_filename = 'pywin32-%s.win-%s-py%s.exe' % (pywin32_version, arch, major_minor_version)
     else:
-      pywin32_filename = 'pywin32-%s.%s-py3.7.exe' % (pywin32_version, arch)
+      pywin32_filename = 'pywin32-%s.%s-py%s.exe' % (pywin32_version, arch, major_minor_version)
     filename = 'python-%s-embed-%s.zip' % (version, arch)
     out_filename = 'python-%s-embed-%s+pywin32.zip' % (version, arch)
     if not os.path.exists(pywin32_filename):
@@ -86,9 +88,21 @@ def build_python():
         osname = 'macos'
         # Take some rather drastic steps to link openssl statically
         check_call(['brew', 'install', 'openssl', 'pkg-config'])
-        os.remove('/usr/local/opt/openssl/lib/libssl.dylib')
-        os.remove('/usr/local/opt/openssl/lib/libcrypto.dylib')
-        os.environ['PKG_CONFIG_PATH'] = '/usr/local/opt/openssl/lib/pkgconfig/'
+        if platform.machine() == 'x86_64':
+            prefix = '/usr/local'
+            min_macos_version = '10.13'
+        elif platform.machine() == 'arm64':
+            prefix = '/opt/homebrew'
+            min_macos_version = '11.0'
+
+        osname += '-' + platform.machine()  # Append '-x86_64' or '-arm64' depending on current arch. (TODO: Do this for Linux too, move this below?)
+
+        try:
+            os.remove(os.path.join(prefix, 'opt', 'openssl', 'lib', 'libssl.dylib'))
+            os.remove(os.path.join(prefix, 'opt', 'openssl', 'lib', 'libcrypto.dylib'))
+        except Exception:
+            pass
+        os.environ['PKG_CONFIG_PATH'] = os.path.join(prefix, 'opt', 'openssl', 'lib', 'pkgconfig')
     else:
         osname = 'linux'
 
@@ -96,9 +110,14 @@ def build_python():
     if not os.path.exists(src_dir):
       check_call(['git', 'clone', 'https://github.com/python/cpython'])
     check_call(['git', 'checkout', 'v' + version], cwd=src_dir)
-    check_call(['./configure'], cwd=src_dir)
-    check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir)
-    check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir)
+
+    min_macos_version_line = '-mmacosx-version-min=' + min_macos_version  # Specify the min OS version we want the build to work on
+    build_flags = min_macos_version_line + ' -Werror=partial-availability'  # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
+    env = os.environ.copy()
+    env['MACOSX_DEPLOYMENT_TARGET'] = min_macos_version
+    check_call(['./configure', 'CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line], cwd=src_dir, env=env)
+    check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir, env=env)
+    check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir, env=env)
 
     install_dir = os.path.join(src_dir, 'install')
 
@@ -109,9 +128,12 @@ def build_python():
     check_call([pybin, pip, 'install', 'requests'])
 
     dirname = 'python-%s-%s' % (version, revision)
+    if os.path.isdir(dirname):
+        print('Erasing old build directory ' + dirname)
+        shutil.rmtree(dirname)
     os.rename(os.path.join(install_dir, 'usr', 'local'), dirname)
     tarball = 'python-%s-%s-%s.tar.gz' % (version, revision, osname)
-    shutil.rmtree(os.path.join(dirname, 'lib', 'python3.7', 'test'))
+    shutil.rmtree(os.path.join(dirname, 'lib', 'python' + major_minor_version, 'test'))
     shutil.rmtree(os.path.join(dirname, 'include'))
     for lib in glob.glob(os.path.join(dirname, 'lib', 'lib*.a')):
       os.remove(lib)

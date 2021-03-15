@@ -117,8 +117,7 @@ SDK from the local hard drive completely.
 
 `emsdk update` will fetch package information for all the new tools and
 SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new
-version. The command `emsdk update-tags` obtains a list of all new tagged
-releases from GitHub without updating Emscripten SDK itself.
+version.
 
 ### How do I install an old Emscripten compiler version?
 
@@ -139,8 +138,8 @@ categories.
 To obtain and build latest upstream wasm SDK from source, run
 
 ```
-emsdk install sdk-upstream-master-64bit
-emsdk activate sdk-upstream-master-64bit
+emsdk install sdk-upstream-main-64bit
+emsdk activate sdk-upstream-main-64bit
 ```
 
 You can use this target for example to bootstrap developing patches to LLVM,
@@ -156,8 +155,8 @@ https://emscripten.org/docs/contributing/developers_guide.html?highlight=develop
 ### When working on git branches compiled from source, how do I update to a newer compiler version?
 
 Unlike tags and precompiled versions, a few of the SDK packages are based on
-"moving" git branches and compiled from source (e.g. sdk-upstream-master,
-sdk-master, emscripten-master, binaryen-master). Because of that, the
+"moving" git branches and compiled from source (e.g. sdk-upstream-main,
+sdk-main, emscripten-main, binaryen-main). Because of that, the
 compiled versions will eventually go out of date as new commits are introduced
 to the development branches. To update an old compiled installation of one of
 this branches, simply reissue the "emsdk install" command on that tool/SDK. This
@@ -198,11 +197,11 @@ where you directly interact with the github repositories. This allows you to
 obtain new features and latest fixes immediately as they are pushed to the
 github repository, without having to wait for release to be tagged. You do not
 need a github account or a fork of Emscripten to do this. To switch to using the
-latest upstream git development branch `master`, run the following:
+latest upstream git development branch `main`, run the following:
 
     emsdk install git-1.9.4 # Install git. Skip if the system already has it.
-    emsdk install sdk-upstream-master-64bit # Clone+pull the latest emscripten-core/emscripten/master.
-    emsdk activate sdk-upstream-master-64bit # Set the master SDK as the currently active one.
+    emsdk install sdk-upstream-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
+    emsdk activate sdk-upstream-main-64bit # Set the main SDK as the currently active one.
 
 ### How do I use my own Emscripten github fork with the SDK?
 
@@ -212,16 +211,16 @@ acquainted with working on multiple remotes in a git clone, these steps should
 be familiar to you. This is useful in the case when you want to make your own
 modifications to the Emscripten toolchain, but still keep using the SDK
 environment and tools. To set up your own fork as the currently active
-Emscripten toolchain, first install the `sdk-master` SDK like shown in the
+Emscripten toolchain, first install the `sdk-main` SDK like shown in the
 previous section, and then run the following commands in the emsdk directory:
 
-    cd emscripten/master
+    cd emscripten/main
     # Add a git remote link to your own repository.
     git remote add myremote https://github.com/mygituseraccount/emscripten.git
     # Obtain the changes in your link.
     git fetch myremote
-    # Switch the emscripten-master tool to use your fork.
-    git checkout -b mymaster --track myremote/master
+    # Switch the emscripten-main tool to use your fork.
+    git checkout -b mymain --track myremote/main
 
 In this way you can utilize the Emscripten SDK tools while using your own git
 fork. You can switch back and forth between remotes via the `git checkout`

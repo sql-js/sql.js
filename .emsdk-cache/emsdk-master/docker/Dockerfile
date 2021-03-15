@@ -1,4 +1,4 @@
-FROM debian:buster AS stage_build
+FROM ubuntu:focal AS stage_build
 
 ARG EMSCRIPTEN_VERSION=tot
 ENV EMSDK /emsdk
@@ -23,7 +23,6 @@ COPY . ${EMSDK}
 
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
-    && if [ "$EMSCRIPTEN_VERSION" = "tot" ]; then ./emsdk update-tags; fi \
     && ./emsdk install ${EMSCRIPTEN_VERSION} \
     && echo "## Done"
 
@@ -57,7 +56,7 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
 
-FROM debian:buster-slim AS stage_deploy
+FROM ubuntu:focal AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
@@ -87,10 +86,11 @@ RUN echo "## Create emscripten user (1000:1000)" \
 # ------------------------------------------------------------------------------
 
 RUN echo "## Update and install packages" \
-    # mitigate problem with create symlink to man for base debian image
-    && mkdir -p /usr/share/man/man1/ \
     && apt-get -qq -y update \
-    && apt-get -qq install -y --no-install-recommends \
+    # Somewhere in here apt sets up tzdata which asks for your time zone and blocks
+    # waiting for the answer which you can't give as docker build doesn't read from
+    # the terninal. The env vars set here avoid the interactive prompt and set the TZ.
+    && DEBIAN_FRONTEND="noninteractive" TZ="America/San_Francisco" apt-get -qq install -y --no-install-recommends \
         sudo \
         libxml2 \
         ca-certificates \

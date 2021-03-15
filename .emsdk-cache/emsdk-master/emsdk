@@ -6,10 +6,15 @@
 
 # Wrapper script that runs emsdk.py
 
-# First look for pre-built python (macos)
+# First look for python bundled in Emsdk
 if [ -z "$EMSDK_PYTHON" ]; then
-  PYTHON3=$(dirname $0)/python/3.7.4-2_64bit/bin/python3
-  if [ -e $PYTHON3 ]; then
+  PYTHON3=$(dirname $0)/python/3.9.2-1_64bit/bin/python3
+  PYTHON3_CERT_FILE=$(dirname $0)/python/3.9.2-1_64bit/lib/python3.9/site-packages/certifi/cacert.pem
+  if [ ! -f $PYTHON3 ]; then
+    PYTHON3=$(dirname $0)/python/3.7.4-2_64bit/bin/python3
+    PYTHON3_CERT_FILE=$(dirname $0)/python/3.7.4-2_64bit/lib/python3.7/site-packages/certifi/cacert.pem
+  fi
+  if [ -f $PYTHON3 ]; then
     EMSDK_PYTHON=$PYTHON3
 
     # When using our bundled python we never want the users
@@ -21,11 +26,11 @@ if [ -z "$EMSDK_PYTHON" ]; then
     # This is needed for MacOS.  Without this, the urlopen
     # code will try to use /usr/local/etc/openssl/cert.pem
     # which may or may not exist on the system.
-    export SSL_CERT_FILE=$(dirname $0)/python/3.7.4-2_64bit/lib/python3.7/site-packages/certifi/cacert.pem
+    export SSL_CERT_FILE=$PYTHON3_CERT_FILE
   fi
 fi
 
-# Look for `python3` first.  This is especially important on macOS (See:
+# If bundled python is not found, look for `python3` in PATH.  This is especially important on macOS (See:
 # https://github.com/emscripten-core/emsdk/pull/273)
 if [ -z "$EMSDK_PYTHON" ]; then
   PYTHON3=$(which python3 2> /dev/null)

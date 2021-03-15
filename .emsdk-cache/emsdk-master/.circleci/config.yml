@@ -35,13 +35,13 @@ jobs:
       - run:
           name: Install debian packages
           command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
-      - run: scripts/test.sh
-      - run: scripts/test_source_env.sh
+      - run: test/test.sh
+      - run: test/test_source_env.sh
       - run:
           name: test.py
           command: |
             source emsdk_env.sh
-            scripts/test.py
+            test/test.py
   test-mac:
     macos:
       xcode: "12.2.0"
@@ -55,12 +55,12 @@ jobs:
       - run:
           name: Install cmake
           command: brew install cmake
-      - run: scripts/test.sh
+      - run: test/test.sh
       - run:
           name: test.py
           command: |
             source emsdk_env.sh
-            scripts/test.py
+            test/test.py
   test-windows:
     executor:
       name: win/vs2019
@@ -81,52 +81,52 @@ jobs:
       - run:
           name: Install latest
           shell: cmd.exe
-          command: scripts\test.bat
+          command: test\test.bat
       - run:
           name: test.py
           command: |
             source emsdk_env.sh
-            python scripts/test.py
+            python test/test.py
 
       - run:
           name: flagless (process/shell) test
           shell: powershell.exe
           command: |
-            scripts/test_activation.ps1
+            test/test_activation.ps1
 
       - run:
           name: --permanent test
           shell: powershell.exe
           command: |
             $env:PERMANENT_FLAG="--permanent"
-            scripts/test_activation.ps1
+            test/test_activation.ps1
 
       - run:
           name: --system test
           shell: powershell.exe
           command: |
             $env:SYSTEM_FLAG="--system"
-            scripts/test_activation.ps1
+            test/test_activation.ps1
 
       - run:
           name: Process/Shell PATH preservation test
           shell: powershell.exe
           command: |
-            scripts/test_path_preservation.ps1
+            test/test_path_preservation.ps1
 
       - run:
           name: User PATH preservation test
           shell: powershell.exe
           command: |
             $env:PERMANENT_FLAG="--permanent"
-            scripts/test_path_preservation.ps1
+            test/test_path_preservation.ps1
 
       - run:
           name: System PATH preservation test
           shell: powershell.exe
           command: |
             $env:SYSTEM_FLAG="--system"
-            scripts/test_path_preservation.ps1
+            test/test_path_preservation.ps1
 
   build-docker-image:
     executor: bionic
@@ -184,7 +184,7 @@ jobs:
           name: install bazel
           command: |
             apt-get install -q -y bazel
-      - run: scripts/test_bazel.sh
+      - run: test/test_bazel.sh
 
 workflows:
   flake8:
