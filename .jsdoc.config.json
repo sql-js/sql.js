@@ -15,8 +15,9 @@
         "theme_opts": {
             "title": "sql.js",
             "meta": [
+                "<title>sql.js API documentation</title>",
                 "<meta name=\"author\" content=\"Ophir Lojkine\">",
-                "<meta name=\"description\" content=\"sql.js technical documentation\">"
+                "<meta name=\"description\" content=\"Documentation for sql.js: an in-memory SQL database for the browser based on SQLite.\">"
             ],
             "menu": [
                 {
