@@ -149,8 +149,10 @@ out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
 
-out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+# Since the extension-functions.c includes other headers in the sqlite_amalgamation, we declare that this depends on more than just extension-functions.c
+out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	mkdir -p out
+	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
@@ -168,18 +170,20 @@ cache/$(EXTENSION_FUNCTIONS):
 
 ## sqlite-src
 .PHONY: sqlite-src
-sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(EXTENSION_FUNCTIONS)
+sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
 
-sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip
-	mkdir -p sqlite-src
+sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
 	echo '$(SQLITE_AMALGAMATION_ZIP_SHA1)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
 	sha1sum -c cache/check.txt
-	rm -rf $@
+	# We don't delete the sqlite_amalgamation folder. That's a job for clean
+	# Also, the extension functions get copied here, and if we get the order of these steps wrong,
+	# this step could remove the extension functions, and that's not what we want
 	unzip -u 'cache/$(SQLITE_AMALGAMATION).zip' -d sqlite-src/
 	touch $@
 
 sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNCTIONS)
-	mkdir -p sqlite-src
+	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
 	echo '$(EXTENSION_FUNCTIONS_SHA1)  ./cache/$(EXTENSION_FUNCTIONS)' > cache/check.txt
 	sha1sum -c cache/check.txt
 	cp 'cache/$(EXTENSION_FUNCTIONS)' $@
@@ -188,5 +192,4 @@ sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNC
 .PHONY: clean
 clean:
 	rm -f out/* dist/* cache/*
-	rm -rf sqlite-src/ c/
-
+	rm -rf sqlite-src/
