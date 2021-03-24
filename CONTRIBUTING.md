@@ -51,7 +51,7 @@ Instructions:
 
 ## Compiling SQLite with different options
 
-In order to enable extensions like JSON1 or FTS5, change the CFLAGS in the [Makefile](Makefile) and rebuild:
+In order to enable extensions like JSON1 or FTS5, change the CFLAGS in the [Makefile](Makefile) and run `npm run rebuild`:
 
 ``` diff
 CFLAGS = \
@@ -61,6 +61,6 @@ CFLAGS = \
         -DSQLITE_ENABLE_FTS3 \
         -DSQLITE_ENABLE_FTS3_PARENTHESIS \
 +       -DSQLITE_ENABLE_FTS5 \
-        -DSQLITE_ENABLE_JSON1 \
++       -DSQLITE_ENABLE_JSON1 \
         -DSQLITE_THREADSAFE=0
 ```
