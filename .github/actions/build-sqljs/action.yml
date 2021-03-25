@@ -12,7 +12,7 @@ description: 'Builds sql.js using the .devcontainer/Dockerfile as its environmen
 runs:
   using: 'docker'
   image: '../../../.devcontainer/Dockerfile'
-  cmd: "cd /github/workspace && npm run build"
+  entrypoint: "cd /github/workspace && npm run build"
   # args:
   #   - ${{ inputs.who-to-greet }}
   
