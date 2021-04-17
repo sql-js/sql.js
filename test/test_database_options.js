@@ -1,9 +1,14 @@
 exports.test = async function(sql, assert) {
+  // Use database with a specified VFS.
   async function doVFS(vfs) {
     var db = new sql.Database(null, { vfs });
-    db.run("CREATE TABLE tbl (x, y);");
-    db.run("INSERT INTO tbl VALUES ('foo', 0), ('bar', 1);");
-    return db.exec("SELECT * FROM tbl;");
+    try {
+      db.run("CREATE TABLE tbl (x, y);");
+      db.run("INSERT INTO tbl VALUES ('foo', 0), ('bar', 1);");
+      return db.exec("SELECT * FROM tbl;");
+    } finally {
+      db.close();
+    }
   }
 
   const vfsNone = await doVFS();
@@ -15,16 +20,16 @@ exports.test = async function(sql, assert) {
   const vfsInvalid = await doVFS("not a vfs").catch(e => e);
   assert.ok(vfsInvalid instanceof Error, 'invalid VFS throws');
 
+  // Attempt export of database with specified filename.
   async function doExport(filename) {
-    // Specify database name
     var db = new sql.Database(null, { filename });
-    db.run("CREATE TABLE tbl (x, y);");
-    db.run("INSERT INTO tbl VALUES ('foo', 0), ('bar', 1);");
-
-    // Check that export works.
-    var binaryArray = db.export();
-    db.close();
-    return binaryArray;
+    try {
+      db.run("CREATE TABLE tbl (x, y);");
+      db.run("INSERT INTO tbl VALUES ('foo', 0), ('bar', 1);");
+      return db.export();
+    } finally {
+      db.close();
+    }
   }
 
   const exportFile = await doExport('foo');
