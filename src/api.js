@@ -71,8 +71,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var SQLITE_BLOB = 4;
     // var - Encodings, used for registering functions.
     var SQLITE_UTF8 = 1;
+    // var - Open flags
+    var SQLITE_OPEN_READWRITE = 0x00000002;
+    var SQLITE_OPEN_CREATE = 0x00000004;
     // var - cwrap function
-    var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
+    var sqlite3_open_v2 = cwrap(
+        "sqlite3_open_v2",
+        "number",
+        ["string", "number", "number", "string"]
+    );
     var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
     var sqlite3_exec = cwrap(
         "sqlite3_exec",
@@ -790,7 +797,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (data != null) {
             FS.createDataFile("/", this.filename, data, true, true);
         }
-        this.handleError(sqlite3_open(this.filename, apiTemp));
+        this.handleError(sqlite3_open_v2(
+            this.filename,
+            apiTemp,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+            "unix"
+        ));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
         // A list of all prepared statements of the database
@@ -1046,7 +1058,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
         var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this.handleError(sqlite3_open(this.filename, apiTemp));
+        this.handleError(sqlite3_open_v2(
+            this.filename,
+            apiTemp,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+            "unix"
+        ));
         this.db = getValue(apiTemp, "i32");
         return binaryDb;
     };
