@@ -54,9 +54,13 @@ module.exports = {
         // reason - parserOptions is set to es5 language-syntax
         "prefer-destructuring": "off",
         // reason - parserOptions is set to es5 language-syntax
+        "prefer-object-spread": "off",
+        // reason - parserOptions is set to es5 language-syntax
         "prefer-spread": "off",
         // reason - parserOptions is set to es5 language-syntax
         "prefer-template": "off",
+        // reason - Closure compiler renames unquoted properties
+        "quote-props": "off",
         // reason - sql.js frequently use sql-query-strings containing
         // single-quotes
         quotes: ["error", "double"],
