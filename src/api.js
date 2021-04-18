@@ -783,19 +783,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         };
     }
 
-    /**
-     * @typedef {Object} Database.Options
-     * @property {string} [filename] Database filename. Can be ":memory:"
-     * to bypass the filesystem but "export" method should not be used.
-     * If unset, a random name will be generated.
-     * @property {number} [flags] Any combination of SQLite open flags. See
-     * https://www.sqlite.org/c3ref/c_open_autoproxy.html (default:
-     * SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE).
-     * @property {string} [vfs] VFS name. If specified, an initialization
-     * array cannot be provided to the constructor and the "export" method
-     * should not be used.
-     */
-
     /** @classdesc
     * Represents an SQLite database
     * @constructs Database
@@ -804,33 +791,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * one stored in the byte array passed in first argument
     * @param {number[]} data An array of bytes representing
     * an SQLite database file
-    * @param {Database.Options=} options
     */
-    function Database(data, options) {
-        this.options = Object.assign(
-            {
-                "filename": "dbfile_" + (0xffffffff * Math.random() >>> 0),
-                "flags": SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE,
-                "vfs": undefined
-            },
-            options
-        );
-        if (data) {
-            if (this.options["vfs"]) {
-                throw new Error(
-                    "Loading data is not supported if a VFS is specified"
-                );
-            }
-            FS.createDataFile(
-                "/",
-                this.options["filename"], data, true, true
-            );
+    function Database(data) {
+        this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
+        if (data != null) {
+            FS.createDataFile("/", this.filename, data, true, true);
         }
         this.handleError(sqlite3_open_v2(
-            this.options["filename"],
+            this.filename,
             apiTemp,
-            this.options["flags"],
-            this.options["vfs"] || "unix"
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+            "unix"
         ));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
@@ -1076,19 +1047,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return new StatementIterator(sql, this);
     };
 
-    /** Exports the contents of the database to a binary array.
-     * Throws an error if the database filename is ":memory:" or
-     * a VFS is specified.
-     * @return {Uint8Array} An array of bytes of the SQLite3 database file
+    /** Exports the contents of the database to a binary array
+    @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
     Database.prototype["export"] = function exportDatabase() {
-        if (this.options["filename"] === ":memory:") {
-            throw new Error("Exporting a \":memory:\" DB is not supported");
-        }
-        if (this.options["vfs"]) {
-            throw new Error(
-                "Exporting is not supported if a VFS is specified"
-            );
+        if (this.filename === ":memory:") {
+            throw new Error("export on ':memory:' database is not supported");
         }
         Object.values(this.statements).forEach(function each(stmt) {
             stmt["free"]();
@@ -1096,15 +1060,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        var binaryDb = FS.readFile(
-            this.options["filename"],
-            { encoding: "binary" }
-        );
+        var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
         this.handleError(sqlite3_open_v2(
-            this.options["filename"],
+            this.filename,
             apiTemp,
-            this.options["flags"],
-            this.options["vfs"] || "unix"
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+            "unix"
         ));
         this.db = getValue(apiTemp, "i32");
         return binaryDb;
@@ -1131,9 +1092,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        if (this.options["filename"] !== ":memory:" && !this.options["vfs"]) {
-            FS.unlink("/" + this.options["filename"]);
-        }
+        FS.unlink("/" + this.filename);
         this.db = null;
     };
 
@@ -1257,6 +1216,33 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             0
         ));
         return this;
+    };
+
+    /**
+     * Open a database accessed with a specified VFS.
+     * @param {string} vfs Name of a registered VFS
+     * @param {string} filename Database filename
+     * @param {number} [flags] Open flags for sqlite3_open_v2, described at
+     * https://www.sqlite.org/c3ref/c_open_autoproxy.html
+     * @returns {Database}
+     */
+    Database["with_vfs"] = function with_vfs(vfs, filename, flags) {
+        var instance = Object.create(Database.prototype);
+        instance.filename = filename;
+        instance.vfs = vfs;
+        instance.statements = {};
+        instance.functions = {};
+
+        instance.handleError(sqlite3_open_v2(
+            instance.filename,
+            apiTemp,
+            flags || (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE),
+            vfs
+        ));
+        instance.db = getValue(apiTemp, "i32");
+        registerExtensionFunctions(instance.db);
+
+        return instance;
     };
 
     // export Database to Module
