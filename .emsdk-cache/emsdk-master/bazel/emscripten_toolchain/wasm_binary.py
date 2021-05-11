@@ -77,6 +77,7 @@ def main():
   ensure(os.path.join(args.output_path, stem + '.fetch.js'))
   ensure(os.path.join(args.output_path, stem + '.js.symbols'))
   ensure(os.path.join(args.output_path, stem + '.wasm.debug.wasm'))
+  ensure(os.path.join(args.output_path, stem + '.html'))
 
 
 if __name__ == '__main__':

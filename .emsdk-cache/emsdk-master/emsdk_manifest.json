@@ -150,7 +150,8 @@
     "linux_url": "node-v8.9.1-linux-x86.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
   },
   {
     "id": "node",
@@ -160,7 +161,8 @@
     "linux_url": "https://nodejs.org/dist/v8.9.1/node-v8.9.1-linux-armv7l.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
   },
   {
     "id": "node",
@@ -172,7 +174,8 @@
     "linux_url": "node-v8.9.1-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
   },
   {
     "id": "node",
@@ -182,7 +185,8 @@
     "linux_url": "node-v8.9.1-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
   },
   {
     "id": "node",
@@ -234,7 +238,8 @@
     "arch": "x86",
     "windows_url": "WinPython-32bit-2.7.13.1Zero.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%",
+    "is_old": true
   },
   {
     "id": "python",
@@ -243,7 +248,8 @@
     "arch": "x86_64",
     "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%",
+    "is_old": true
   },
   {
     "id": "python",
@@ -252,7 +258,8 @@
     "arch": "x86",
     "windows_url": "python-3.7.4-embed-win32-patched.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "is_old": true
   },
   {
     "id": "python",
@@ -261,7 +268,8 @@
     "arch": "x86_64",
     "windows_url": "python-3.7.4-embed-amd64-patched.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "is_old": true
   },
   {
     "id": "python",
@@ -270,7 +278,8 @@
     "arch": "x86",
     "windows_url": "python-3.7.4-embed-win32+pywin32.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "is_old": true
   },
   {
     "id": "python",
@@ -279,7 +288,8 @@
     "arch": "x86_64",
     "windows_url": "python-3.7.4-embed-amd64+pywin32.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "is_old": true
   },
   {
     "id": "python",
@@ -288,7 +298,17 @@
     "arch": "x86_64",
     "macos_url": "python-3.7.4-2-macos.tar.gz",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem",
+    "is_old": true
+  },
+  {
+    "id": "python",
+    "version": "3.9.2-1",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "python-3.9.2-1-embed-amd64+pywin32.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
   {
     "id": "python",
@@ -494,9 +514,8 @@
     "bitness": 64,
     "url": "https://github.com/juj/ccache.git",
     "git_branch": "emscripten",
-    "activated_cfg": "EMCC_CCACHE=1",
     "activated_path": "%installation_dir%/bin",
-    "activated_env": "EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
+    "activated_env": "_EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
     "cmake_build_type": "Release",
     "custom_install_script": "build_ccache"
   }
@@ -506,7 +525,7 @@
   {
     "version": "upstream-main",
     "bitness": 64,
-    "uses": ["python-3.7.4-pywin32-64bit", "llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.9.2-1-64bit", "llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
@@ -573,7 +592,7 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.15.5-64bit", "python-3.7.4-2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "python-3.9.2-1-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -581,7 +600,7 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.15.5-64bit", "python-3.9.2-1-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   },

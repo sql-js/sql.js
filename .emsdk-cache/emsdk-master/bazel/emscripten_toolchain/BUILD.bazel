@@ -9,9 +9,9 @@ filegroup(
         "emcc.sh",
         "emscripten_config",
         "env.sh",
-        "@emscripten//:all",
         "@nodejs//:node_files",
-        "@npm//:node_modules",
+        "@emsdk//:binaries",
+        "@emsdk//:node_modules",
     ],
 )
 
@@ -26,7 +26,7 @@ filegroup(
         "emcc_link.sh",
         "link_wrapper.py",
         ":common-script-includes",
-        "@emscripten//:all",
+        "@emsdk//:binaries",
         "@nodejs//:node_files",
     ],
 )
@@ -36,7 +36,7 @@ filegroup(
     srcs = [
         ":compile-emscripten",
         ":link-emscripten",
-        "@emscripten//:all",
+        "@emsdk//:binaries",
         "@nodejs//:node_files",
     ],
 )
@@ -49,7 +49,8 @@ cc_library(name = "malloc")
 emscripten_cc_toolchain_config_rule(
     name = "wasm",
     cpu = "wasm",
-    emscripten_version = "emscripten",
+    em_config = "emscripten_config",
+    emscripten_binaries = "@emsdk//:binaries",
 )
 
 cc_toolchain(

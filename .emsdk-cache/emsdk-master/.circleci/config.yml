@@ -166,7 +166,7 @@ jobs:
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
-  test-bazel:
+  test-bazel-linux:
     executor: bionic
     steps:
       - checkout
@@ -185,6 +185,21 @@ jobs:
           command: |
             apt-get install -q -y bazel
       - run: test/test_bazel.sh
+
+  test-bazel-mac:
+    macos:
+      xcode: "12.2.0"
+    environment:
+      EMSDK_NOTTY: "1"
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - checkout
+      - run: brew install grep
+      - run:
+          name: install bazel
+          command: |
+            brew install bazel
+      - run: test/test_bazel_mac.sh
 
 workflows:
   flake8:
@@ -208,6 +223,9 @@ workflows:
               ignore: /.*/
             tags:
               only: /.*/
-  test-bazel:
+  test-bazel-linux:
     jobs:
-      - test-bazel
+      - test-bazel-linux
+  test-bazel-mac:
+    jobs:
+      - test-bazel-mac

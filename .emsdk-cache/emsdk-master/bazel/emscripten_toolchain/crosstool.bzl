@@ -69,9 +69,10 @@ def _impl(ctx):
     abi_libc_version = "default"
 
     cc_target_os = "emscripten"
-    emscripten_version = ctx.attr.emscripten_version
 
-    builtin_sysroot = "external/emscripten/emscripten/cache/sysroot"
+    emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
+
+    builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
     ################################################################
     # Tools
@@ -436,6 +437,11 @@ def _impl(ctx):
         # https://emscripten.org/docs/debugging/Sanitizers.html
         feature(name = "wasm_asan"),
         feature(name = "wasm_ubsan"),
+
+        feature(
+            name = "output_format_js",
+            enabled = True,
+        ),
     ]
 
     crosstool_default_flag_sets = [
@@ -546,6 +552,11 @@ def _impl(ctx):
             actions = all_link_actions,
             flags = ["-s", "PRINTF_LONG_DOUBLE=1"],
             features = ["precise_long_double_printf"],
+        ),
+        flag_set(
+            actions = all_link_actions,
+            flags = ["--oformat=js"],
+            features = ["output_format_js"],
         ),
 
         # Opt
@@ -899,7 +910,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/c++/v1",
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
-                "-isystem", "external/emscripten/lib/clang/13.0.0/include",
+                "-isystem", emscripten_dir + "/lib/clang/13.0.0/include",
             ],
         ),
         # Inputs and outputs
@@ -1006,6 +1017,22 @@ def _impl(ctx):
     ]
 
     crosstool_default_env_sets = [
+        # Globals
+        env_set(
+            actions = all_compile_actions +
+                      all_link_actions +
+                      [ACTION_NAMES.cpp_link_static_library],
+            env_entries = [
+                env_entry(
+                    key = "EM_BIN_PATH",
+                    value = emscripten_dir,
+                ),
+                env_entry(
+                    key = "EM_CONFIG_PATH",
+                    value = ctx.file.em_config.path,
+                ),
+            ],
+        ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
         env_set(
             actions = all_compile_actions +
@@ -1042,49 +1069,42 @@ def _impl(ctx):
     features.append(crosstool_default_flags_feature)
 
     cxx_builtin_include_directories = [
-        "external/emscripten/emscripten/cache/sysroot/include/c++/v1",
-        "external/emscripten/emscripten/cache/sysroot/include/compat",
-        "external/emscripten/emscripten/cache/sysroot/include",
-        "external/emscripten/lib/clang/13.0.0/include",
+        emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
+        emscripten_dir + "/emscripten/cache/sysroot/include/compat",
+        emscripten_dir + "/emscripten/cache/sysroot/include",
+        emscripten_dir + "/lib/clang/13.0.0/include",
     ]
 
     artifact_name_patterns = []
 
     make_variables = []
 
-    out = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.write(out, "Fake executable")
-    return [
-        cc_common.create_cc_toolchain_config_info(
-            ctx = ctx,
-            features = features,
-            action_configs = action_configs,
-            artifact_name_patterns = artifact_name_patterns,
-            cxx_builtin_include_directories = cxx_builtin_include_directories,
-            toolchain_identifier = toolchain_identifier,
-            host_system_name = host_system_name,
-            target_system_name = target_system_name,
-            target_cpu = target_cpu,
-            target_libc = target_libc,
-            compiler = compiler,
-            abi_version = abi_version,
-            abi_libc_version = abi_libc_version,
-            tool_paths = tool_paths,
-            make_variables = make_variables,
-            builtin_sysroot = builtin_sysroot,
-            cc_target_os = cc_target_os,
-        ),
-        DefaultInfo(
-            executable = out,
-        ),
-    ]
+    return cc_common.create_cc_toolchain_config_info(
+        ctx = ctx,
+        features = features,
+        action_configs = action_configs,
+        artifact_name_patterns = artifact_name_patterns,
+        cxx_builtin_include_directories = cxx_builtin_include_directories,
+        toolchain_identifier = toolchain_identifier,
+        host_system_name = host_system_name,
+        target_system_name = target_system_name,
+        target_cpu = target_cpu,
+        target_libc = target_libc,
+        compiler = compiler,
+        abi_version = abi_version,
+        abi_libc_version = abi_libc_version,
+        tool_paths = tool_paths,
+        make_variables = make_variables,
+        builtin_sysroot = builtin_sysroot,
+        cc_target_os = cc_target_os,
+    )
 
 emscripten_cc_toolchain_config_rule = rule(
     implementation = _impl,
     attrs = {
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
-        "emscripten_version": attr.string(mandatory = True),
+        "em_config": attr.label(mandatory = True, allow_single_file=True),
+        "emscripten_binaries": attr.label(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],
-    executable = True,
 )

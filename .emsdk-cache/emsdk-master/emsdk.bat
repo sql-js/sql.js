@@ -7,6 +7,13 @@ setlocal
 :: When using our bundled python we never want the users
 :: PYTHONHOME or PYTHONPATH
 :: https://github.com/emscripten-core/emsdk/issues/598
+if exist "%~dp0python\3.9.2-1_64bit\python.exe" (
+  set EMSDK_PY="%~dp0python\3.9.2-1_64bit\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
+  goto end
+)
+
 if exist "%~dp0python\3.7.4-pywin32_64bit\python.exe" (
   set EMSDK_PY="%~dp0python\3.7.4-pywin32_64bit\python.exe"
   set PYTHONHOME=

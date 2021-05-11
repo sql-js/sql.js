@@ -33,31 +33,40 @@ if [[ $ERR = 1 ]]; then
   exit 1
 fi
 
-URL1=https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/
+URL1=https://storage.googleapis.com/webassembly/emscripten-releases-builds/
 URL2=/wasm-binaries.tbz2
+
+# Get commit hash for $1 version
+get_hash () {
+  echo $(grep "$1" emscripten-releases-tags.txt | grep -v latest | cut -f4 -d\")
+}
+
+# Get sha256 for $1 os $2 hash
+get_sha () {
+  echo $(curl "${URL1}$1/$2${URL2}" 2>/dev/null | sha256sum | awk '{print $1}')
+}
+
+# Assemble dictionary line
+revisions_item () {
+  hash=$(get_hash $1)
+  echo \
+      "\   \"$1\": struct(\n" \
+      "\       hash = \"$(get_hash ${hash})\",\n" \
+      "\       sha_linux = \"$(get_sha linux ${hash})\",\n" \
+      "\       sha_mac = \"$(get_sha mac ${hash})\",\n" \
+      "\       sha_win = \"$(get_sha win ${hash})\",\n" \
+      "\   ),"
+}
+
+append_revision () {
+  sed -i "5 i $(revisions_item $1)" bazel/revisions.bzl
+}
 
 # Get the latest version number from emscripten-releases-tag.txt.
 VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
         emscripten-releases-tags.txt \
       | sed --expression "s/\./\\\./g")
-# Based on the latest version number, get the commit hash for that version.
-HASH=$(grep "${VER}" emscripten-releases-tags.txt \
-      | grep -v latest \
-      | cut -f4 -d\")
-# Download and compute the sha256sum for the archive with the prebuilts.
-SHA=$(curl "${URL1}${HASH}${URL2}" 2>/dev/null \
-      | sha256sum \
-      | awk '{print $1}')
-# Get the line number on which the sha256 sum lives for emscripten.
-# This will always be one line after the name of the rule.
-SHALINE=$(($(grep -n 'name = "emscripten"' bazel/WORKSPACE \
-      | sed 's/^\([[:digit:]]*\).*$/\1/')+1))
 
-# Insert the new commit hash into the url.
-sed -i "s!\(${URL1}\)\([[:alnum:]]*\)\(${URL2}\)!\1${HASH}\3!" bazel/WORKSPACE
-# Insert the new version number.
-sed -i "s!\(# emscripten \)\(.*\)!\1${VER}!" bazel/WORKSPACE
-# Insert the new sha256 sum.
-sed -i "${SHALINE}s!\"[[:alnum:]]*\"!\"${SHA}\"!" bazel/WORKSPACE
+append_revision ${VER}
 
 echo "Done!"

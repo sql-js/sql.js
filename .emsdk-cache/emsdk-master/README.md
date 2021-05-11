@@ -56,7 +56,8 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Mac OS X
 
-- `python`: Version 2.7.0 or above.
+- For Intel-based Macs, macOS 10.13 or newer. For ARM64 M1 based Macs, macOS
+  11.0 or newer.
 - `java`: For running closure compiler (optional).  After installing emscripten
   via emsdk, typing 'emcc --help' should pop up a OS X dialog "Java is not
   installed. To open java, you need a Java SE 6 runtime. Would you like to

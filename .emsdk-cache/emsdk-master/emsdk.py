@@ -44,7 +44,10 @@ emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-release
 
 emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
 
-emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/master.zip'
+# This was previously `master.zip` but we are transitioning to `main` and
+# `HEAD.zip` works for both cases.  In future we could switch this to
+# `main.zip` perhaps.
+emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/HEAD.zip'
 
 zips_subdir = 'zips/'
 
@@ -181,6 +184,27 @@ if POWERSHELL:
   EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.ps1')
 else:
   EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
+
+
+# Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a pair (https://github.com/emscripten-core/emscripten, d6aced8)
+def parse_github_url_and_refspec(url):
+  if not url:
+    return ('', '')
+
+  if url.endswith(('/tree/', '/tree', '/commit/', '/commit')):
+    raise Exception('Malformed git URL and refspec ' + url + '!')
+
+  if '/tree/' in url:
+    if url.endswith('/'):
+      raise Exception('Malformed git URL and refspec ' + url + '!')
+    return url.split('/tree/')
+  elif '/commit/' in url:
+    if url.endswith('/'):
+      raise Exception('Malformed git URL and refspec ' + url + '!')
+    return url.split('/commit/')
+  else:
+    return (url, 'main')  # Assume the default branch is main in the absence of a refspec
+
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
@@ -498,11 +522,11 @@ def num_files_in_directory(path):
   return len([name for name in os.listdir(path) if os.path.exists(os.path.join(path, name))])
 
 
-def run(cmd, cwd=None):
+def run(cmd, cwd=None, quiet=False):
   debug_print('run(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
   process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
   process.communicate()
-  if process.returncode != 0:
+  if process.returncode != 0 and not quiet:
     errlog(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
   return process.returncode
 
@@ -792,33 +816,37 @@ def git_clone(url, dstpath):
   git_clone_args = []
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
+  print('Cloning from ' + url + '...')
   return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
 
 
-def git_checkout_and_pull(repo_path, branch):
-  debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
+def git_checkout_and_pull(repo_path, branch_or_tag):
+  debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch/tag=' + branch_or_tag + ')')
   ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
   if ret != 0:
     return False
   try:
-    print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
+    print("Fetching latest changes to the branch/tag '" + branch_or_tag + "' for '" + repo_path + "'...")
     ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
     if ret != 0:
       return False
-    #  run([GIT, 'checkout', '-b', branch, '--track', 'origin/'+branch], repo_path)
     # this line assumes that the user has not gone and manually messed with the
     # repo and added new remotes to ambiguate the checkout.
-    ret = run([GIT(), 'checkout', '--quiet', branch], repo_path)
+    ret = run([GIT(), 'checkout', '--quiet', branch_or_tag], repo_path)
     if ret != 0:
       return False
-    # this line assumes that the user has not gone and made local changes to the repo
-    ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch], repo_path)
+    # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
+    target_is_tag = run([GIT(), 'symbolic-ref', '-q', 'HEAD'], repo_path, quiet=True)
+    if not target_is_tag:
+      # update branch to latest (not needed for tags)
+      # this line assumes that the user has not gone and made local changes to the repo
+      ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
   except:
     errlog('git operation failed!')
     return False
-  print("Successfully updated and checked out branch '" + branch + "' on repository '" + repo_path + "'")
+  print("Successfully updated and checked out branch/tag '" + branch_or_tag + "' on repository '" + repo_path + "'")
   print("Current repository version: " + git_repo_version(repo_path))
   return True
 
@@ -1390,34 +1418,6 @@ def emscripten_npm_install(tool, directory):
     errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
 
-  # Manually install the appropriate native Closure Compiler package
-  # This is currently needed because npm ci will install the packages
-  # for Closure for all platforms, adding 180MB to the download size
-  # There are two problems here:
-  #   1. npm ci does not consider the platform of optional dependencies
-  #      https://github.com/npm/cli/issues/558
-  #   2. A bug with the native compiler has bloated the packages from
-  #      30MB to almost 300MB
-  #      https://github.com/google/closure-compiler-npm/issues/186
-  # If either of these bugs are fixed then we can remove this exception
-  closure_compiler_native = ''
-  if LINUX and ARCH in ('x86', 'x86_64'):
-    closure_compiler_native = 'google-closure-compiler-linux'
-  if MACOS and ARCH in ('x86', 'x86_64'):
-    closure_compiler_native = 'google-closure-compiler-osx'
-  if WINDOWS and ARCH == 'x86_64':
-    closure_compiler_native = 'google-closure-compiler-windows'
-  if closure_compiler_native:
-    print('Running post-install step: npm install', closure_compiler_native)
-    try:
-      subprocess.check_output(
-        [npm, 'install', closure_compiler_native],
-        cwd=directory, stderr=subprocess.STDOUT, env=env,
-        universal_newlines=True)
-    except subprocess.CalledProcessError as e:
-      errlog('Error running %s:\n%s' % (e.cmd, e.output))
-      return False
-
   print('Done running: npm ci')
   return True
 
@@ -1604,9 +1604,6 @@ def load_dot_emscripten():
 
 
 def generate_dot_emscripten(active_tools):
-  temp_dir = sdk_path('tmp')
-  mkdir_p(temp_dir)
-
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -1627,10 +1624,9 @@ def generate_dot_emscripten(active_tools):
     cfg += name + " = '" + value + "'\n"
 
   cfg += '''\
-TEMP_DIR = '%s'
 COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
-''' % temp_dir
+'''
 
   cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
 
@@ -1688,7 +1684,9 @@ class Tool(object):
       setattr(self, key, value)
 
     # Cache the name ID of this Tool (these are read very often)
-    self.name = self.id + '-' + self.version
+    self.name = self.id
+    if self.version:
+      self.name += '-' + self.version
     if hasattr(self, 'bitness'):
       self.name += '-' + str(self.bitness) + 'bit'
 
@@ -2175,6 +2173,14 @@ def find_tot_sdk():
   return 'sdk-releases-upstream-%s-64bit' % (extra_release_tag)
 
 
+def parse_emscripten_version(emscripten_root):
+  version_file = os.path.join(emscripten_root, 'emscripten-version.txt')
+  with open(version_file) as f:
+    version = f.read().strip()
+    version = version.strip('"').split('.')
+    return [int(v) for v in version]
+
+
 # Given a git hash in emscripten-releases, find the emscripten
 # version for it. There may not be one if this is not the hash of
 # a release, in which case we return None.
@@ -2647,10 +2653,26 @@ def get_env_vars_to_add(tools_to_activate, system, user):
   for tool in tools_to_activate:
     config = tool.activated_config()
     if 'EMSCRIPTEN_ROOT' in config:
-      # For older emscripten versions that don't use this default we export
-      # EM_CACHE.
-      em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
-      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+      # For older emscripten versions that don't use an embedded cache by
+      # default we need to export EM_CACHE.
+      #
+      # Sadly, we can't put this in the config file since those older versions
+      # also didn't read the `CACHE` key from the config file:
+      #
+      # History:
+      # - 'CACHE' config started being honored in 1.39.16
+      #   https://github.com/emscripten-core/emscripten/pull/11091
+      # - Default to embedded cache also started in 1.39.16
+      #   https://github.com/emscripten-core/emscripten/pull/11126
+      #
+      # Since setting EM_CACHE in the environment effects the entire machine
+      # we want to avoid this except when installing these older emscripten
+      # versions that really need it.
+      version = parse_emscripten_version(config['EMSCRIPTEN_ROOT'])
+      if version < [1, 39, 16]:
+        em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
+        env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+
     envs = tool.activated_environment()
     for env in envs:
       key, value = parse_key_value(env)
@@ -2664,6 +2686,18 @@ def construct_env(tools_to_activate, system, user):
   return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system, user))
 
 
+def unset_env(key):
+  if POWERSHELL:
+    return 'Remove-Item env:%s\n' % key
+  if CMD:
+    return 'set %s=\n' % key
+  if CSH:
+    return 'unsetenv %s;\n' % key
+  if BASH:
+    return 'unset %s;\n' % key
+  assert False
+
+
 def construct_env_with_vars(env_vars_to_add):
   env_string = ''
   if env_vars_to_add:
@@ -2671,36 +2705,40 @@ def construct_env_with_vars(env_vars_to_add):
 
     for key, value in env_vars_to_add:
       # Don't set env vars which are already set to the correct value.
-      if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
-        errlog(key + ' = ' + value)
-        if POWERSHELL:
-          env_string += '$env:' + key + '="' + value + '"\n'
-        elif CMD:
-          env_string += 'SET ' + key + '=' + value + '\n'
-        elif CSH:
-          env_string += 'setenv ' + key + ' "' + value + '"\n'
-        elif BASH:
-          env_string += 'export ' + key + '="' + value + '"\n'
-        else:
-          assert False
-      if 'EMSDK_PYTHON' in env_vars_to_add:
-        # When using our bundled python we never want the user's
-        # PYTHONHOME or PYTHONPATH
-        # See https://github.com/emscripten-core/emsdk/issues/598
-        if POWERSHELL:
-          env_string += 'Remove-Item env:PYTHONHOME\n'
-          env_string += 'Remove-Item env:PYTHONPATH\n'
-        elif CMD:
-          env_string += 'set PYTHONHOME=\n'
-          env_string += 'set PYTHONPATH=\n'
-        elif CSH:
-          env_string += 'unsetenv PYTHONHOME\n'
-          env_string += 'unsetenv PYTHONPATH\n'
-        elif BASH:
-          env_string += 'unset PYTHONHOME\n'
-          env_string += 'unset PYTHONPATH\n'
-        else:
-          assert False
+      if key in os.environ and to_unix_path(os.environ[key]) == to_unix_path(value):
+        continue
+      errlog(key + ' = ' + value)
+      if POWERSHELL:
+        env_string += '$env:' + key + '="' + value + '"\n'
+      elif CMD:
+        env_string += 'SET ' + key + '=' + value + '\n'
+      elif CSH:
+        env_string += 'setenv ' + key + ' "' + value + '";\n'
+      elif BASH:
+        env_string += 'export ' + key + '="' + value + '";\n'
+      else:
+        assert False
+
+    if 'EMSDK_PYTHON' in env_vars_to_add:
+      # When using our bundled python we never want the user's
+      # PYTHONHOME or PYTHONPATH
+      # See https://github.com/emscripten-core/emsdk/issues/598
+      env_string += unset_env('PYTHONHOME')
+      env_string += unset_env('PYTHONPATH')
+
+  # Remove any environment variables that might have been set by old or
+  # inactive tools/sdks.  For example, we set EM_CACHE for older versions
+  # of the SDK but we want to remove that from the current environment
+  # if no such tool is active.
+  # Ignore certain keys that are inputs to emsdk itself.
+  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH',
+                     'EMSDK_NUM_CORES', 'EMSDK_TTY'])
+  env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
+  for key in os.environ:
+    if key.startswith('EMSDK_') or key.startswith('EM_'):
+      if key not in env_keys_to_add and key not in ignore_keys:
+        errlog('Clearing existing environment variable: %s' % key)
+        env_string += unset_env(key)
 
   return env_string
 
@@ -2767,6 +2805,8 @@ def expand_sdk_name(name, activating):
           backend = 'fastcomp'
       return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
     elif len(version) == 40:
+      if backend is None:
+        backend = 'upstream'
       global extra_release_tag
       extra_release_tag = version
       return 'sdk-releases-%s-%s-64bit' % (backend, version)
@@ -2774,6 +2814,18 @@ def expand_sdk_name(name, activating):
 
 
 def main(args):
+
+  if is_emsdk_sourced_from_github():
+    # This code only exists on the master branch
+    errlog('****')
+    errlog('Warning: You appear to be using the `master` branch of emsdk.')
+    errlog('We recently made the switch to using `main`')
+    errlog('In order to continue to receive updates you will need to make the switch locally too.')
+    errlog('For normal clones without any local branches simply running the following command should be enough:')
+    errlog('  `git checkout main`')
+    errlog('For more information see https://github.com/emscripten-core/emsdk/issues/805')
+    errlog('****')
+
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
@@ -2806,7 +2858,7 @@ def main(args):
                   --build=<type>: Controls what kind of build of LLVM to
                                   perform. Pass either 'Debug', 'Release',
                                   'MinSizeRel' or 'RelWithDebInfo'. Default:
-                                  'RelWithDebInfo'.
+                                  'Release'.
 
               --generator=<type>: Specifies the CMake Generator to be used
                                   during the build. Possible values are the
@@ -2850,6 +2902,10 @@ def main(args):
                                   LLVM_CMAKE_ARGS="param1=value1,param2=value2"
                                   in the environment where the build is invoked.
                                   See README.md for details.
+
+           --override-repository: Specifies the git URL to use for a given Tool. E.g.
+                                  --override-repository emscripten-main@https://github.com/<fork>/emscripten/tree/<refspec>
+
 
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
@@ -2898,6 +2954,13 @@ def main(args):
       return True
     return False
 
+  def extract_string_arg(name):
+    for i in range(len(args)):
+      if args[i] == name:
+        value = args[i + 1]
+        del args[i:i + 2]
+        return value
+
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
   arg_permanent = extract_bool_arg('--permanent')
@@ -2926,6 +2989,20 @@ def main(args):
 
   load_dot_emscripten()
   load_sdk_manifest()
+
+  # Apply any overrides to git branch names to clone from.
+  forked_url = extract_string_arg('--override-repository')
+  while forked_url:
+    tool_name, url_and_refspec = forked_url.split('@')
+    t = find_tool(tool_name)
+    if not t:
+      errlog('Failed to find tool ' + tool_name + '!')
+      return False
+    else:
+      t.url, t.git_branch = parse_github_url_and_refspec(url_and_refspec)
+      debug_print('Reading git repository URL "' + t.url + '" and git branch "' + t.git_branch + '" for Tool "' + tool_name + '".')
+
+    forked_url = extract_string_arg('--override-repository')
 
   # Process global args
   for i in range(len(args)):

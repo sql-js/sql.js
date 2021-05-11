@@ -42,13 +42,31 @@ pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % py
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 
+def unzip_cmd():
+    # Use 7-Zip if available (https://www.7-zip.org/)
+    sevenzip = os.path.join(os.getenv('ProgramFiles'), '7-Zip', '7z.exe')
+    if os.path.isfile(sevenzip):
+        return [sevenzip, 'x']
+    # Fall back to 'unzip' tool
+    return ['unzip', '-q']
+
+
+def zip_cmd():
+    # Use 7-Zip if available (https://www.7-zip.org/)
+    sevenzip = os.path.join(os.getenv('ProgramFiles'), '7-Zip', '7z.exe')
+    if os.path.isfile(sevenzip):
+        return [sevenzip, 'a', '-mx9']
+    # Fall back to 'zip' tool
+    return ['zip', '-rq']
+
+
 def make_python_patch(arch):
     if arch == 'amd64':
       pywin32_filename = 'pywin32-%s.win-%s-py%s.exe' % (pywin32_version, arch, major_minor_version)
     else:
       pywin32_filename = 'pywin32-%s.%s-py%s.exe' % (pywin32_version, arch, major_minor_version)
     filename = 'python-%s-embed-%s.zip' % (version, arch)
-    out_filename = 'python-%s-embed-%s+pywin32.zip' % (version, arch)
+    out_filename = 'python-%s-%s-embed-%s+pywin32.zip' % (version, revision, arch)
     if not os.path.exists(pywin32_filename):
         download_url = pywin32_base + pywin32_filename
         print('Downloading pywin32: ' + download_url)
@@ -60,27 +78,27 @@ def make_python_patch(arch):
         urllib.request.urlretrieve(download_url, filename)
 
     os.mkdir('python-embed')
-    check_call(['unzip', '-q', os.path.abspath(filename)], cwd='python-embed')
-    os.remove(os.path.join('python-embed', 'python37._pth'))
+    check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-embed')
+    os.remove(os.path.join('python-embed', 'python%s._pth' % major_minor_version.replace('.', '')))
 
     os.mkdir('pywin32')
-    rtn = subprocess.call(['unzip', '-q', os.path.abspath(pywin32_filename)], cwd='pywin32')
+    rtn = subprocess.call(unzip_cmd() + [os.path.abspath(pywin32_filename)], cwd='pywin32')
     assert rtn in [0, 1]
 
     os.mkdir(os.path.join('python-embed', 'lib'))
     shutil.move(os.path.join('pywin32', 'PLATLIB'), os.path.join('python-embed', 'lib', 'site-packages'))
 
-    check_call(['zip', '-rq', os.path.join('..', out_filename), '.'], cwd='python-embed')
+    check_call(zip_cmd() + [os.path.join('..', out_filename), '.'], cwd='python-embed')
+
+    # cleanup if everything went fine
+    shutil.rmtree('python-embed')
+    shutil.rmtree('pywin32')
 
     upload_url = upload_base + out_filename
     print('Uploading: ' + upload_url)
     cmd = ['gsutil', 'cp', '-n', out_filename, upload_url]
     print(' '.join(cmd))
     check_call(cmd)
-
-    # cleanup if everything went fine
-    shutil.rmtree('python-embed')
-    shutil.rmtree('pywin32')
 
 
 def build_python():

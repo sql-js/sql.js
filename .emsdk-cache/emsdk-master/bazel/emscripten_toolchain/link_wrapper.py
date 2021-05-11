@@ -3,19 +3,20 @@
 
 This wrapper currently serves the following purposes.
 
-1. Ensures we always link to file with .js extension. The upstream default
-   it to link to an llvm bitcode file which is never (AFAICT) want to do that.
-
-2. When building with --config=wasm the final output is multiple files, usually
+1. When building with --config=wasm the final output is multiple files, usually
    at least one .js and one .wasm file. Since the cc_binary link step only
    allows a single output, we must tar up the outputs into a single file.
 
-3. Add quotes around arguments that need them in the response file to work
+2. Add quotes around arguments that need them in the response file to work
    around a bazel quirk.
+
+3. Ensure the external_debug_info section of the wasm points at the correct
+   bazel path.
 """
 
 from __future__ import print_function
 
+import argparse
 import os
 import subprocess
 import sys
@@ -25,20 +26,8 @@ assert sys.argv[1][0] == '@'
 param_filename = sys.argv[1][1:]
 param_file_args = [l.strip() for l in open(param_filename, 'r').readlines()]
 
-output_index = param_file_args.index('-o') + 1
-orig_output = js_output = param_file_args[output_index]
-outdir = os.path.dirname(orig_output)
-
-# google3-only(TODO(b/139440956): Default to False once the bug is fixed)
-replace_response_file = any(' ' in a for a in param_file_args)
-
-if not os.path.splitext(orig_output)[1]:
-  js_output = orig_output + '.js'
-  param_file_args[output_index] = js_output
-  replace_response_file = True
-
 # Re-write response file if needed.
-if replace_response_file:
+if any(' ' in a for a in param_file_args):
   new_param_filename = param_filename + '.modified'
   with open(new_param_filename, 'w') as f:
     for param in param_file_args:
@@ -54,8 +43,41 @@ rtn = subprocess.call(['python3', emcc_py] + sys.argv[1:])
 if rtn != 0:
   sys.exit(1)
 
-js_name = os.path.basename(js_output)
-base_name = os.path.splitext(js_name)[0]
+# Parse the arguments that we gave to the linker to determine what the output
+# file is named and what the output format is.
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument('-o')
+parser.add_argument('--oformat')
+options = parser.parse_known_args(param_file_args)[0]
+output_file = options.o
+oformat = options.oformat
+outdir = os.path.dirname(output_file)
+base_name = os.path.basename(output_file)
+
+# The output file name is the name of the build rule that was built.
+# Add an appropriate file extension based on --oformat.
+if oformat is not None:
+  base_name_split = os.path.splitext(base_name)
+
+  # If the output name has no extension, give it the appropriate extension.
+  if not base_name_split[1]:
+    os.rename(output_file, output_file + '.' + oformat)
+
+  # If the output name does have an extension and it matches the output format,
+  # change the base_name so it doesn't have an extension.
+  elif base_name_split[1] == '.' + oformat:
+    base_name = base_name_split[0]
+
+  # If the output name does have an extension and it does not match the output
+  # format, change the base_name so it doesn't have an extension and rename
+  # the output_file so it has the proper extension.
+  # Note that if you do something like name your build rule "foo.js" and pass
+  # "--oformat=html", emscripten will write to the same file for both the js and
+  # html output, overwriting the js output entirely with the html.
+  # Please don't do that.
+  else:
+    base_name = base_name_split[0]
+    os.rename(output_file, os.path.join(outdir, base_name + '.' + oformat))
 
 files = []
 extensions = [
@@ -67,7 +89,8 @@ extensions = [
     '.worker.js',
     '.data',
     '.js.symbols',
-    '.wasm.debug.wasm'
+    '.wasm.debug.wasm',
+    '.html'
 ]
 
 for ext in extensions:
@@ -112,7 +135,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
         binary_part = '1' + binary_part
       final_bytes.append(int(binary_part, 2))
     # Finally, add the actual filename.
-    final_bytes.extend(base_name + '.wasm.debug.wasm')
+    final_bytes.extend((base_name + '.wasm.debug.wasm').encode())
 
     # Write our length + filename bytes to a temp file.
     with open('debugsection.tmp', 'wb+') as f:
@@ -134,11 +157,11 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
 if len(files) > 1:
   cmd = ['tar', 'cf', 'tmp.tar'] + files
   subprocess.check_call(cmd, cwd=outdir)
-  os.rename(os.path.join(outdir, 'tmp.tar'), orig_output)
+  os.rename(os.path.join(outdir, 'tmp.tar'), output_file)
 elif len(files) == 1:
   # Otherwise, if only have a single output than move it to the expected name
-  if files[0] != os.path.basename(orig_output):
-    os.rename(os.path.join(outdir, files[0]), orig_output)
+  if files[0] != os.path.basename(output_file):
+    os.rename(os.path.join(outdir, files[0]), output_file)
 else:
   print('emcc.py did not appear to output any known files!')
   sys.exit(1)

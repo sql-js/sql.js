@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source emscripten_toolchain/env.sh
+source external/emsdk/emscripten_toolchain/env.sh
 
-exec python3 external/emscripten/emscripten/emcc.py "$@"
+exec python3 $EMSCRIPTEN/emcc.py "$@"

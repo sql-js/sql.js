@@ -47,11 +47,11 @@ Teardown of compilation command:
 
 ### Building Dockerfile
 
-This image requires to specify following build arguments:
+This image has following optional arguments
 
-| arg | description |
-| --- | --- |
-| `EMSCRIPTEN_VERSION` | One of released version of Emscripten. For example `1.39.17`<br/> Minimal supported version is **1.39.0**|
+| arg | default value | description |
+| --- | --- | --- |
+| `EMSCRIPTEN_VERSION` | `tot`<br/>(special case, tip-of-tree) | One of released version of Emscripten. For example `2.0.0`<br/> Minimal supported version is **1.39.0** |
 
 **Building**
 
