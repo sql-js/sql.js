@@ -145,7 +145,7 @@ See : https://sql-js.github.io/sql.js/examples/GUI/gui.js
 const sqlPromise = initSqlJs({
   locateFile: file => `https://path/to/your/dist/folder/dist/${file}`
 });
-const dataPromise = fetch("/path/to/databse.sqlite").then(res => res.arrayBuffer());
+const dataPromise = fetch("/path/to/database.sqlite").then(res => res.arrayBuffer());
 const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 const db = new SQL.Database(new Uint8Array(buf));
 ```
