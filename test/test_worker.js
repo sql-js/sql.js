@@ -36,7 +36,7 @@ class Worker {
 exports.test = async function test(SQL, assert) {
   var target = process.argv[2];
   var file = target ? "sql-" + target : "sql-wasm";
-  if (file.indexOf('wasm') > -1 || file.indexOf('memory-growth') > -1) {
+  if (file.indexOf('wasm') > -1) {
     console.error("Skipping worker test for " + file + ". Not implemented yet");
     return;
   };

@@ -290,8 +290,8 @@ You can always find the latest published artifacts on https://github.com/sql-js/
 For each [release](https://github.com/sql-js/sql.js/releases/), you will find a file called `sqljs.zip` in the *release assets*. It will contain:
  - `sql-wasm.js` : The Web Assembly version of Sql.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
  - `sql-wasm-debug.js` : The Web Assembly, Debug version of Sql.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.
- - `sql-asm.js` : The older asm.js version of Sql.js. Slower and larger. Provided for compatibility reasons.
- - `sql-asm-memory-growth.js` : Asm.js doesn't allow for memory to grow by default, because it is slower and de-optimizes. If you are using sql-asm.js and you see this error (`Cannot enlarge memory arrays`), use this file.
+ - `sql-asm.js` : The older asm.js version of Sql.js. Slower and larger. Provided for compatibility reasons. Includes memory-growth and IE 11 compatibility.
+ - `sql-asm-memory-growth.js` : DEPRECATED and will be removed in future releases. Use sql-asm.js instead, which now includes memory-growth support.
  - `sql-asm-debug.js` : The _Debug_ asm.js version of Sql.js. Use this for local development.
  - `worker.*` - Web Worker versions of the above libraries. More limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for a good example of this.
 
