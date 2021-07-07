@@ -2818,13 +2818,14 @@ def main(args):
   if is_emsdk_sourced_from_github():
     # This code only exists on the master branch
     errlog('****')
-    errlog('Warning: You appear to be using the `master` branch of emsdk.')
+    errlog('Error: You appear to be using the `master` branch of emsdk.')
     errlog('We recently made the switch to using `main`')
     errlog('In order to continue to receive updates you will need to make the switch locally too.')
     errlog('For normal clones without any local branches simply running the following command should be enough:')
     errlog('  `git checkout main`')
     errlog('For more information see https://github.com/emscripten-core/emsdk/issues/805')
     errlog('****')
+    return 1
 
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
