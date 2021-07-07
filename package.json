@@ -21,7 +21,7 @@
 	"scripts": {
 		"build": "make",
 		"rebuild": "make clean && make",
-		"test": "npm run lint && npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
+		"test": "npm run lint && npm run test-asm-debug && npm run test-wasm-debug && npm run test-asm && npm run test-wasm && npm run test-asm-memory-growth",
 		"lint": "eslint .",
 		"prettify": "eslint . --fix",
 		"test-asm": "node test/all.js asm",

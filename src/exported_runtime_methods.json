@@ -3,5 +3,6 @@
 "stackAlloc",
 "stackSave",
 "stackRestore",
+"FS",
 "UTF8ToString"
 ]
