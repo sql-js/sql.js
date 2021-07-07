@@ -203,7 +203,7 @@ See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 If you don't want to run CPU-intensive SQL queries in your main application thread,
 you can use the *more limited* WebWorker API.
 
-You will need to download [dist/worker.sql-wasm.js](dist/worker.sql-wasm.js) [dist/worker.sql-wasm.wasm](dist/worker.sql-wasm.wasm).
+You will need to download `worker.sql-wasm.js` and `worker.sql-wasm.wasm` from the [release page](https://github.com/sql-js/sql.js/releases).
 
 Example:
 ```html
