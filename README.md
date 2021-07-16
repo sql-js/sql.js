@@ -25,7 +25,7 @@ By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAss
 ```javascript
 const initSqlJs = require('sql.js');
 // or if you are in a browser:
-// var initSqlJs = window.initSqlJs;
+// const initSqlJs = window.initSqlJs;
 
 const SQL = await initSqlJs({
   // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
@@ -34,15 +34,15 @@ const SQL = await initSqlJs({
 });
 
 // Create a database
-var db = new SQL.Database();
+const db = new SQL.Database();
 // NOTE: You can also use new SQL.Database(data) where
 // data is an Uint8Array representing an SQLite database file
 
 // Prepare an sql statement
-var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
+const stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
 
 // Bind values to the parameters and fetch the results of the query
-var result = stmt.getAsObject({':aval' : 1, ':bval' : 'world'});
+const result = stmt.getAsObject({':aval' : 1, ':bval' : 'world'});
 console.log(result); // Will print {a:1, b:'world'}
 
 // Bind other values
@@ -54,12 +54,12 @@ stmt.free();
 // But not freeing your statements causes memory leaks. You don't want that.
 
 // Execute a single SQL string that contains multiple statements
-sqlstr = "CREATE TABLE hello (a int, b char);";
+let sqlstr = "CREATE TABLE hello (a int, b char);";
 sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
 sqlstr += "INSERT INTO hello VALUES (1, 'world');"
 db.run(sqlstr); // Run the query without returning anything
 
-var res = db.exec("SELECT * FROM hello");
+const res = db.exec("SELECT * FROM hello");
 /*
 [
   {columns:['a','b'], values:[[0,'hello'],[1,'world']]}
@@ -75,7 +75,7 @@ db.create_function("add_js", add);
 db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
 
 // Export the database to an Uint8Array containing the SQLite database file
-var binaryArray = db.export();
+const binaryArray = db.export();
 ```
 
 ## Demo
@@ -97,20 +97,20 @@ The test files provide up to date example of the use of the api.
     // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
     initSqlJs(config).then(function(SQL){
       //Create the database
-      var db = new SQL.Database();
+      const db = new SQL.Database();
       // Run a query without reading the results
       db.run("CREATE TABLE test (col1, col2);");
       // Insert two rows: (1,111) and (2,222)
       db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
 
       // Prepare a statement
-      var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
+      const stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
       stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
 
       // Bind new values
       stmt.bind({$start:1, $end:2});
       while(stmt.step()) { //
-        var row = stmt.getAsObject();
+        const row = stmt.getAsObject();
         console.log('Here is a row: ' + JSON.stringify(row));
       }
     });
@@ -126,10 +126,10 @@ The test files provide up to date example of the use of the api.
 The following code uses an HTML input as the source for loading a database:
 ```javascript
 dbFileElm.onchange = () => {
-  var f = dbFileElm.files[0];
-  var r = new FileReader();
+  const f = dbFileElm.files[0];
+  const r = new FileReader();
   r.onload = function() {
-    var Uints = new Uint8Array(r.result);
+    const Uints = new Uint8Array(r.result);
     db = new SQL.Database(Uints);
   }
   r.readAsArrayBuffer(f);
@@ -153,15 +153,15 @@ const db = new SQL.Database(new Uint8Array(buf));
 ##### using XMLHttpRequest
 
 ```javascript
-var xhr = new XMLHttpRequest();
+const xhr = new XMLHttpRequest();
 // For example: https://github.com/lerocha/chinook-database/raw/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite
 xhr.open('GET', '/path/to/database.sqlite', true);
 xhr.responseType = 'arraybuffer';
 
 xhr.onload = e => {
-  var uInt8Array = new Uint8Array(xhr.response);
-  var db = new SQL.Database(uInt8Array);
-  var contents = db.exec("SELECT * FROM my_table");
+  const uInt8Array = new Uint8Array(xhr.response);
+  const db = new SQL.Database(uInt8Array);
+  const contents = db.exec("SELECT * FROM my_table");
   // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
 };
 xhr.send();
@@ -176,13 +176,13 @@ Alternatively, you can simply download `sql-wasm.js` and `sql-wasm.wasm`, from t
 
 #### read a database from the disk:
 ```javascript
-var fs = require('fs');
-var initSqlJs = require('sql-wasm.js');
-var filebuffer = fs.readFileSync('test.sqlite');
+const fs = require('fs');
+const initSqlJs = require('sql-wasm.js');
+const filebuffer = fs.readFileSync('test.sqlite');
 
 initSqlJs().then(function(SQL){
   // Load the db
-  var db = new SQL.Database(filebuffer);
+  const db = new SQL.Database(filebuffer);
 });
 
 ```
@@ -190,10 +190,10 @@ initSqlJs().then(function(SQL){
 #### write a database to the disk
 You need to convert the result of `db.export` to a buffer
 ```javascript
-var fs = require("fs");
+const fs = require("fs");
 // [...] (create the database)
-var data = db.export();
-var buffer = new Buffer(data);
+const data = db.export();
+const buffer = new Buffer(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
@@ -208,7 +208,7 @@ You will need to download `worker.sql-wasm.js` and `worker.sql-wasm.wasm` from t
 Example:
 ```html
 <script>
-  var worker = new Worker("/dist/worker.sql-wasm.js");
+  const worker = new Worker("/dist/worker.sql-wasm.js");
   worker.onmessage = () => {
     console.log("Database opened");
     worker.onmessage = event => {
@@ -246,14 +246,14 @@ So in the past, you would:
 ```html
 <script src='js/sql.js'></script>
 <script>
-  var db = new SQL.Database();
+  const db = new SQL.Database();
   //...
 </script>
 ```
 or:
 ```javascript
-var SQL = require('sql.js');
-var db = new SQL.Database();
+const SQL = require('sql.js');
+const db = new SQL.Database();
 //...
 ```
 
@@ -262,16 +262,16 @@ Version 1.x:
 <script src='dist/sql-wasm.js'></script>
 <script>
   initSqlJs({ locateFile: filename => `/dist/${filename}` }).then(function(SQL){
-    var db = new SQL.Database();
+    const db = new SQL.Database();
     //...
   });
 </script>
 ```
 or:
 ```javascript
-var initSqlJs = require('sql-wasm.js');
+const initSqlJs = require('sql-wasm.js');
 initSqlJs().then(function(SQL){
-  var db = new SQL.Database();
+  const db = new SQL.Database();
   //...
 });
 ```
