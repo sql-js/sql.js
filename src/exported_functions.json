@@ -42,6 +42,8 @@
 "_sqlite3_result_int64",
 "_sqlite3_result_error",
 "_sqlite3_aggregate_context",
-"_RegisterExtensionFunctions",
-"_sqlite3_update_hook"
+"_sqlite3_update_hook",
+"_sqlite3_vfs_find",
+"_register_for_idb",
+"_RegisterExtensionFunctions"
 ]
