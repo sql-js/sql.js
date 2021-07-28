@@ -15,6 +15,7 @@ function onModuleReady(SQL) {
 
     var buff; var data; var result;
     data = this["data"];
+    var config = data["config"] ? data["config"] : {};
     switch (data && data["action"]) {
         case "open":
             buff = data["buffer"];
@@ -32,26 +33,26 @@ function onModuleReady(SQL) {
             }
             return postMessage({
                 id: data["id"],
-                results: db.exec(data["sql"], data["params"])
+                results: db.exec(data["sql"], data["params"], config)
             });
         case "each":
             if (db === null) {
                 createDb();
             }
-            var callback = function callback(row) {
+            var callbackfunc = function callback(row) {
                 return postMessage({
                     id: data["id"],
                     row: row,
                     finished: false
                 });
             };
-            var done = function done() {
+            var donefunc = function done() {
                 return postMessage({
                     id: data["id"],
                     finished: true
                 });
             };
-            return db.each(data["sql"], data["params"], callback, done);
+            return db.each(data["sql"], data["params"], callbackfunc, donefunc, config);
         case "export":
             buff = db["export"]();
             result = {

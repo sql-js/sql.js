@@ -3,7 +3,7 @@
 module.exports = {
     env: {
         browser: true,
-        es6: true,
+        es2020: true,
         node: true
     },
     extends: [
@@ -24,7 +24,7 @@ module.exports = {
         "!/.eslintrc.js"
     ],
     parserOptions: {
-        ecmaVersion: 5,
+        ecmaVersion: 2020,
         sourceType: "script"
     },
     rules: {

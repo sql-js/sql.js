@@ -116,6 +116,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "number",
         ["number", "number", "number"]
     );
+
+    var sqlite3_bind_int64 = cwrap(
+        "sqlite3_bind_int64",
+        "number",
+        ["number", "number"]
+    );
+
     var sqlite3_bind_parameter_index = cwrap(
         "sqlite3_bind_parameter_index",
         "number",
@@ -358,6 +365,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return sqlite3_column_double(this.stmt, pos);
     };
 
+    Statement.prototype.getBigInt = function getBigInt(pos) {
+        if (pos == null) {
+            pos = this.pos;
+            this.pos += 1;
+        }
+        var text = sqlite3_column_text(this.stmt, pos);
+        return BigInt(text);
+    };
+
     Statement.prototype.getString = function getString(pos) {
         if (pos == null) {
             pos = this.pos;
@@ -390,8 +406,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     <caption>Print all the rows of the table test to the console</caption>
     var stmt = db.prepare("SELECT * FROM test");
     while (stmt.step()) console.log(stmt.get());
+
+    <caption>Enable BigInt support</caption>
+    var stmt = db.prepare("SELECT * FROM test");
+    while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
      */
-    Statement.prototype["get"] = function get(params) {
+    Statement.prototype["get"] = function get(params, config = {}) {
         if (params != null && this["bind"](params)) {
             this["step"]();
         }
@@ -400,6 +420,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         for (var field = 0; field < ref; field += 1) {
             switch (sqlite3_column_type(this.stmt, field)) {
                 case SQLITE_INTEGER:
+                    var getfunc = config.useBigInt
+                        ? this.getBigInt(field)
+                        : this.getNumber(field);
+                    results1.push(getfunc);
+                    break;
                 case SQLITE_FLOAT:
                     results1.push(this.getNumber(field));
                     break;
@@ -451,8 +476,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
      */
-    Statement.prototype["getAsObject"] = function getAsObject(params) {
-        var values = this["get"](params);
+    Statement.prototype["getAsObject"] = function getAsObject(params, config = {}) {
+        var values = this["get"](params, config);
         var names = this["getColumnNames"]();
         var rowObject = {};
         for (var i = 0; i < names.length; i += 1) {
@@ -547,6 +572,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return true;
     };
 
+    Statement.prototype.bindBigInt = function bindBigInt(num, pos) {
+        if (pos == null) {
+            pos = this.pos;
+            this.pos += 1;
+        }
+        this.db.handleError(sqlite3_bind_int64(this.stmt, pos, num));
+        return true;
+    };
+
     Statement.prototype.bindNull = function bindNull(pos) {
         if (pos == null) {
             pos = this.pos;
@@ -560,10 +594,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
+
         switch (typeof val) {
             case "string":
                 return this.bindString(val, pos);
             case "number":
+                return this.bindNumber(val + 0, pos);
+            case "bigint":
+                // BigInt is not fully supported yet at WASM level.
+                return this.bindString(val.toString(), pos);
             case "boolean":
                 return this.bindNumber(val + 0, pos);
             case "object":
@@ -899,7 +938,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     (separated by `;`). This limitation does not apply to params as an object.
     * @return {Database.QueryExecResult[]} The results of each statement
     */
-    Database.prototype["exec"] = function exec(sql, params) {
+    Database.prototype["exec"] = function exec(sql, params, config = {}) {
         if (!this.db) {
             throw "Database closed";
         }
@@ -937,7 +976,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                             };
                             results.push(curresult);
                         }
-                        curresult["values"].push(stmt["get"]());
+                        curresult["values"].push(stmt["get"](null, config));
                     }
                     stmt["free"]();
                 }
@@ -971,7 +1010,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             function (row){console.log(row.name + " is a grown-up.")}
     );
      */
-    Database.prototype["each"] = function each(sql, params, callback, done) {
+    Database.prototype["each"] = function each(sql, params, callback, done, config = {}) {
         var stmt;
         if (typeof params === "function") {
             done = callback;
@@ -981,7 +1020,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         stmt = this["prepare"](sql, params);
         try {
             while (stmt["step"]()) {
-                callback(stmt["getAsObject"]());
+                callback(stmt["getAsObject"](null, config));
             }
         } finally {
             stmt["free"]();
