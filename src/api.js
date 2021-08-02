@@ -1576,4 +1576,9 @@ function Database(data, { filename = false } = {}) {
       let fileInfo = filesInfo.find(f => f[1] === path);
       sqliteFiles.delete(fileInfo[0])
     }
+
+    Module["reset_filesystem"] = () => {
+      FS.root = null;
+      FS.staticInit();
+    }
 };
