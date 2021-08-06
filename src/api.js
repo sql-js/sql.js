@@ -818,6 +818,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     function Database(data, { filename = false } = {}) {
         if(filename === false) {
           this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
+          this.memoryFile = true;
           if (data != null) {
             FS.createDataFile("/", this.filename, data, true, true);
           }
@@ -1109,7 +1110,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        FS.unlink("/" + this.filename);
+
+        if(this.memoryFile) {
+          FS.unlink("/" + this.filename);
+        }
         this.db = null;
     };
 
