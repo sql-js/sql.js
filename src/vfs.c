@@ -24,8 +24,6 @@ static int block_unlock(sqlite3_file *file, int lock) {
 static int block_open(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int flags, int *pOutFlags) {
     int res = defaultOpen(vfs, zName, file, flags, pOutFlags);
 
-    printf("Opened!\n");
-
     sqlite3_io_methods* methods = (sqlite3_io_methods*)file->pMethods;
     methods->xDeviceCharacteristics = blockDeviceCharacteristics;
     methods->xLock = block_lock;

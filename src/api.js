@@ -833,24 +833,26 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * an SQLite database file or a path
     * @param {Object} opts Options to specify a filename
     */
-function Database(data, { filename = false } = {}) {
-    if(filename === false) {
-      this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
-      if (data != null) {
-         FS.createDataFile("/", this.filename, data, true, true);
-      }
-    }
-    else {
-      this.filename = data;
-    }
-    this.handleError(sqlite3_open(this.filename, apiTemp));
-    this.db = getValue(apiTemp, "i32");
+    function Database(data, { filename = false } = {}) {
+        if(filename === false) {
+          this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
+          this.memoryFile = true;  // Add this line to track if it's a memory file
+          if (data != null) {
+             FS.createDataFile("/", this.filename, data, true, true);
+          }
+        }
+        else {
+          this.filename = data;
+        }
+        this.handleError(sqlite3_open(this.filename, apiTemp));
+        this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
         // A list of all prepared statements of the database
         this.statements = {};
-        // A list of all user function of the database
-        // (created by create_function call)
+        // A list of custom functions registered by this database instance
         this.functions = {};
+        // Callbacks for update hook
+        this.updateHookFunctionPtr = undefined;
     }
 
     /** Execute an SQL query, ignoring the rows it returns.
@@ -1121,23 +1123,25 @@ function Database(data, { filename = false } = {}) {
     * memory consumption will grow forever
      */
     Database.prototype["close"] = function close() {
-        // do nothing if db is null or already closed
-        if (this.db === null) {
-            return;
-        }
-        Object.values(this.statements).forEach(function each(stmt) {
-            stmt["free"]();
+        if (!this.db) return;
+        
+        Object.keys(this.statements).forEach((statementId) => {
+            this["run"](this.statements[statementId], ["--close"]);
         });
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
-
+    
         if (this.updateHookFunctionPtr) {
             removeFunction(this.updateHookFunctionPtr);
             this.updateHookFunctionPtr = undefined;
         }
-
+    
         this.handleError(sqlite3_close_v2(this.db));
-        FS.unlink("/" + this.filename);
+        
+        if(this.memoryFile) {
+            FS.unlink("/" + this.filename);
+        }
+        
         this.db = null;
     };
 
