@@ -240,6 +240,10 @@ If you need ```BigInt``` support, it is partially supported since most browsers 
   const config = {useBigInt: true};
   /*Pass optional config param to the get function*/
   while (stmt.step()) console.log(stmt.get(null, config));
+
+  /*OR*/
+  const result = db.exec("SELECT * FROM test", config);
+  console.log(results[0].values)
 </script>
 ```
 On WebWorker, you can just add ```config``` param before posting a message. With this, you wont have to pass config param on ```get``` function.
