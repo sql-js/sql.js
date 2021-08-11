@@ -410,6 +410,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
      */
     Statement.prototype["get"] = function get(params, config) {
+        config = config || {};
         if (params != null && this["bind"](params)) {
             this["step"]();
         }
@@ -418,7 +419,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         for (var field = 0; field < ref; field += 1) {
             switch (sqlite3_column_type(this.stmt, field)) {
                 case SQLITE_INTEGER:
-                    var getfunc = config && config.useBigInt
+                    var getfunc = config["useBigInt"]
                         ? this.getBigInt(field)
                         : this.getNumber(field);
                     results1.push(getfunc);
