@@ -40,7 +40,7 @@ const db = new SQL.Database();
 
 
 // Execute a single SQL string that contains multiple statements
-sqlstr = "CREATE TABLE hello (a int, b char); \
+let sqlstr = "CREATE TABLE hello (a int, b char); \
 INSERT INTO hello VALUES (0, 'hello'); \
 INSERT INTO hello VALUES (1, 'world');";
 db.run(sqlstr); // Run the query without returning anything
@@ -59,13 +59,6 @@ while (stmt.step()) console.log(stmt.get()); // Will print [0, 'hello']
 stmt.free();
 // You can not use your statement anymore once it has been freed.
 // But not freeing your statements causes memory leaks. You don't want that.
-
-// Execute a single SQL string that contains multiple statements
-let sqlstr = 
-  "CREATE TABLE hello (a int, b char); \
-  INSERT INTO hello VALUES (0, 'hello'); \
-  INSERT INTO hello VALUES (1, 'world');";
-db.run(sqlstr); // Run the query without returning anything
 
 const res = db.exec("SELECT * FROM hello");
 /*
