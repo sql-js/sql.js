@@ -7,17 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/cache@v1
-      id: cache
-      with:
-        path: '.emsdk-cache'
-        key: emscripten-2.0.6
-    - uses: mymindstorm/setup-emsdk@ca33dc66a6b178f65393989c12e9465baf053352
-      with:
-        version: '2.0.6'
-        actions-cache-folder: '.emsdk-cache'
     - name: make
-      run: make
+      uses: ./.github/actions/build-sqljs
     - uses: actions/upload-artifact@v2
       with: {name: dist, path: dist}
     - name: test
