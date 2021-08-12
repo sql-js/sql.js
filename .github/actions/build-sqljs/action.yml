@@ -1,18 +1,7 @@
 # action.yml
 name: 'Build SQL.js'
 description: 'Builds sql.js using the .devcontainer/Dockerfile as its environment'
-# inputs:
-#   who-to-greet:  # id of input
-#     description: 'Who to greet'
-#     required: true
-#     default: 'World'
-# outputs:
-#   time: # id of output
-#     description: 'The time we greeted you'
 runs:
   using: 'docker'
   image: '../../../.devcontainer/Dockerfile'
   entrypoint: "/github/workspace/.github/actions/build-sqljs/entrypoint.sh"
-  # args:
-  #   - ${{ inputs.who-to-greet }}
-  
