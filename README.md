@@ -38,6 +38,13 @@ const db = new SQL.Database();
 // NOTE: You can also use new SQL.Database(data) where
 // data is an Uint8Array representing an SQLite database file
 
+
+// Execute a single SQL string that contains multiple statements
+sqlstr = "CREATE TABLE hello (a int, b char); \
+INSERT INTO hello VALUES (0, 'hello'); \
+INSERT INTO hello VALUES (1, 'world');";
+db.run(sqlstr); // Run the query without returning anything
+
 // Prepare an sql statement
 const stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
 
@@ -54,9 +61,10 @@ stmt.free();
 // But not freeing your statements causes memory leaks. You don't want that.
 
 // Execute a single SQL string that contains multiple statements
-let sqlstr = "CREATE TABLE hello (a int, b char);";
-sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
-sqlstr += "INSERT INTO hello VALUES (1, 'world');"
+let sqlstr = 
+  "CREATE TABLE hello (a int, b char); \
+  INSERT INTO hello VALUES (0, 'hello'); \
+  INSERT INTO hello VALUES (1, 'world');";
 db.run(sqlstr); // Run the query without returning anything
 
 const res = db.exec("SELECT * FROM hello");
