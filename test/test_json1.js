@@ -87,7 +87,8 @@ exports.test = function(sql, assert) {
         String(db.exec(
             "SELECT " + sql.split(" = ")[0] + " AS val;"
         )[0].values[0][0]),
-        String(sql.split(" = ")[1].replace(/'/g, ""))
+        String(sql.split(" = ")[1].replace(/'/g, "")),
+        sql
     );
   });
 };
