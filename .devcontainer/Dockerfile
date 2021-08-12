@@ -44,6 +44,8 @@ RUN cd ${EMSDK} \
     && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
     && echo "## Done"
 
+ENV PATH $EMSDK:$EMSDK/upstream/emscripten/:$PATH
+
 # Cleanup Emscripten installation and strip some symbols
 RUN echo "## Aggressive optimization: Remove debug symbols" \
     && cd ${EMSDK} && . ./emsdk_env.sh \
