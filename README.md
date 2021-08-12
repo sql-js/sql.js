@@ -231,6 +231,33 @@ Example:
   });
 </script>
 ```
+### Enabling BigInt support
+If you need ```BigInt``` support, it is partially supported since most browsers now supports it including Safari.Binding ```BigInt``` is still not supported, only getting ```BigInt``` from the database is supported for now.
+
+```html
+<script>
+  const stmt = db.prepare("SELECT * FROM test");
+  const config = {useBigInt: true};
+  /*Pass optional config param to the get function*/
+  while (stmt.step()) console.log(stmt.get(null, config));
+
+  /*OR*/
+  const result = db.exec("SELECT * FROM test", config);
+  console.log(results[0].values)
+</script>
+```
+On WebWorker, you can just add ```config``` param before posting a message. With this, you wont have to pass config param on ```get``` function.
+
+```html
+<script>
+  worker.postMessage({
+    id:1,
+    action:"exec",
+    sql: "SELECT * FROM test",
+    config: {useBigInt: true}, /*Optional param*/
+  });
+</script>
+```
 
 See [examples/GUI/gui.js](examples/GUI/gui.js) for a full working example.
 

@@ -230,7 +230,7 @@ Database::prepare</p></div>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line261">line 261</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line262">line 262</a>
             </li></ul></dd>
         </div>
     
@@ -434,7 +434,7 @@ This function binds these parameters to the given values.</p>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line315">line 315</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line316">line 316</a>
             </li></ul></dd>
         </div>
     
@@ -604,7 +604,7 @@ stmt.bind([5, 10, 20]);</code></pre>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line638">line 638</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line667">line 667</a>
             </li></ul></dd>
         </div>
     
@@ -715,7 +715,7 @@ stmt.bind([5, 10, 20]);</code></pre>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line628">line 628</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line657">line 657</a>
             </li></ul></dd>
         </div>
     
@@ -867,7 +867,7 @@ to the statement before it is executed</p></td>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line394">line 394</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line412">line 412</a>
             </li></ul></dd>
         </div>
     
@@ -923,7 +923,11 @@ to the statement before it is executed</p></td>
         <p class="code-caption">Print all the rows of the table test to the console</p>
     
     <pre class="prettyprint"><code>    var stmt = db.prepare("SELECT * FROM test");
-    while (stmt.step()) console.log(stmt.get());</code></pre>
+    while (stmt.step()) console.log(stmt.get());
+
+    &lt;caption>Enable BigInt support&lt;/caption>
+    var stmt = db.prepare("SELECT * FROM test");
+    while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));</code></pre>
 
     </div>
 
@@ -1053,7 +1057,7 @@ to the statement, and it will be executed</p></td>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line454">line 454</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line478">line 478</a>
             </li></ul></dd>
         </div>
     
@@ -1185,7 +1189,7 @@ to the statement, and it will be executed</p></td>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line429">line 429</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line453">line 453</a>
             </li></ul></dd>
         </div>
     
@@ -1310,7 +1314,7 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line484">line 484</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line508">line 508</a>
             </li></ul></dd>
         </div>
     
@@ -1432,7 +1436,7 @@ well-defined: see <a href="https://sqlite.org/c3ref/expanded_sql.html">the SQLit
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line468">line 468</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line492">line 492</a>
             </li></ul></dd>
         </div>
     
@@ -1545,7 +1549,7 @@ by bound parameters.</p>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line619">line 619</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line648">line 648</a>
             </li></ul></dd>
         </div>
     
@@ -1697,7 +1701,7 @@ and resets it</p>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line493">line 493</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line517">line 517</a>
             </li></ul></dd>
         </div>
     
@@ -1785,7 +1789,7 @@ that can be retrieved with Statement.get.</p>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line333">line 333</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line334">line 334</a>
             </li></ul></dd>
         </div>
     
@@ -1935,7 +1939,7 @@ that can be retrieved with Statement.get.</p>
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="api.js.html">api.js</a>, <a href="api.js.html#line272">line 272</a>
+                <a href="api.js.html">api.js</a>, <a href="api.js.html#line273">line 273</a>
             </li></ul></dd>
         </div>
     
