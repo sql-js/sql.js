@@ -646,7 +646,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     by bound parameters.
      */
     Statement.prototype["reset"] = function reset() {
-        this.freemem();
+        this["freemem"]();
         return (
             sqlite3_clear_bindings(this.stmt) === SQLITE_OK
             && sqlite3_reset(this.stmt) === SQLITE_OK
@@ -666,7 +666,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     Statement.prototype["free"] = function free() {
         var res;
-        this.freemem();
+        this["freemem"]();
         res = sqlite3_finalize(this.stmt) === SQLITE_OK;
         delete this.db.statements[this.stmt];
         this.stmt = NULL;
