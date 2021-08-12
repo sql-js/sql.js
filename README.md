@@ -322,21 +322,8 @@ For each [release](https://github.com/sql-js/sql.js/releases/), you will find a 
  - `sql-asm-debug.js` : The _Debug_ asm.js version of Sql.js. Use this for local development.
  - `worker.*` - Web Worker versions of the above libraries. More limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for a good example of this.
 
-## Compiling
+## Compiling/Contributing
 
-- Install the EMSDK, [as described here](https://emscripten.org/docs/getting_started/downloads.html)
-- Run `npm run rebuild`
+General consumers of this library don't need to read any further. (The compiled files are available via the [release page](https://github.com/sql-js/sql.js/releases).)
 
-In order to enable extensions like FTS5, change the CFLAGS in the [Makefile](Makefile) and rebuild:
-
-``` diff
-CFLAGS = \
-        -O2 \
-        -DSQLITE_OMIT_LOAD_EXTENSION \
-        -DSQLITE_DISABLE_LFS \
-        -DSQLITE_ENABLE_FTS3 \
-        -DSQLITE_ENABLE_FTS3_PARENTHESIS \
-+       -DSQLITE_ENABLE_FTS5 \
-        -DSQLITE_ENABLE_JSON1 \
-        -DSQLITE_THREADSAFE=0
-```
+If you want to compile your own version of SQLite for WebAssembly, or want to contribute to this project, see [CONTRIBUTING.md](docs/CONTRIBUTING.md).
