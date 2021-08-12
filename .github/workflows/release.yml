@@ -12,10 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: mymindstorm/setup-emsdk@ca33dc66a6b178f65393989c12e9465baf053352
-        with: {version: '2.0.6'}
       - name: make
-        run: make
+        uses: ./.github/actions/build-sqljs
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
