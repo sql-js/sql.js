@@ -1,60 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Adding meta -->
     
-      
-        <title>sql.js API documentation</title>
-      
-        <meta name="author" content="Ophir Lojkine">
-      
-        <meta name="description" content="Documentation for sql.js: an in-memory SQL database for the browser based on SQLite.">
-      
     
-    <title>api.js</title>
+    <meta 0="<" 1="t" 2="i" 3="t" 4="l" 5="e" 6=">" 7="s" 8="q" 9="l" 10="." 11="j" 12="s" 13=" " 14="A" 15="P" 16="I" 17=" " 18="d" 19="o" 20="c" 21="u" 22="m" 23="e" 24="n" 25="t" 26="a" 27="t" 28="i" 29="o" 30="n" 31="<" 32="/" 33="t" 34="i" 35="t" 36="l" 37="e" 38=">" />
+    
+    <meta 0="<" 1="m" 2="e" 3="t" 4="a" 5=" " 6="n" 7="a" 8="m" 9="e" 10="=" 11=""" 12="a" 13="u" 14="t" 15="h" 16="o" 17="r" 18=""" 19=" " 20="c" 21="o" 22="n" 23="t" 24="e" 25="n" 26="t" 27="=" 28=""" 29="O" 30="p" 31="h" 32="i" 33="r" 34=" " 35="L" 36="o" 37="j" 38="k" 39="i" 40="n" 41="e" 42=""" 43=">" />
+    
+    <meta 0="<" 1="m" 2="e" 3="t" 4="a" 5=" " 6="n" 7="a" 8="m" 9="e" 10="=" 11=""" 12="d" 13="e" 14="s" 15="c" 16="r" 17="i" 18="p" 19="t" 20="i" 21="o" 22="n" 23=""" 24=" " 25="c" 26="o" 27="n" 28="t" 29="e" 30="n" 31="t" 32="=" 33=""" 34="D" 35="o" 36="c" 37="u" 38="m" 39="e" 40="n" 41="t" 42="a" 43="t" 44="i" 45="o" 46="n" 47=" " 48="f" 49="o" 50="r" 51=" " 52="s" 53="q" 54="l" 55="." 56="j" 57="s" 58=":" 59=" " 60="a" 61="n" 62=" " 63="i" 64="n" 65="-" 66="m" 67="e" 68="m" 69="o" 70="r" 71="y" 72=" " 73="S" 74="Q" 75="L" 76=" " 77="d" 78="a" 79="t" 80="a" 81="b" 82="a" 83="s" 84="e" 85=" " 86="f" 87="o" 88="r" 89=" " 90="t" 91="h" 92="e" 93=" " 94="b" 95="r" 96="o" 97="w" 98="s" 99="e" 100="r" 101=" " 102="b" 103="a" 104="s" 105="e" 106="d" 107=" " 108="o" 109="n" 110=" " 111="S" 112="Q" 113="L" 114="i" 115="t" 116="e" 117="." 118=""" 119=">" />
+    
+    
+
+    <!-- Adding external script-->
+    
+
+    <!-- Adding external style-->
+    
+
+    <!-- Adding scripts-->
+    
+
+    <!-- Adding style-->
+    
+
+    <!-- Adding overlay script-->
+    
+
+    <!-- Adding overlay style-->
+    
+
+
+    <title>
+      api.js
+    </title>
 
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <link type="text/css" rel="stylesheet" href="styles/third-party/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/third-party/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/reset.css">
+    <link type="text/css" rel="stylesheet" href="styles/heading.css">
     <link type="text/css" rel="stylesheet" href="styles/clean-jsdoc-theme-base.css">
     <link type="text/css" rel="stylesheet" href="styles/clean-jsdoc-theme-light.css">
     
-    
-    
-<svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none">
+    <svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    style="display:none">
     <defs>
         <symbol id="copy-icon" viewbox="0 0 488.3 488.3">
             <g>
-                <path d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z"/>
-                <path d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z"/>
+                <path
+                    d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z" />
+                <path
+                    d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z" />
             </g>
+        </symbol>
+        <symbol id='search-icon' viewBox="0 0 512 512">
+            <g>
+                <g>
+                    <path
+                        d="M225.474,0C101.151,0,0,101.151,0,225.474c0,124.33,101.151,225.474,225.474,225.474    c124.33,0,225.474-101.144,225.474-225.474C450.948,101.151,349.804,0,225.474,0z M225.474,409.323    c-101.373,0-183.848-82.475-183.848-183.848S124.101,41.626,225.474,41.626s183.848,82.475,183.848,183.848    S326.847,409.323,225.474,409.323z" />
+                </g>
+            </g>
+            <g>
+                <g>
+                    <path
+                        d="M505.902,476.472L386.574,357.144c-8.131-8.131-21.299-8.131-29.43,0c-8.131,8.124-8.131,21.306,0,29.43l119.328,119.328    c4.065,4.065,9.387,6.098,14.715,6.098c5.321,0,10.649-2.033,14.715-6.098C514.033,497.778,514.033,484.596,505.902,476.472z" />
+                </g>
+            </g>
+        </symbol>
+        <symbol id="down-icon" viewBox="0 0 16 16">
+            <path 
+                fill-rule="evenodd" 
+                clip-rule="evenodd" 
+                d="M12.7803 6.21967C13.0732 6.51256 13.0732 6.98744 12.7803 7.28033L8.53033 11.5303C8.23744 11.8232 7.76256 11.8232 7.46967 11.5303L3.21967 7.28033C2.92678 6.98744 2.92678 6.51256 3.21967 6.21967C3.51256 5.92678 3.98744 5.92678 4.28033 6.21967L8 9.93934L11.7197 6.21967C12.0126 5.92678 12.4874 5.92678 12.7803 6.21967Z"
+            >
+            </path>
         </symbol>
     </defs>
 </svg>
+  </head>
 
-</head>
-<body>
-<input type="checkbox" id="nav-trigger" class="nav-trigger" />
-<label for="nav-trigger" class="navicon-button x">
-  <div class="navicon"></div>
-</label>
+  <body>
 
-<label for="nav-trigger" class="overlay"></label>
+    <nav class="navbar" id="navbar">
+      <div class="navbar-heading" id="navbar-heading"><a href="index.html"><h2 class="navbar-heading-text">sql.js</h2></a></div><div class="search-box" id="search-box"><div class="search-box-input-container"><input class="search-box-input" type="text" placeholder="Search..." id="search-box-input" /><svg class="search-icon" alt="search-icon"><use xlink:href="#search-icon"></use></svg></div><div class="search-item-container" id="search-item-container"><ul class="search-item-ul" id="search-item-ul"></ul></div></div><div class="sidebar-main-content" id="sidebar-main-content"><ul><li class="menu-li"><a href='https://sql.js.org/' class=' menu-link' id='' target=''>Website</a></li><li class="menu-li"><a href='https://github.com/sql-js/sql.js' class=' menu-link' id='' target=''>Github</a></li><li class="menu-li"><a href='https://sql.js.org/examples/GUI/' class=' menu-link' id='' target=''>Demo</a></li></ul><div class="accordion collapsed" id="8032898" > <h3 class="accordion-heading">Classes<svg><use xlink:href="#down-icon"></use></svg></h3><ul class="accordion-content"><li class="accordion collapsed child" id=2999680><div class="accordion-heading child"><a href="Database.html">Database</a><svg><use xlink:href="#down-icon"></use></svg></div><ul class='methods accordion-content'><li data-type='method'><a href="Database.html#%255B%2522close%2522%255D">["close"]</a></li><li data-type='method'><a href="Database.html#%255B%2522create_function%2522%255D">["create_function"]</a></li><li data-type='method'><a href="Database.html#%255B%2522each%2522%255D">["each"]</a></li><li data-type='method'><a href="Database.html#%255B%2522exec%2522%255D">["exec"]</a></li><li data-type='method'><a href="Database.html#%255B%2522export%2522%255D">["export"]</a></li><li data-type='method'><a href="Database.html#%255B%2522getRowsModified%2522%255D">["getRowsModified"]</a></li><li data-type='method'><a href="Database.html#%255B%2522handleError%2522%255D">["handleError"]</a></li><li data-type='method'><a href="Database.html#%255B%2522iterateStatements%2522%255D">["iterateStatements"]</a></li><li data-type='method'><a href="Database.html#%255B%2522prepare%2522%255D">["prepare"]</a></li><li data-type='method'><a href="Database.html#%255B%2522run%2522%255D">["run"]</a></li></ul></li><li class="accordion collapsed child" id=4135908><div class="accordion-heading child"><a href="Statement.html">Statement</a><svg><use xlink:href="#down-icon"></use></svg></div><ul class='methods accordion-content'><li data-type='method'><a href="Statement.html#%255B%2522bind%2522%255D">["bind"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522free%2522%255D">["free"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522freemem%2522%255D">["freemem"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522get%2522%255D">["get"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getAsObject%2522%255D">["getAsObject"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getColumnNames%2522%255D">["getColumnNames"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getNormalizedSQL%2522%255D">["getNormalizedSQL"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getSQL%2522%255D">["getSQL"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522reset%2522%255D">["reset"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522run%2522%255D">["run"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522step%2522%255D">["step"]</a></li></ul></li><li class="accordion collapsed child" id=2463423><div class="accordion-heading child"><a href="StatementIterator.html">StatementIterator</a><svg><use xlink:href="#down-icon"></use></svg></div><ul class='methods accordion-content'><li data-type='method'><a href="StatementIterator.html#%255B%2522getRemainingSQL%2522%255D">["getRemainingSQL"]</a></li><li data-type='method'><a href="StatementIterator.html#%255B%2522next%2522%255D">["next"]</a></li></ul></li></ul> </div><div class="accordion collapsed" id="7726731" > <h3 class="accordion-heading">Modules<svg><use xlink:href="#down-icon"></use></svg></h3><ul class="accordion-content"><li class="accordion-list" id=""><a href="module-SqlJs.html">SqlJs</a></li></ul> </div><div class="accordion collapsed" id="1255386" > <h3 class="accordion-heading">Global<svg><use xlink:href="#down-icon"></use></svg></h3><ul class="accordion-content"><li class="accordion-list" id=""><a href="global.html#initSqlJs">initSqlJs</a></li><li class="accordion-list" id=""><a href="global.html#SqlJs">SqlJs</a></li><li class="accordion-list" id=""><a href="global.html#SqlJsConfig">SqlJsConfig</a></li></ul> </div></div>
+      
 
-<nav>
-    <h2><a href="index.html"><div class="text">sql.js</div></a></h2><div class="search-box"><input type="text" placeholder="Search..." id="search-box" /><div class="search-item-container" id="search-item-container"><ul class="search-item-ul" id="search-item-ul"></ul></div></div><div class="sidebar-list-div"><ul><li><a href='https://sql.js.org/' class='' id='' target=''>Website</a></li><li><a href='https://github.com/sql-js/sql.js' class='' id='' target=''>Github</a></li><li><a href='https://sql.js.org/examples/GUI/' class='' id='' target=''>Demo</a></li></ul><h3>Classes</h3><ul><li><a href="Database.html">Database</a><ul class='methods'><li data-type='method'><a href="Database.html#%255B%2522close%2522%255D">["close"]</a></li><li data-type='method'><a href="Database.html#%255B%2522create_function%2522%255D">["create_function"]</a></li><li data-type='method'><a href="Database.html#%255B%2522each%2522%255D">["each"]</a></li><li data-type='method'><a href="Database.html#%255B%2522exec%2522%255D">["exec"]</a></li><li data-type='method'><a href="Database.html#%255B%2522export%2522%255D">["export"]</a></li><li data-type='method'><a href="Database.html#%255B%2522getRowsModified%2522%255D">["getRowsModified"]</a></li><li data-type='method'><a href="Database.html#%255B%2522handleError%2522%255D">["handleError"]</a></li><li data-type='method'><a href="Database.html#%255B%2522iterateStatements%2522%255D">["iterateStatements"]</a></li><li data-type='method'><a href="Database.html#%255B%2522prepare%2522%255D">["prepare"]</a></li><li data-type='method'><a href="Database.html#%255B%2522run%2522%255D">["run"]</a></li></ul></li><li><a href="Statement.html">Statement</a><ul class='methods'><li data-type='method'><a href="Statement.html#%255B%2522bind%2522%255D">["bind"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522free%2522%255D">["free"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522freemem%2522%255D">["freemem"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522get%2522%255D">["get"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getAsObject%2522%255D">["getAsObject"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getColumnNames%2522%255D">["getColumnNames"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getNormalizedSQL%2522%255D">["getNormalizedSQL"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522getSQL%2522%255D">["getSQL"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522reset%2522%255D">["reset"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522run%2522%255D">["run"]</a></li><li data-type='method'><a href="Statement.html#%255B%2522step%2522%255D">["step"]</a></li></ul></li><li><a href="StatementIterator.html">StatementIterator</a><ul class='methods'><li data-type='method'><a href="StatementIterator.html#%255B%2522getRemainingSQL%2522%255D">["getRemainingSQL"]</a></li><li data-type='method'><a href="StatementIterator.html#%255B%2522next%2522%255D">["next"]</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-SqlJs.html">SqlJs</a></li></ul><h3><a href="global.html">Global</a></h3><ul><li><a href="global.html#initSqlJs">initSqlJs</a></li></ul></div>
-</nav>
+    </nav>
+    <div class="navbar-ham" id="navbar-ham">
+      <div>
+        <div class="first"></div>
+        <div class="second"></div>
+        <div class="third"></div>
+      </div>
+    </div>
 
-<div id="main">
-    
-    <h1 id='page-title' class="page-title">api.js</h1>
-    
+    <div id="main" class="main-content">
+      
+      <h1 id='page-title' class="page-title">
+        api.js
+      </h1>
+      
 
-    
+      
 
 
 
@@ -1302,26 +1356,39 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
 
 
-</div>
+    </div>
 
-<footer id="footer">
-  
-</footer>
+    <footer class="footer" id="footer">
+      
+    </footer>
 
-<script src="scripts/third-party/prettify.js"></script>
-<script src="scripts/third-party/lang-css.js"></script>
-<script src="scripts/search.js"></script>
-<script src="scripts/third-party/fuse.js"></script>
+    <script src="scripts/third-party/prettify.js"></script>
+    <script src="scripts/third-party/lang-css.js"></script>
+    <script type="text/javascript" src="scripts/misc.js"></script>
 
-<script>prettyPrint();</script>
-<script src="scripts/linenumber.js"></script>
-<script src="scripts/fix-code-block.js"></script>
-<script>
-var list = [{"title":"Database","link":"<a href=\"Database.html\">Database</a>"},{"title":"Database#[\"close\"]","link":"<a href=\"Database.html#%255B%2522close%2522%255D\">Database &rtrif; [\"close\"]</a>"},{"title":"Database#[\"create_function\"]","link":"<a href=\"Database.html#%255B%2522create_function%2522%255D\">Database &rtrif; [\"create_function\"]</a>"},{"title":"Database#[\"each\"]","link":"<a href=\"Database.html#%255B%2522each%2522%255D\">Database &rtrif; [\"each\"]</a>"},{"title":"Database#[\"exec\"]","link":"<a href=\"Database.html#%255B%2522exec%2522%255D\">Database &rtrif; [\"exec\"]</a>"},{"title":"Database#[\"export\"]","link":"<a href=\"Database.html#%255B%2522export%2522%255D\">Database &rtrif; [\"export\"]</a>"},{"title":"Database#[\"getRowsModified\"]","link":"<a href=\"Database.html#%255B%2522getRowsModified%2522%255D\">Database &rtrif; [\"getRowsModified\"]</a>"},{"title":"Database#[\"handleError\"]","link":"<a href=\"Database.html#%255B%2522handleError%2522%255D\">Database &rtrif; [\"handleError\"]</a>"},{"title":"Database#[\"iterateStatements\"]","link":"<a href=\"Database.html#%255B%2522iterateStatements%2522%255D\">Database &rtrif; [\"iterateStatements\"]</a>"},{"title":"Database#[\"prepare\"]","link":"<a href=\"Database.html#%255B%2522prepare%2522%255D\">Database &rtrif; [\"prepare\"]</a>"},{"title":"Database#[\"run\"]","link":"<a href=\"Database.html#%255B%2522run%2522%255D\">Database &rtrif; [\"run\"]</a>"},{"title":"Statement","link":"<a href=\"Statement.html\">Statement</a>"},{"title":"Statement#[\"bind\"]","link":"<a href=\"Statement.html#%255B%2522bind%2522%255D\">Statement &rtrif; [\"bind\"]</a>"},{"title":"Statement#[\"free\"]","link":"<a href=\"Statement.html#%255B%2522free%2522%255D\">Statement &rtrif; [\"free\"]</a>"},{"title":"Statement#[\"freemem\"]","link":"<a href=\"Statement.html#%255B%2522freemem%2522%255D\">Statement &rtrif; [\"freemem\"]</a>"},{"title":"Statement#[\"get\"]","link":"<a href=\"Statement.html#%255B%2522get%2522%255D\">Statement &rtrif; [\"get\"]</a>"},{"title":"Statement#[\"getAsObject\"]","link":"<a href=\"Statement.html#%255B%2522getAsObject%2522%255D\">Statement &rtrif; [\"getAsObject\"]</a>"},{"title":"Statement#[\"getColumnNames\"]","link":"<a href=\"Statement.html#%255B%2522getColumnNames%2522%255D\">Statement &rtrif; [\"getColumnNames\"]</a>"},{"title":"Statement#[\"getNormalizedSQL\"]","link":"<a href=\"Statement.html#%255B%2522getNormalizedSQL%2522%255D\">Statement &rtrif; [\"getNormalizedSQL\"]</a>"},{"title":"Statement#[\"getSQL\"]","link":"<a href=\"Statement.html#%255B%2522getSQL%2522%255D\">Statement &rtrif; [\"getSQL\"]</a>"},{"title":"Statement#[\"reset\"]","link":"<a href=\"Statement.html#%255B%2522reset%2522%255D\">Statement &rtrif; [\"reset\"]</a>"},{"title":"Statement#[\"run\"]","link":"<a href=\"Statement.html#%255B%2522run%2522%255D\">Statement &rtrif; [\"run\"]</a>"},{"title":"Statement#[\"step\"]","link":"<a href=\"Statement.html#%255B%2522step%2522%255D\">Statement &rtrif; [\"step\"]</a>"},{"title":"StatementIterator","link":"<a href=\"StatementIterator.html\">StatementIterator</a>"},{"title":"StatementIterator#[\"getRemainingSQL\"]","link":"<a href=\"StatementIterator.html#%255B%2522getRemainingSQL%2522%255D\">StatementIterator &rtrif; [\"getRemainingSQL\"]</a>"},{"title":"StatementIterator#[\"next\"]","link":"<a href=\"StatementIterator.html#%255B%2522next%2522%255D\">StatementIterator &rtrif; [\"next\"]</a>"},{"title":"SqlJs","link":"<a href=\"module-SqlJs.html\">SqlJs</a>"},{"title":"initSqlJs","link":"<a href=\"global.html#initSqlJs\">Global &rtrif; initSqlJs</a>"}];
-setupSearch(list)
-</script>
+    <script>prettyPrint();</script>
+    <script src="scripts/linenumber.js"></script>
+    <script src="scripts/fix-code-block.js"></script>
+    <script src="scripts/fix-navbar.js"></script>
+    
+      <script src="scripts/search.js"></script>
+      <script src="scripts/third-party/fuse.js"></script>
+      <script>
+        var list = [{"title":"Database","link":"<a href=\"Database.html\">Database</a>"},{"title":"Database#[\"close\"]","link":"<a href=\"Database.html#%255B%2522close%2522%255D\">Database &rtrif; [\"close\"]</a>"},{"title":"Database#[\"create_function\"]","link":"<a href=\"Database.html#%255B%2522create_function%2522%255D\">Database &rtrif; [\"create_function\"]</a>"},{"title":"Database#[\"each\"]","link":"<a href=\"Database.html#%255B%2522each%2522%255D\">Database &rtrif; [\"each\"]</a>"},{"title":"Database#[\"exec\"]","link":"<a href=\"Database.html#%255B%2522exec%2522%255D\">Database &rtrif; [\"exec\"]</a>"},{"title":"Database#[\"export\"]","link":"<a href=\"Database.html#%255B%2522export%2522%255D\">Database &rtrif; [\"export\"]</a>"},{"title":"Database#[\"getRowsModified\"]","link":"<a href=\"Database.html#%255B%2522getRowsModified%2522%255D\">Database &rtrif; [\"getRowsModified\"]</a>"},{"title":"Database#[\"handleError\"]","link":"<a href=\"Database.html#%255B%2522handleError%2522%255D\">Database &rtrif; [\"handleError\"]</a>"},{"title":"Database#[\"iterateStatements\"]","link":"<a href=\"Database.html#%255B%2522iterateStatements%2522%255D\">Database &rtrif; [\"iterateStatements\"]</a>"},{"title":"Database#[\"prepare\"]","link":"<a href=\"Database.html#%255B%2522prepare%2522%255D\">Database &rtrif; [\"prepare\"]</a>"},{"title":"Database#[\"run\"]","link":"<a href=\"Database.html#%255B%2522run%2522%255D\">Database &rtrif; [\"run\"]</a>"},{"title":"Statement","link":"<a href=\"Statement.html\">Statement</a>"},{"title":"Statement#[\"bind\"]","link":"<a href=\"Statement.html#%255B%2522bind%2522%255D\">Statement &rtrif; [\"bind\"]</a>"},{"title":"Statement#[\"free\"]","link":"<a href=\"Statement.html#%255B%2522free%2522%255D\">Statement &rtrif; [\"free\"]</a>"},{"title":"Statement#[\"freemem\"]","link":"<a href=\"Statement.html#%255B%2522freemem%2522%255D\">Statement &rtrif; [\"freemem\"]</a>"},{"title":"Statement#[\"get\"]","link":"<a href=\"Statement.html#%255B%2522get%2522%255D\">Statement &rtrif; [\"get\"]</a>"},{"title":"Statement#[\"getAsObject\"]","link":"<a href=\"Statement.html#%255B%2522getAsObject%2522%255D\">Statement &rtrif; [\"getAsObject\"]</a>"},{"title":"Statement#[\"getColumnNames\"]","link":"<a href=\"Statement.html#%255B%2522getColumnNames%2522%255D\">Statement &rtrif; [\"getColumnNames\"]</a>"},{"title":"Statement#[\"getNormalizedSQL\"]","link":"<a href=\"Statement.html#%255B%2522getNormalizedSQL%2522%255D\">Statement &rtrif; [\"getNormalizedSQL\"]</a>"},{"title":"Statement#[\"getSQL\"]","link":"<a href=\"Statement.html#%255B%2522getSQL%2522%255D\">Statement &rtrif; [\"getSQL\"]</a>"},{"title":"Statement#[\"reset\"]","link":"<a href=\"Statement.html#%255B%2522reset%2522%255D\">Statement &rtrif; [\"reset\"]</a>"},{"title":"Statement#[\"run\"]","link":"<a href=\"Statement.html#%255B%2522run%2522%255D\">Statement &rtrif; [\"run\"]</a>"},{"title":"Statement#[\"step\"]","link":"<a href=\"Statement.html#%255B%2522step%2522%255D\">Statement &rtrif; [\"step\"]</a>"},{"title":"StatementIterator","link":"<a href=\"StatementIterator.html\">StatementIterator</a>"},{"title":"StatementIterator#[\"getRemainingSQL\"]","link":"<a href=\"StatementIterator.html#%255B%2522getRemainingSQL%2522%255D\">StatementIterator &rtrif; [\"getRemainingSQL\"]</a>"},{"title":"StatementIterator#[\"next\"]","link":"<a href=\"StatementIterator.html#%255B%2522next%2522%255D\">StatementIterator &rtrif; [\"next\"]</a>"},{"title":"SqlJs","link":"<a href=\"module-SqlJs.html\">SqlJs</a>"},{"title":"initSqlJs","link":"<a href=\"global.html#initSqlJs\">initSqlJs</a>"},{"title":"SqlJs","link":"<a href=\"global.html#SqlJs\">SqlJs</a>"},{"title":"SqlJsConfig","link":"<a href=\"global.html#SqlJsConfig\">SqlJsConfig</a>"}];
+        var options = 
+          setupSearch(list, options)
+      </script>
+    
 
- 
-<script type="text/javascript" src="scripts/misc.js"></script>
-</body>
+    
+
+    
+
+    
+
+    
+
+
+  </body>
+
 </html>

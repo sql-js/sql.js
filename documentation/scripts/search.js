@@ -8,7 +8,7 @@ function showSearchList() {
 }
 
 function checkClick(e) {
-    if ( e.target.id !== 'search-box') {
+    if ( e.target.id !== 'search-box-input') {
         setTimeout(function() {
             hideSearchList();
         }, 60);
@@ -18,8 +18,8 @@ function checkClick(e) {
     }
 }
 
-function search(list, keys, searchKey) {
-    var options = {
+function search(list, options, keys, searchKey) {
+    var defaultOptions = {
         shouldSort: true,
         threshold: 0.4,
         location: 0,
@@ -29,31 +29,42 @@ function search(list, keys, searchKey) {
         keys: keys
     };
 
+    var op = Object.assign({}, defaultOptions, options);
+
+    // eslint-disable-next-line no-undef
+    var searchIndex = Fuse.createIndex(op.keys, list);
+
     /* eslint-disable-next-line */
-    var fuse = new Fuse(list, options);
+    var fuse = new Fuse(list, op, searchIndex);
+
     var result = fuse.search(searchKey);
+
+    console.log(result, result.length);
+    if (result.length > 20) { result = result.slice(0, 20); }
+
+    console.log(result);
     var searchUL = document.getElementById('search-item-ul');
 
     searchUL.innerHTML = '';
 
     if (result.length === 0) {
-        searchUL.innerHTML += '<li> No Result Found </li>';
+        searchUL.innerHTML += '<li class="p-h-n"> No Result Found </li>';
     } else {
-        result.forEach(function(item) {
-            searchUL.innerHTML += '<li>' + item.link + '</li>';
+        result.forEach(function(obj) {
+            searchUL.innerHTML += '<li>' + obj.item.link + '</li>';
         });
     }
 }
 
 /* eslint-disable-next-line */
-function setupSearch(list) {
-    var inputBox = document.getElementById('search-box');
+function setupSearch(list, options) {
+    var inputBox = document.getElementById('search-box-input');
     var keys = ['title'];
 
     inputBox.addEventListener('keyup', function() {
         if (inputBox.value !== '') {
             showSearchList();
-            search(list, keys, inputBox.value);
+            search(list, options, keys, inputBox.value);
         }
         else { hideSearchList(); }
     });
@@ -61,7 +72,7 @@ function setupSearch(list) {
     inputBox.addEventListener('focus', function() {
         showSearchList();
         if (inputBox.value !== '') {
-            search(list, keys, inputBox.value);
+            search(list, options, keys, inputBox.value);
         }
 
         /* eslint-disable-next-line */
