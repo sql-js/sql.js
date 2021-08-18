@@ -327,4 +327,4 @@ For each [release](https://github.com/sql-js/sql.js/releases/), you will find a 
 
 General consumers of this library don't need to read any further. (The compiled files are available via the [release page](https://github.com/sql-js/sql.js/releases).)
 
-If you want to compile your own version of SQLite for WebAssembly, or want to contribute to this project, see [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+If you want to compile your own version of SQLite for WebAssembly, or want to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
