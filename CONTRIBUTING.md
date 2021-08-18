@@ -27,6 +27,7 @@ To get started:
 3. Open the repository folder in VSCode. It will detect the presence of a .devcontainer and prompt you: "Folder contains a Dev Container configuration file. Reopen folder to develop in a container." Click "Reopen in container"
 
 You're now ready to test the dev environment:
+
 4. Click on Terminal->New Terminal to be dropped into a terminal inside the dev environment.
 5. Run `$ npm install` to install the required modules
 6. Run `$ npm test` to ensure all tests pass
