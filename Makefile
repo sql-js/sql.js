@@ -70,19 +70,21 @@ EMFLAGS_PRE_JS_FILES = \
 
 EXPORTED_METHODS_JSON_FILES = src/exported_functions.json src/exported_runtime_methods.json
 
+FS_EXTERN_PATH = "$(realpath -s ./src/fs-externs.js)"
+
 all: optimized debug worker
 
 .PHONY: debug
 debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
 
 dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	EMCC_CLOSURE_ARGS="--externs src/fs-externs.js" $(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	EMCC_CLOSURE_ARGS="--externs ${FS_EXTERN_PATH}" $(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	EMCC_CLOSURE_ARGS="--externs src/fs-externs.js" $(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	EMCC_CLOSURE_ARGS="--externs ${FS_EXTERN_PATH}" $(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
@@ -91,19 +93,19 @@ dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FI
 optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
 
 dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	EMCC_CLOSURE_ARGS="--externs src/fs-externs.js" $(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	EMCC_CLOSURE_ARGS="--externs ${FS_EXTERN_PATH}" $(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	EMCC_CLOSURE_ARGS="--externs src/fs-externs.js" $(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	EMCC_CLOSURE_ARGS="--externs ${FS_EXTERN_PATH}" $(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	EMCC_CLOSURE_ARGS="--externs src/fs-externs.js" $(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM_MEMORY_GROWTH) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	EMCC_CLOSURE_ARGS="--externs ${FS_EXTERN_PATH}" $(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM_MEMORY_GROWTH) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
