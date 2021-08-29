@@ -35,7 +35,7 @@ EMFLAGS = \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s ALLOW_TABLE_GROWTH=1 \
 	-s EXPORTED_FUNCTIONS=@src/exported_functions.json \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
+	-s EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
 	-s SINGLE_FILE=0 \
 	-s NODEJS_CATCH_EXIT=0 \
 	-s NODEJS_CATCH_REJECTION=0
@@ -154,7 +154,7 @@ out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	mkdir -p out
 	# Generate llvm bitcode
-	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+	$(EMCC) $(CFLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
