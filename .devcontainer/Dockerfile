@@ -124,6 +124,9 @@ RUN apt-get update \
         wget \
         xdg-utils
 
+# Installs the command "sha3sum", which is used check the download integrity of sqlite source.
+RUN apt-get install -y libdigest-sha3-perl
+
 # We set this env variable (RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX=1) this to tell our sql.js test harness to run Puppeteer without the sandbox.
 # Otherwise, when we instantiate Puppeteer, we get this error: 
 # Puppeteer can't start due to a sandbox error. (Details follow.)
