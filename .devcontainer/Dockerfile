@@ -24,7 +24,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 # Install EMSDK to /emsdk just like the EMSDK Dockerfile: https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 ENV EMSDK /emsdk
 # We pin EMSDK to 2.0.15 rather than 'latest' so that everyone is using the same compiler version
-ENV EMSCRIPTEN_VERSION 2.0.15
+ENV EMSCRIPTEN_VERSION 2.0.29
 
 RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK
 
@@ -36,7 +36,7 @@ RUN echo "## Install Emscripten" \
 # Copied directly from https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 RUN cd ${EMSDK} \
     && echo "## Generate standard configuration" \
-    && ./emsdk activate $EMSCRIPTEN_VERSION \
+    && ./emsdk activate ${EMSCRIPTEN_VERSION} \
     && chmod 777 ${EMSDK}/upstream/emscripten \
     && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
     && echo "int main() { return 0; }" > hello.c \
@@ -47,6 +47,7 @@ RUN cd ${EMSDK} \
 ENV PATH $EMSDK:$EMSDK/upstream/emscripten/:$PATH
 
 # Cleanup Emscripten installation and strip some symbols
+# Copied directly from https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 RUN echo "## Aggressive optimization: Remove debug symbols" \
     && cd ${EMSDK} && . ./emsdk_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
@@ -60,6 +61,12 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
     && echo "## Done"
 
 RUN echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc
+# We must set the EM_NODE_JS environment variable for a somewhat silly reason
+# We run our build scripts with `npm run`, which sets the NODE environment variable as it runs.
+# The EMSDK picks up on that environment variable and gives a deprecation warning: warning: honoring legacy environment variable `NODE`.  Please switch to using `EM_NODE_JS` instead`
+# So, we are going to put this environment variable here explicitly to avoid the deprecation warning.
+RUN echo 'export EM_NODE_JS="$EMSDK_NODE"' >> /etc/bash.bashrc
+
 # END EMSDK
 # --------------------------------------------------------------------
 
@@ -116,6 +123,9 @@ RUN apt-get update \
         lsb-release \
         wget \
         xdg-utils
+
+# Installs the command "sha3sum", which is used check the download integrity of sqlite source.
+RUN apt-get install -y libdigest-sha3-perl
 
 # We set this env variable (RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX=1) this to tell our sql.js test harness to run Puppeteer without the sandbox.
 # Otherwise, when we instantiate Puppeteer, we get this error: 
