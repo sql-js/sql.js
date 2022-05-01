@@ -194,7 +194,7 @@ You need to convert the result of `db.export` to a buffer
 const fs = require("fs");
 // [...] (create the database)
 const data = db.export();
-const buffer = new Buffer(data);
+const buffer = Buffer.from(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
