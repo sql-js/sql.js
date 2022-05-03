@@ -16,7 +16,7 @@ SQLite is public domain, sql.js is MIT licensed.
 
 ## API documentation
 A [full API documentation](https://sql.js.org/documentation/) for all the available classes and methods is available.
-Is is generated from comments inside the source code, and is thus always up to date.
+It is generated from comments inside the source code, and is thus always up to date.
 
 ## Usage
 
@@ -194,7 +194,7 @@ You need to convert the result of `db.export` to a buffer
 const fs = require("fs");
 // [...] (create the database)
 const data = db.export();
-const buffer = new Buffer(data);
+const buffer = Buffer.from(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
