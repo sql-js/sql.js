@@ -39,20 +39,16 @@ function search(list, options, keys, searchKey) {
 
     var result = fuse.search(searchKey);
 
-    console.log(result, result.length);
     if (result.length > 20) { result = result.slice(0, 20); }
 
-    console.log(result);
     var searchUL = document.getElementById('search-item-ul');
 
-    searchUL.innerHTML = '';
-
     if (result.length === 0) {
-        searchUL.innerHTML += '<li class="p-h-n"> No Result Found </li>';
+        searchUL.innerHTML = '<li class="p-h-n"> No Result Found </li>';
     } else {
-        result.forEach(function(obj) {
-            searchUL.innerHTML += '<li>' + obj.item.link + '</li>';
-        });
+        searchUL.innerHTML = result.reduce(function(html, obj) {
+            return html + '<li>' + obj.item.link + '</li>';
+        }, '');
     }
 }
 
@@ -79,5 +75,3 @@ function setupSearch(list, options) {
         window.addEventListener('click', checkClick);
     });
 }
-
-

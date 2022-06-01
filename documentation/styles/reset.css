@@ -240,8 +240,13 @@ ol.linenums li {
     padding-left: 0;
 }
 
+.prettyprint.linenums code,
 .prettyprint.linenums li {
-    min-height: 18px;
+    min-height: 25px;
+}
+
+.prettyprint.linenums code {
+    display: inline;
 }
 
 .prettyprint.linenums li.selected,
