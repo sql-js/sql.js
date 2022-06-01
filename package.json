@@ -1,6 +1,6 @@
 {
 	"name": "sql.js",
-	"version": "1.6.2",
+	"version": "1.7.0",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
 	"keywords": [
 		"sql",
@@ -41,11 +41,11 @@
 		"url": "https://github.com/sql-js/sql.js/issues"
 	},
 	"devDependencies": {
-		"clean-jsdoc-theme": "^3.2.7",
+		"clean-jsdoc-theme": "^3.3.4",
 		"eslint": "^7.32.0",
 		"eslint-config-airbnb-base": "^14.2.1",
-		"eslint-plugin-import": "^2.24.0",
-		"jsdoc": "^3.6.7",
+		"eslint-plugin-import": "^2.26.0",
+		"jsdoc": "^3.6.10",
 		"puppeteer": "^10.2.0",
 		"test": ">=0.6"
 	},
