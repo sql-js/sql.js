@@ -37,6 +37,10 @@ exports.test = function(sql, assert){
     assert.deepEqual(res, {nbr:5, str:'粵語😄', no_value:null}, "Statement.getAsObject()");
     stmt.free();
 
+    // getColumnNames() should work even if query returns no data 
+    stmt = db.prepare("SELECT * FROM data WHERE nbr = -1");
+    assert.deepEqual(stmt.getColumnNames(), ['nbr','str','no_value'], 'Statement.GetColumnNames()');
+    stmt.free();
 
     stmt = db.prepare("SELECT str FROM data WHERE str=?");
     assert.deepEqual(stmt.getAsObject(['粵語😄']), {'str':'粵語😄'}, "UTF8 support in prepared statements");

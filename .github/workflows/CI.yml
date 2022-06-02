@@ -7,16 +7,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: mymindstorm/setup-emsdk@b6b33c4
-      with: {version: '1.39.14'}
-    - uses: actions/cache@v1
-      id: cache
-      with:
-        path: ~/.emscripten_cache
-        key: emscripten-1.39.14
     - name: make
-      run: make
-    - uses: actions/upload-artifact@master
+      uses: ./.github/actions/build-sqljs
+    - uses: actions/upload-artifact@v2
       with: {name: dist, path: dist}
     - name: test
       run: npm ci && npm test
+    - name: generate documentation
+      run: npm run doc
+    - name: Update github pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@3.6.2
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: "." # The folder the action should deploy.
+        CLEAN: false # Automatically remove deleted files from the deploy branch

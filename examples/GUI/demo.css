@@ -57,6 +57,7 @@ h1 {
 	color:red;
 	transition:.5s;
 	overflow:hidden;
+	margin: 15px;
 }
 
 #output {
