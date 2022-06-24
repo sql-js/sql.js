@@ -173,7 +173,7 @@ sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(SQLITE_AMALGAMATION)/
 sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
 	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
 	echo '$(SQLITE_AMALGAMATION_ZIP_SHA3)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
-	sha3sum -c cache/check.txt
+	sha3sum -a 256 -c cache/check.txt
 	# We don't delete the sqlite_amalgamation folder. That's a job for clean
 	# Also, the extension functions get copied here, and if we get the order of these steps wrong,
 	# this step could remove the extension functions, and that's not what we want
