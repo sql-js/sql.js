@@ -1131,81 +1131,90 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return sqlite3_changes(this.db);
     };
 
-    /** Register a custom function with SQLite
-    @example Register a simple function
-        db.create_function("addOne", function (x) {return x+1;})
-        db.exec("SELECT addOne(1)") // = 2
+    var extract_blob = function extract_blob(ptr) {
+        var size = sqlite3_value_bytes(ptr);
+        var blob_ptr = sqlite3_value_blob(ptr);
+        var blob_arg = new Uint8Array(size);
+        for (var j = 0; j < size; j += 1) {
+            blob_arg[j] = HEAP8[blob_ptr + j];
+        }
+        return blob_arg;
+    };
 
-    @param {string} name the name of the function as referenced in
-    SQL statements.
-    @param {function} func the actual function to be executed.
-    @return {Database} The database object. Useful for method chaining
-     */
+    var parseFunctionArguments = function parseFunctionArguments(argc, argv) {
+        var args = [];
+        for (var i = 0; i < argc; i += 1) {
+            var value_ptr = getValue(argv + (4 * i), "i32");
+            var value_type = sqlite3_value_type(value_ptr);
+            var arg;
+            if (
+                value_type === SQLITE_INTEGER
+                || value_type === SQLITE_FLOAT
+            ) {
+                arg = sqlite3_value_double(value_ptr);
+            } else if (value_type === SQLITE_TEXT) {
+                arg = sqlite3_value_text(value_ptr);
+            } else if (value_type === SQLITE_BLOB) {
+                arg = extract_blob(value_ptr);
+            } else arg = null;
+            args.push(arg);
+        }
+        return args;
+    };
+    var setFunctionResult = function setFunctionResult(cx, result) {
+        switch (typeof result) {
+            case "boolean":
+                sqlite3_result_int(cx, result ? 1 : 0);
+                break;
+            case "number":
+                sqlite3_result_double(cx, result);
+                break;
+            case "string":
+                sqlite3_result_text(cx, result, -1, -1);
+                break;
+            case "object":
+                if (result === null) {
+                    sqlite3_result_null(cx);
+                } else if (result.length != null) {
+                    var blobptr = allocate(result, ALLOC_NORMAL);
+                    sqlite3_result_blob(cx, blobptr, result.length, -1);
+                    _free(blobptr);
+                } else {
+                    sqlite3_result_error(cx, (
+                        "Wrong API use : tried to return a value "
+                        + "of an unknown type (" + result + ")."
+                    ), -1);
+                }
+                break;
+            default:
+                sqlite3_result_null(cx);
+        }
+    };
+
+    /** Register a custom function with SQLite
+      @example Register a simple function
+          db.create_function("addOne", function (x) {return x+1;})
+          db.exec("SELECT addOne(1)") // = 2
+
+      @param {string} name the name of the function as referenced in
+      SQL statements.
+      @param {function} func the actual function to be executed.
+      @return {Database} The database object. Useful for method chaining
+       */
     Database.prototype["create_function"] = function create_function(
         name,
         func
     ) {
         function wrapped_func(cx, argc, argv) {
+            var args = parseFunctionArguments(argc, argv);
             var result;
-            function extract_blob(ptr) {
-                var size = sqlite3_value_bytes(ptr);
-                var blob_ptr = sqlite3_value_blob(ptr);
-                var blob_arg = new Uint8Array(size);
-                for (var j = 0; j < size; j += 1) {
-                    blob_arg[j] = HEAP8[blob_ptr + j];
-                }
-                return blob_arg;
-            }
-            var args = [];
-            for (var i = 0; i < argc; i += 1) {
-                var value_ptr = getValue(argv + (4 * i), "i32");
-                var value_type = sqlite3_value_type(value_ptr);
-                var arg;
-                if (
-                    value_type === SQLITE_INTEGER
-                    || value_type === SQLITE_FLOAT
-                ) {
-                    arg = sqlite3_value_double(value_ptr);
-                } else if (value_type === SQLITE_TEXT) {
-                    arg = sqlite3_value_text(value_ptr);
-                } else if (value_type === SQLITE_BLOB) {
-                    arg = extract_blob(value_ptr);
-                } else arg = null;
-                args.push(arg);
-            }
             try {
                 result = func.apply(null, args);
             } catch (error) {
                 sqlite3_result_error(cx, error, -1);
                 return;
             }
-            switch (typeof result) {
-                case "boolean":
-                    sqlite3_result_int(cx, result ? 1 : 0);
-                    break;
-                case "number":
-                    sqlite3_result_double(cx, result);
-                    break;
-                case "string":
-                    sqlite3_result_text(cx, result, -1, -1);
-                    break;
-                case "object":
-                    if (result === null) {
-                        sqlite3_result_null(cx);
-                    } else if (result.length != null) {
-                        var blobptr = allocate(result, ALLOC_NORMAL);
-                        sqlite3_result_blob(cx, blobptr, result.length, -1);
-                        _free(blobptr);
-                    } else {
-                        sqlite3_result_error(cx, (
-                            "Wrong API use : tried to return a value "
-                            + "of an unknown type (" + result + ")."
-                        ), -1);
-                    }
-                    break;
-                default:
-                    sqlite3_result_null(cx);
-            }
+            setFunctionResult(cx, result);
         }
         if (Object.prototype.hasOwnProperty.call(this.functions, name)) {
             removeFunction(this.functions[name]);
@@ -1224,6 +1233,89 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             func_ptr,
             0,
             0,
+            0
+        ));
+        return this;
+    };
+
+    /** Register a custom aggregate with SQLite
+      @example Register a aggregate function
+        db.create_aggregate(
+            "js_sum",
+            function () { return { sum: 0 }; },
+            function (state, value) { state.sum+=value; },
+            function (state) { return state.sum; }
+        );
+        db.exec("CREATE TABLE test (col); INSERT INTO test VALUES (1), (2)");
+        db.exec("SELECT js_sum(col) FROM test"); // = 3
+
+      @param {string} name the name of the aggregate as referenced in
+      SQL statements.
+      @param {function} init the actual function to be executed on initialize.
+      @param {function} step the actual function to be executed on step by step.
+      @param {function} finalize the actual function to be executed on finalize.
+      @return {Database} The database object. Useful for method chaining
+       */
+    Database.prototype["create_aggregate"] = function create_aggregate(
+        name,
+        init,
+        step,
+        finalize
+    ) {
+        var state;
+        function wrapped_step(cx, argc, argv) {
+            if (!state) {
+                state = init();
+            }
+            var args = parseFunctionArguments(argc, argv);
+            var mergedArgs = [state].concat(args);
+            try {
+                step.apply(null, mergedArgs);
+            } catch (error) {
+                sqlite3_result_error(cx, error, -1);
+            }
+        }
+        function wrapped_finalize(cx) {
+            var result;
+            try {
+                result = finalize.apply(null, [state]);
+            } catch (error) {
+                sqlite3_result_error(cx, error, -1);
+                state = null;
+                return;
+            }
+            setFunctionResult(cx, result);
+            state = null;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.functions, name)) {
+            removeFunction(this.functions[name]);
+            delete this.functions[name];
+        }
+        if (Object.prototype.hasOwnProperty.call(
+            this.functions,
+            name + "__finalize"
+        )) {
+            removeFunction(this.functions[name + "__finalize"]);
+            delete this.functions[name + "__finalize"];
+        }
+        // The signature of the wrapped function is :
+        // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
+        var step_ptr = addFunction(wrapped_step, "viii");
+        // The signature of the wrapped function is :
+        // void wrapped(sqlite3_context *db)
+        var finalize_ptr = addFunction(wrapped_finalize, "vi");
+        this.functions[name] = step_ptr;
+        this.functions[name + "__finalize"] = finalize_ptr;
+        this.handleError(sqlite3_create_function_v2(
+            this.db,
+            name,
+            step.length - 1,
+            SQLITE_UTF8,
+            0,
+            0,
+            step_ptr,
+            finalize_ptr,
             0
         ));
         return this;
