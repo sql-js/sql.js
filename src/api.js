@@ -811,13 +811,20 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing
     * one stored in the byte array passed in first argument
-    * @param {number[]} data An array of bytes representing
-    * an SQLite database file
+    * @param {number[]|string} data An array of bytes representing
+    * an SQLite database file or a path
+    * @param {Object} opts Options to specify a filename
     */
-    function Database(data) {
-        this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
-        if (data != null) {
+    function Database(data, { filename = false } = {}) {
+        if(filename === false) {
+          this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
+          this.memoryFile = true;
+          if (data != null) {
             FS.createDataFile("/", this.filename, data, true, true);
+          }
+        }
+        else {
+          this.filename = data;
         }
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
@@ -1103,7 +1110,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        FS.unlink("/" + this.filename);
+
+        if(this.memoryFile) {
+          FS.unlink("/" + this.filename);
+        }
         this.db = null;
     };
 
@@ -1231,4 +1241,49 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     // export Database to Module
     Module.Database = Database;
+
+    // Because emscripten doesn't allow us to handle `ioctl`, we need
+    // to manually install lock/unlock methods. Unfortunately we need
+    // to keep track of a mapping of `sqlite_file*` pointers to filename
+    // so that we can tell our filesystem which files to lock/unlock
+    var sqliteFiles = new Map();
+
+    Module["register_for_idb"] = (customFS) => {
+      var SQLITE_BUSY = 5;
+
+      function open(namePtr, file) {
+        var path = UTF8ToString(namePtr);
+        sqliteFiles.set(file, path);
+      }
+
+      function lock(file, lockType) {
+        var path = sqliteFiles.get(file);
+        var success = customFS.lock(path, lockType)
+        return success? 0 : SQLITE_BUSY;
+      }
+
+      function unlock(file,lockType) {
+        var path = sqliteFiles.get(file);
+        customFS.unlock(path, lockType)
+        return 0;
+      }
+
+      let lockPtr = addFunction(lock, 'iii');
+      let unlockPtr = addFunction(unlock, 'iii');
+      let openPtr = addFunction(open, 'vii');
+      Module["_register_for_idb"](lockPtr, unlockPtr, openPtr)
+    }
+
+    // TODO: This isn't called from anywhere yet. We need to
+    // somehow cleanup closed files from `sqliteFiles`
+    Module["cleanup_file"] = (path) => {
+      let filesInfo = [...sqliteFiles.entries()]
+      let fileInfo = filesInfo.find(f => f[1] === path);
+      sqliteFiles.delete(fileInfo[0])
+    }
+
+    Module["reset_filesystem"] = () => {
+      FS.root = null;
+      FS.staticInit();
+    }
 };
