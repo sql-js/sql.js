@@ -1304,6 +1304,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var finalize_ptr = addFunction(wrapped_finalize, "vi");
         this.functions[name] = step_ptr;
         this.functions[name + "__finalize"] = finalize_ptr;
+
+        // passing null to the sixth parameter defines this as an aggregate
+        // function
+        //
+        // > An aggregate SQL function requires an implementation of xStep and
+        // > xFinal and NULL pointer must be passed for xFunc.
+        // - http://www.sqlite.org/c3ref/create_function.html
         this.handleError(sqlite3_create_function_v2(
             this.db,
             name,
