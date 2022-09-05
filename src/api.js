@@ -1262,11 +1262,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         step,
         finalize
     ) {
-        var state;
+        var state = init();
         function wrapped_step(cx, argc, argv) {
-            if (!state) {
-                state = init();
-            }
             var args = parseFunctionArguments(argc, argv);
             var mergedArgs = [state].concat(args);
             try {
