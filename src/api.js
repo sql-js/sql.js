@@ -1176,7 +1176,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 if (result === null) {
                     sqlite3_result_null(cx);
                 } else if (result.length != null) {
-                    var blobptr = allocate(result, "i8", ALLOC_NORMAL);
+                    var blobptr = allocate(result, ALLOC_NORMAL);
                     sqlite3_result_blob(cx, blobptr, result.length, -1);
                     _free(blobptr);
                 } else {
