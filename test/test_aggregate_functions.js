@@ -30,15 +30,15 @@ exports.test = function (SQL, assert) {
 
     db.create_aggregate(
         "json_agg", {
-            init: function() { return { vals: [] }; },
-            step: function(state, val) { state.vals.push(val); },
-            finalize: function(state) { return JSON.stringify(state.vals); }
+            step: function(state, val) { state.push(val); },
+            finalize: function(state) { return JSON.stringify(state); }
         }
     );
 
     db.exec("CREATE TABLE test2 (col, col2);");
     db.exec("INSERT INTO test2 values ('four score', 12), ('and seven', 7), ('years ago', 1);");
     var result = db.exec("SELECT json_agg(col) FROM test2;");
+    console.log("output: ", result[0].values);
     assert.deepEqual(JSON.parse(result[0].values[0]), ["four score", "and seven", "years ago"], "Aggregate function that returns JSON");
 }
 
