@@ -1267,24 +1267,23 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         aggregateFunctions
     ) {
         if (!Object.hasOwnProperty.call(aggregateFunctions, "step")
-            || !Object.hasOwnProperty.call(
-                aggregateFunctions, "finalize"
-            )
         ) {
-            throw "An aggregate function must have step and finalize "
-             + "properties";
+            throw "An aggregate function must have a step property";
         }
 
-        // state is a state array; we'll use the pointer p to serve as the
+        aggregateFunctions["init"] ||= (() => null)
+        aggregateFunctions["finalize"] ||= ((state) => state)
+
+        // state is a state object; we'll use the pointer p to serve as the
         // key for where we hold our state so that multiple invocations of
         // this function never step on each other
         var state = {};
 
         function wrapped_step(cx, argc, argv) {
-            // The first time the sqlite3_aggregate_context(C,N) routine is
-            // called for a particular aggregate function, SQLite allocates N
-            // bytes of memory, zeroes out that memory, and returns a pointer
-            // to the new memory.
+            // > The first time the sqlite3_aggregate_context(C,N) routine is
+            // > called for a particular aggregate function, SQLite allocates N
+            // > bytes of memory, zeroes out that memory, and returns a pointer
+            // > to the new memory.
             //
             // We're going to use that pointer as a key to our state array,
             // since using sqlite3_aggregate_context as it's meant to be used
@@ -1292,19 +1291,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             // one byte.
             var p = sqlite3_aggregate_context(cx, 1);
 
-            // If this is the first invocation of wrapped_step, state[p]
+            // If this is the first invocation of wrapped_step, call `init`
             if (!state[p]) {
-                if (Object.hasOwnProperty.call(aggregateFunctions, "init")) {
-                    state[p] = aggregateFunctions["init"].apply(null);
-                } else {
-                    state[p] = [];
-                }
+                state[p] = aggregateFunctions["init"].apply(null);
             }
 
             var args = parseFunctionArguments(argc, argv);
             var mergedArgs = [state[p]].concat(args);
             try {
-                aggregateFunctions["step"].apply(null, mergedArgs);
+                state[p] = aggregateFunctions["step"].apply(null, mergedArgs);
             } catch (error) {
                 sqlite3_result_error(cx, error, -1);
             }
@@ -1340,6 +1335,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // The signature of the wrapped function is :
         // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
         var step_ptr = addFunction(wrapped_step, "viii");
+
         // The signature of the wrapped function is :
         // void wrapped(sqlite3_context *db)
         var finalize_ptr = addFunction(wrapped_finalize, "vi");
