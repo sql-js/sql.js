@@ -69,6 +69,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var SQLITE_FLOAT = 2;
     var SQLITE_TEXT = 3;
     var SQLITE_BLOB = 4;
+    var SQLITE_NULL = 5;
     // var - Encodings, used for registering functions.
     var SQLITE_UTF8 = 1;
     // var - cwrap function
@@ -224,6 +225,14 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "sqlite3_result_error",
         "",
         ["number", "string", "number"]
+    );
+
+    // https://www.sqlite.org/c3ref/aggregate_context.html
+    // void *sqlite3_aggregate_context(sqlite3_context*, int nBytes)
+    var sqlite3_aggregate_context = cwrap(
+        "sqlite3_aggregate_context",
+        "number",
+        ["number", "number"]
     );
     var registerExtensionFunctions = cwrap(
         "RegisterExtensionFunctions",
@@ -1265,6 +1274,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
         var state;
         function wrapped_step(cx, argc, argv) {
+            var p = sqlite3_aggregate_context(cx, 999);
             if (!state) {
                 state = aggregateFunctions["init"].apply(null);
             }
