@@ -1271,9 +1271,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             throw "An aggregate function must have a step function";
         }
 
-        aggregateFunctions["init"] = aggregateFunctions["init"] || (() => null);
+        // Default initializer and finalizer
+        function init() { return null; }
+        function finalize(state) { return state; }
+
+        aggregateFunctions["init"] = aggregateFunctions["init"] || init;
         aggregateFunctions["finalize"] = aggregateFunctions["finalize"]
-            || ((state) => state);
+            || finalize;
 
         // state is a state object; we'll use the pointer p to serve as the
         // key for where we hold our state so that multiple invocations of
