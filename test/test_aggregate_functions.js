@@ -12,7 +12,7 @@ exports.test = function (SQL, assert) {
     );
 
     db.exec("CREATE TABLE test (col);");
-    db.exec("INSERT INTO test VALUES (1), (2), (3);");
+    db.exec("INSERT INTO test VALUES (1), (2), (3), (null);");
     var result = db.exec("SELECT sum(col) FROM test;");
     assert.equal(result[0].values[0][0], 6, "Simple aggregate function.");
 
@@ -20,8 +20,10 @@ exports.test = function (SQL, assert) {
         "percentile", {
             init: function () { return { vals: [], pctile: null }; }, // init
             step: function (state, value, pctile) {
-                state.pctile = pctile;
-                state.vals.push(value);
+                if (value && !isNaN(value)) {
+                    state.pctile = pctile;
+                    state.vals.push(value);
+                }
                 return state;
             },
             finalize: function (state) {
