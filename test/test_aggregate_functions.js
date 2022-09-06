@@ -53,3 +53,18 @@ function percentile(arr, p) {
     }
 };
 
+if (module == require.main) {
+    const target_file = process.argv[2];
+    const sql_loader = require('./load_sql_lib');
+    sql_loader(target_file).then((sql)=>{
+        require('test').run({
+            'test functions': function(assert, done){
+                exports.test(sql, assert, done);
+            }
+        });
+    })
+    .catch((e)=>{
+        console.error(e);
+        assert.fail(e);
+    });
+}
