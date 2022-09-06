@@ -1268,11 +1268,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     ) {
         if (!Object.hasOwnProperty.call(aggregateFunctions, "step")
         ) {
-            throw "An aggregate function must have a step property";
+            throw "An aggregate function must have a step function";
         }
 
-        aggregateFunctions["init"] ||= (() => null)
-        aggregateFunctions["finalize"] ||= ((state) => state)
+        aggregateFunctions["init"] = aggregateFunctions["init"] || (() => null);
+        aggregateFunctions["finalize"] = aggregateFunctions["finalize"]
+            || ((state) => state);
 
         // state is a state object; we'll use the pointer p to serve as the
         // key for where we hold our state so that multiple invocations of
