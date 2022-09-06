@@ -2,10 +2,11 @@ exports.test = function (SQL, assert) {
     var db = new SQL.Database();
 
     db.create_aggregate(
-        "sum",
-        function () { return { sum: 0 }; },
-        function (state, value) { state.sum += value; },
-        function (state) { return state.sum; }
+        "sum", {
+            init: function () { return { sum: 0 }; },
+            step: function (state, value) { state.sum += value; },
+            finalize: function (state) { return state.sum; }
+        }
     );
 
     db.exec("CREATE TABLE test (col);");
@@ -14,23 +15,25 @@ exports.test = function (SQL, assert) {
     assert.equal(result[0].values[0][0], 6, "Simple aggregate function.");
 
     db.create_aggregate(
-        "percentile",
-        function () { return { vals: [], pctile: null }; }, // init
-        function (state, value, pctile) {
-            state.vals.push(value);
-        },
-        function (state) {
-            return percentile(state.vals, state.pctile);
+        "percentile", {
+            init: function () { return { vals: [], pctile: null }; }, // init
+            step: function (state, value, pctile) {
+                state.vals.push(value);
+            },
+            finalize: function (state) {
+                return percentile(state.vals, state.pctile);
+            }
         }
     );
     var result = db.exec("SELECT percentile(col, 20) FROM test;");
     assert.equal(result[0].values[0][0], 1, "Aggregate function with two args");
 
     db.create_aggregate(
-        "json_agg",
-        function() { return { vals: [] }; },
-        function(state, val) { state.vals.push(val); },
-        function(state) { return JSON.stringify(state.vals); }
+        "json_agg", {
+            init: function() { return { vals: [] }; },
+            step: function(state, val) { state.vals.push(val); },
+            finalize: function(state) { return JSON.stringify(state.vals); }
+        }
     );
 
     db.exec("CREATE TABLE test2 (col, col2);");

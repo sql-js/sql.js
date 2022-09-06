@@ -1251,23 +1251,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
       @param {string} name the name of the aggregate as referenced in
       SQL statements.
-      @param {function} init the actual function to be executed on initialize.
-      @param {function} step the actual function to be executed on step by step.
-      @param {function} finalize the actual function to be executed on finalize.
+      @param {object} Aggregate function containing three functions
       @return {Database} The database object. Useful for method chaining
        */
     Database.prototype["create_aggregate"] = function create_aggregate(
         name,
-        init,
-        step,
-        finalize
+        aggregateFunctions
     ) {
-        var state = init();
+        if (!aggregateFunctions.hasOwnProperty("init") ||
+            !aggregateFunctions.hasOwnProperty("step") ||
+            !aggregateFunctions.hasOwnProperty("finalize"))
+            throw "An aggregate function must have init, step and finalize properties";
+
+        var state;
         function wrapped_step(cx, argc, argv) {
+            if (!state) {
+                state = aggregateFunctions["init"].apply(null);
+            }
             var args = parseFunctionArguments(argc, argv);
             var mergedArgs = [state].concat(args);
             try {
-                step.apply(null, mergedArgs);
+                aggregateFunctions["step"].apply(null, mergedArgs);
             } catch (error) {
                 sqlite3_result_error(cx, error, -1);
             }
@@ -1275,7 +1279,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         function wrapped_finalize(cx) {
             var result;
             try {
-                result = finalize.apply(null, [state]);
+                result = aggregateFunctions["finalize"].apply(null, [state]);
             } catch (error) {
                 sqlite3_result_error(cx, error, -1);
                 state = null;
@@ -1314,7 +1318,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.handleError(sqlite3_create_function_v2(
             this.db,
             name,
-            step.length - 1,
+            aggregateFunctions["step"].length - 1,
             SQLITE_UTF8,
             0,
             0,
