@@ -1321,7 +1321,6 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             } catch (error) {
                 delete state[p];
                 sqlite3_result_error(cx, error, -1);
-                state = null;
                 return;
             }
 
