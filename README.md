@@ -78,7 +78,7 @@ db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); /
 // You can create custom aggregation functions, by passing a name
 // and a set of functions to `db.create_aggregate`:
 //
-// - a initialization function. This function receives no arguments and returns
+// - an initialization function. This function receives no arguments and returns
 //   the initial value for the aggregation function
 // - a step function. This function receives as a first argument the state
 //   object created in init, as well as the values received in the step. It
