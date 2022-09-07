@@ -45,10 +45,34 @@ exports.test = function (SQL, assert) {
     db.exec("CREATE TABLE test2 (col, col2);");
     db.exec("INSERT INTO test2 values ('four score', 12), ('and seven', 7), ('years ago', 1);");
     result = db.exec("SELECT json_agg(col) FROM test2;");
-    assert.deepEqual(JSON.parse(result[0].values[0]), ["four score", "and seven", "years ago"], "Aggregate function that returns JSON");
+    assert.deepEqual(
+        JSON.parse(result[0].values[0]),
+        ["four score", "and seven", "years ago"],
+        "Aggregate function that returns JSON"
+    );
 
     result = db.exec("SELECT json_agg(col), json_agg(col2) FROM test2;");
-    assert.deepEqual(result[0].values[0].map(JSON.parse), [["four score", "and seven", "years ago"], [12, 7, 1]], "Multiple aggregations at once");
+    assert.deepEqual(
+        result[0].values[0].map(JSON.parse),
+        [["four score", "and seven", "years ago"], [12, 7, 1]],
+        "Multiple aggregations at once"
+    );
+
+    db.create_aggregate("throws_step", 0, {step: (state, value) => { throw "bananas" }})
+    assert.throws(
+        () => db.exec("SELECT throws_step(col) FROM test;"),
+        "Error: bananas",
+        "Handles exception in a step function"
+    );
+
+    db.create_aggregate("throws_finalize", 0, {
+        step: (state, value) => state + value,
+        finalize: (state) => { throw "shoes" }})
+    assert.throws(
+        () => db.exec("SELECT throws_finalize(col) FROM test;"),
+        "Error: shoes",
+        "Handles exception in a finalize function"
+    );
 }
 
 // helper function to calculate a percentile from an array. Will modify the
