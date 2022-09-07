@@ -94,7 +94,7 @@ db.create_aggregate(
   "json_agg",
   {
     init: () => [],
-    step: (state, val) => state.push(val),
+    step: (state, val) => [...state, val],
     finalize: (state) => JSON.stringify(state),
   }
 );
