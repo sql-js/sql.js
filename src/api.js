@@ -1264,6 +1264,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
        */
     Database.prototype["create_aggregate"] = function create_aggregate(
         name,
+        initial_value,
         aggregateFunctions
     ) {
         if (!Object.hasOwnProperty.call(aggregateFunctions, "step")
@@ -1271,11 +1272,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             throw "An aggregate function must have a step function";
         }
 
-        // Default initializer and finalizer
-        function init() { return null; }
+        // Default finalizer
         function finalize(state) { return state; }
-
-        aggregateFunctions["init"] = aggregateFunctions["init"] || init;
         aggregateFunctions["finalize"] = aggregateFunctions["finalize"]
             || finalize;
 
@@ -1298,7 +1296,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
             // If this is the first invocation of wrapped_step, call `init`
             if (!state[p]) {
-                state[p] = aggregateFunctions["init"].apply(null);
+                state[p] = initial_value;
             }
 
             var args = parseFunctionArguments(argc, argv);

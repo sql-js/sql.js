@@ -6,8 +6,8 @@ exports.test = function (SQL, assert) {
     var db = new SQL.Database();
 
     db.create_aggregate(
-        "sum", {
-            step: function (state, value) { return (state || 0) + value; },
+        "sum", 0, {
+            step: function (state, value) { return state + value; },
         }
     );
 
@@ -17,10 +17,11 @@ exports.test = function (SQL, assert) {
     assert.equal(result[0].values[0][0], 6, "Simple aggregate function.");
 
     db.create_aggregate(
-        "percentile", {
-            init: function () { return { vals: [], pctile: null }; }, // init
+        "percentile", { vals: [], pctile: null },
+        {
             step: function (state, value, pctile) {
-                if (value && !isNaN(value)) {
+                var typ = typeof value;
+                if (typ == "number" || typ == "bigint") {
                     state.pctile = pctile;
                     state.vals.push(value);
                 }
@@ -35,9 +36,9 @@ exports.test = function (SQL, assert) {
     assertFloat(result[0].values[0][0], 2.6, "Aggregate function with two args");
 
     db.create_aggregate(
-        "json_agg", {
-            step: function(state, val) { state = (state || []); state.push(val); return state; },
-            finalize: function(state) { return JSON.stringify(state); }
+        "json_agg", [], {
+            step: (state, val) => [...state, val],
+            finalize: (state) => JSON.stringify(state),
         }
     );
 
