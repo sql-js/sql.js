@@ -99,9 +99,9 @@ db.create_aggregate(
   }
 );
 
-// Now if you run this query:
-var result = db.exec("SELECT json_agg(somecol) FROM atable;");
-console.log("You'll get a json-encoded list of values: ", result[0].values[0])
+```suggestion
+db.exec("SELECT json_agg(column1) FROM (VALUES ('hello'), ('world'))");
+// -> The result of the query is the string '["hello","world"]'
 
 // Export the database to an Uint8Array containing the SQLite database file
 const binaryArray = db.export();
