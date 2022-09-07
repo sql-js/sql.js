@@ -78,15 +78,15 @@ db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); /
 // You can create custom aggregation functions, by passing a name
 // and a set of functions to `db.create_aggregate`:
 //
-// - an initialization function. This function receives no argument and returns
-//   the initial value for the aggregation function
-// - a step function. This function receives as a first argument the state
-//   object created in init, as well as the values received in the step. It
-//   will be called on every value to be aggregated, and its return value
-//   will be used as the state for the next iteration.
-// - a finalizer. This function receives one argument, the state object, and
+// - an `init` function. This function receives no argument and returns
+//   the initial value for the state of the aggregate function.
+// - a `step` function. This function takes two arguments
+//    - the current state of the aggregation
+//    - a new value to aggregate to the state
+//  It should return a new value for the state.
+// - a `finalize` function. This function receives a state object, and
 //   returns the final value of the aggregate. It can be omitted, in which case
-//   the value of the `state` variable will be used.
+//   the final value of the state will be returned directly by the aggregate function.
 //
 // Here is an example aggregation function, `json_agg`, which will collect all
 // input values and return them as a JSON array:
