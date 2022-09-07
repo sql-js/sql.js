@@ -1259,21 +1259,33 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
       @param {string} name the name of the aggregate as referenced in
       SQL statements.
-      @param {object} Aggregate function containing three functions
+      @param {object} Aggregate function containing at least a step function.
+        Valid keys for this object are:
+        - init: a function receiving no arguments and returning an initial
+                value for the aggregate function. The initial value will be
+                null if this key is omitted.
+        - step (required): a function receiving the current state and one to
+                           many values and returning an updated state value.
+                           Will receive the value from init for the first step.
+        - finalize: a function returning the final value of the aggregate
+                    function. If omitted, the value returned by the last step
+                    wil be used as the final value.
       @return {Database} The database object. Useful for method chaining
        */
     Database.prototype["create_aggregate"] = function create_aggregate(
         name,
-        initial_value,
         aggregateFunctions
     ) {
         if (!Object.hasOwnProperty.call(aggregateFunctions, "step")
         ) {
-            throw "An aggregate function must have a step function";
+            throw "An aggregate function must have a step function in " + name;
         }
 
-        // Default finalizer
+        // Default initializer and finalizer
+        function init() { return null; }
         function finalize(state) { return state; }
+
+        aggregateFunctions["init"] = aggregateFunctions["init"] || init;
         aggregateFunctions["finalize"] = aggregateFunctions["finalize"]
             || finalize;
 
@@ -1299,8 +1311,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             // Make sure that every path through the step and finalize
             // functions deletes the value state[p] when it's done so we don't
             // leak memory and possibly stomp the init value of future calls
-            if (!state[p]) {
-                state[p] = initial_value;
+            if (!Object.hasOwnProperty.call(state, p)) {
+                state[p] = aggregateFunctions["init"].apply(null);
             }
 
             var args = parseFunctionArguments(argc, argv);
