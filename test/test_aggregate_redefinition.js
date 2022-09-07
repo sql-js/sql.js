@@ -5,7 +5,7 @@ exports.test = function(sql, assert) {
     let lastStep = i == 1000;
     let db = new sql.Database();
     try {
-      db.create_aggregate("TestFunction"+i, 0, {step: (state, value) => i})
+      db.create_aggregate("TestFunction"+i, {step: (state, value) => i})
     } catch(e) {
       assert.ok(
         false,
@@ -37,7 +37,7 @@ exports.test = function(sql, assert) {
     {
       let lastStep = i == 1000;
       try {
-        db.create_aggregate("TestFunction", 0, {step: (state, value) => i})
+        db.create_aggregate("TestFunction", {step: (state, value) => i})
       } catch(e) {
         assert.ok(
           false,
