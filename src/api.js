@@ -1295,6 +1295,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             var p = sqlite3_aggregate_context(cx, 1);
 
             // If this is the first invocation of wrapped_step, call `init`
+            //
+            // Make sure that every path through the step and finalize
+            // functions deletes the value state[p] when it's done so we don't
+            // leak memory and possibly stomp the init value of future calls
             if (!state[p]) {
                 state[p] = initial_value;
             }
@@ -1304,6 +1308,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             try {
                 state[p] = aggregateFunctions["step"].apply(null, mergedArgs);
             } catch (error) {
+                delete state[p];
                 sqlite3_result_error(cx, error, -1);
             }
         }
@@ -1314,13 +1319,14 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             try {
                 result = aggregateFunctions["finalize"].apply(null, [state[p]]);
             } catch (error) {
+                delete state[p];
                 sqlite3_result_error(cx, error, -1);
                 state = null;
                 return;
             }
+
             setFunctionResult(cx, result);
 
-            // clear the state for this invocation
             delete state[p];
         }
 
