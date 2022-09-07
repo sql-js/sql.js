@@ -99,7 +99,6 @@ db.create_aggregate(
   }
 );
 
-```suggestion
 db.exec("SELECT json_agg(column1) FROM (VALUES ('hello'), ('world'))");
 // -> The result of the query is the string '["hello","world"]'
 
