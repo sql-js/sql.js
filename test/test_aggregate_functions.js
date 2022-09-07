@@ -5,44 +5,37 @@ exports.test = function (SQL, assert) {
 
     var db = new SQL.Database();
 
-    db.create_aggregate(
-        "sum", {
-            step: function (state, value) { return (state || 0) + value; },
-        }
-    );
+    db.create_aggregate("sum", {
+        step: function (state, value) { return (state || 0) + value; },
+    });
 
     db.exec("CREATE TABLE test (col);");
     db.exec("INSERT INTO test VALUES (1), (2), (3), (null);");
     var result = db.exec("SELECT sum(col) FROM test;");
     assert.equal(result[0].values[0][0], 6, "Simple aggregate function.");
 
-    db.create_aggregate(
-        "percentile",
-        {
-            init: function() { return { vals: [], pctile: null }},
-            step: function (state, value, pctile) {
-                var typ = typeof value;
-                if (typ == "number" || typ == "bigint") { // ignore nulls
-                    state.pctile = pctile;
-                    state.vals.push(value);
-                }
-                return state;
-            },
-            finalize: function (state) {
-                return percentile(state.vals, state.pctile);
+    db.create_aggregate("percentile", {
+        init: function() { return { vals: [], pctile: null }},
+        step: function (state, value, pctile) {
+            var typ = typeof value;
+            if (typ == "number" || typ == "bigint") { // ignore nulls
+                state.pctile = pctile;
+                state.vals.push(value);
             }
+            return state;
+        },
+        finalize: function (state) {
+            return percentile(state.vals, state.pctile);
         }
-    );
+    });
     result = db.exec("SELECT percentile(col, 80) FROM test;");
     assertFloat(result[0].values[0][0], 2.6, "Aggregate function with two args");
 
-    db.create_aggregate(
-        "json_agg", {
-            init: () => [],
-            step: (state, val) => [...state, val],
-            finalize: (state) => JSON.stringify(state),
-        }
-    );
+    db.create_aggregate("json_agg", {
+        init: () => [],
+        step: (state, val) => [...state, val],
+        finalize: (state) => JSON.stringify(state),
+    });
 
     db.exec("CREATE TABLE test2 (col, col2);");
     db.exec("INSERT INTO test2 values ('four score', 12), ('and seven', 7), ('years ago', 1);");
@@ -77,7 +70,7 @@ exports.test = function (SQL, assert) {
             if (!value) throw "bananas";
             return state + value  
         }
-    })
+    });
     assert.throws(
         () => db.exec("SELECT sum_non_zero(column1) FROM (VALUES (1),(2),(0));"),
         "Error: bananas",
@@ -94,7 +87,8 @@ exports.test = function (SQL, assert) {
         finalize: (state) => {
             if (!state) throw "shoes"
             return state;
-        }})
+        }
+    });
     assert.throws(
         () => db.exec("SELECT throws_finalize(column1) FROM (VALUES (0));"),
         "Error: shoes",
