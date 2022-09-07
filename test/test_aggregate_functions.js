@@ -6,8 +6,8 @@ exports.test = function (SQL, assert) {
     var db = new SQL.Database();
 
     db.create_aggregate(
-        "sum", 0, {
-            step: function (state, value) { return state + value; },
+        "sum", {
+            step: function (state, value) { return (state || 0) + value; },
         }
     );
 
@@ -17,11 +17,12 @@ exports.test = function (SQL, assert) {
     assert.equal(result[0].values[0][0], 6, "Simple aggregate function.");
 
     db.create_aggregate(
-        "percentile", { vals: [], pctile: null },
+        "percentile",
         {
+            init: function() { return { vals: [], pctile: null }},
             step: function (state, value, pctile) {
                 var typ = typeof value;
-                if (typ == "number" || typ == "bigint") {
+                if (typ == "number" || typ == "bigint") { // ignore nulls
                     state.pctile = pctile;
                     state.vals.push(value);
                 }
@@ -36,7 +37,8 @@ exports.test = function (SQL, assert) {
     assertFloat(result[0].values[0][0], 2.6, "Aggregate function with two args");
 
     db.create_aggregate(
-        "json_agg", [], {
+        "json_agg", {
+            init: () => [],
             step: (state, val) => [...state, val],
             finalize: (state) => JSON.stringify(state),
         }
@@ -58,20 +60,50 @@ exports.test = function (SQL, assert) {
         "Multiple aggregations at once"
     );
 
-    db.create_aggregate("throws_step", 0, {step: (state, value) => { throw "bananas" }})
+    db.create_aggregate("is_even", {
+       init: () => true,
+       step: state => !state
+    });
+    result = db.exec("SELECT is_even() FROM (VALUES (1),(2),(0));");
+    assert.deepEqual(
+        result[0].values[0][0],
+        0, // this gets convert from "false" to an int by sqlite
+        "Aggregate functions respect falsy values"
+    );
+
+    db.create_aggregate("sum_non_zero", {
+        init: () => 0,
+        step: (state, value) => { 
+            if (!value) throw "bananas";
+            return state + value  
+        }
+    })
     assert.throws(
-        () => db.exec("SELECT throws_step(col) FROM test;"),
+        () => db.exec("SELECT sum_non_zero(column1) FROM (VALUES (1),(2),(0));"),
         "Error: bananas",
         "Handles exception in a step function"
     );
+    assert.deepEqual(
+        db.exec("SELECT sum_non_zero(column1) FROM (VALUES (1),(2));")[0].values[0][0],
+        3,
+        "Aggregate functions work after an exception has been thrown in step"
+    );
 
-    db.create_aggregate("throws_finalize", 0, {
-        step: (state, value) => state + value,
-        finalize: (state) => { throw "shoes" }})
+    db.create_aggregate("throws_finalize", {
+        step: (state, value) => (state || 0) + value,
+        finalize: (state) => {
+            if (!state) throw "shoes"
+            return state;
+        }})
     assert.throws(
-        () => db.exec("SELECT throws_finalize(col) FROM test;"),
+        () => db.exec("SELECT throws_finalize(column1) FROM (VALUES (0));"),
         "Error: shoes",
         "Handles exception in a finalize function"
+    );
+    assert.deepEqual(
+        db.exec("SELECT throws_finalize(column1) FROM (VALUES (1),(2));")[0].values[0][0],
+        3,
+        "Aggregate functions work after an exception has been thrown in finalize"
     );
 }
 
