@@ -75,9 +75,11 @@ db.create_function("add_js", add);
 // Run a query in which the function is used
 db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
 
-// You can create custom aggregation functions, by passing a name, an initial
-// value, and two functions to `db.create_aggregate`:
+// You can create custom aggregation functions, by passing a name
+// and a set of functions to `db.create_aggregate`:
 //
+// - a initialization function. This function receives no arguments and returns
+//   the initial value for the aggregation function
 // - a step function. This function receives as a first argument the state
 //   object created in init, as well as the values received in the step. It
 //   will be called on every value to be aggregated, and its return value
@@ -90,8 +92,8 @@ db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); /
 // input values and return them as a JSON array:
 db.create_aggregate(
   "json_agg",
-  [],
   {
+    init: () => [],
     step: (state, val) => state.push(val),
     finalize: (state) => JSON.stringify(state),
   }
