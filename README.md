@@ -101,8 +101,7 @@ db.create_aggregate(
 
 // Now if you run this query:
 var result = db.exec("SELECT json_agg(somecol) FROM atable;");
-
-// result will be a json-encoded string representing each value of `somecol` in `atable`.
+console.log("You'll get a json-encoded list of values: ", result[0].values[0])
 
 // Export the database to an Uint8Array containing the SQLite database file
 const binaryArray = db.export();
