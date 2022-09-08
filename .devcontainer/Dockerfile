@@ -24,7 +24,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 # Install EMSDK to /emsdk just like the EMSDK Dockerfile: https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 ENV EMSDK /emsdk
 # We pin the EMSDK version rather than 'latest' so that everyone is using the same compiler version
-ENV EMSCRIPTEN_VERSION 3.1.8
+ENV EMSCRIPTEN_VERSION 3.1.20
 
 RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK
 
