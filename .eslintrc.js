@@ -16,6 +16,7 @@ module.exports = {
     ignorePatterns: [
         "/dist/",
         "/examples/",
+        "/documentation/",
         "/node_modules/",
         "/out/",
         "/src/shell-post.js",
