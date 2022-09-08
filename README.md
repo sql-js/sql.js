@@ -75,6 +75,33 @@ db.create_function("add_js", add);
 // Run a query in which the function is used
 db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
 
+// You can create custom aggregation functions, by passing a name
+// and a set of functions to `db.create_aggregate`:
+//
+// - an `init` function. This function receives no argument and returns
+//   the initial value for the state of the aggregate function.
+// - a `step` function. This function takes two arguments
+//    - the current state of the aggregation
+//    - a new value to aggregate to the state
+//  It should return a new value for the state.
+// - a `finalize` function. This function receives a state object, and
+//   returns the final value of the aggregate. It can be omitted, in which case
+//   the final value of the state will be returned directly by the aggregate function.
+//
+// Here is an example aggregation function, `json_agg`, which will collect all
+// input values and return them as a JSON array:
+db.create_aggregate(
+  "json_agg",
+  {
+    init: () => [],
+    step: (state, val) => [...state, val],
+    finalize: (state) => JSON.stringify(state),
+  }
+);
+
+db.exec("SELECT json_agg(column1) FROM (VALUES ('hello'), ('world'))");
+// -> The result of the query is the string '["hello","world"]'
+
 // Export the database to an Uint8Array containing the SQLite database file
 const binaryArray = db.export();
 ```
