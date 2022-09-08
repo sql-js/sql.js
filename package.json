@@ -47,7 +47,7 @@
 		"eslint-plugin-import": "^2.26.0",
 		"jsdoc": "^3.6.10",
 		"puppeteer": "^10.2.0",
-		"test": ">=0.6"
+		"test": "=0.6.0"
 	},
 	"dependencies": {}
 }
