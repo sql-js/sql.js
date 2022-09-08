@@ -1279,18 +1279,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         name,
         aggregateFunctions
     ) {
-        if (!Object.hasOwnProperty.call(aggregateFunctions, "step")
-        ) {
+        // Default initializer and finalizer
+        var init = aggregateFunctions["init"]
+            || function init() { return null; };
+        var finalize = aggregateFunctions["finalize"]
+            || function finalize(state) { return state; };
+        var step = aggregateFunctions["step"];
+
+        if (!step) {
             throw "An aggregate function must have a step function in " + name;
         }
-
-        // Default initializer and finalizer
-        function init() { return null; }
-        function finalize(state) { return state; }
-
-        aggregateFunctions["init"] = aggregateFunctions["init"] || init;
-        aggregateFunctions["finalize"] = aggregateFunctions["finalize"]
-            || finalize;
 
         // state is a state object; we'll use the pointer p to serve as the
         // key for where we hold our state so that multiple invocations of
@@ -1314,14 +1312,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             // Make sure that every path through the step and finalize
             // functions deletes the value state[p] when it's done so we don't
             // leak memory and possibly stomp the init value of future calls
-            if (!Object.hasOwnProperty.call(state, p)) {
-                state[p] = aggregateFunctions["init"].apply(null);
-            }
+            if (!Object.hasOwnProperty.call(state, p)) state[p] = init();
 
             var args = parseFunctionArguments(argc, argv);
             var mergedArgs = [state[p]].concat(args);
             try {
-                state[p] = aggregateFunctions["step"].apply(null, mergedArgs);
+                state[p] = step.apply(null, mergedArgs);
             } catch (error) {
                 delete state[p];
                 sqlite3_result_error(cx, error, -1);
@@ -1332,28 +1328,24 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             var result;
             var p = sqlite3_aggregate_context(cx, 1);
             try {
-                result = aggregateFunctions["finalize"].apply(null, [state[p]]);
+                result = finalize(state[p]);
             } catch (error) {
                 delete state[p];
                 sqlite3_result_error(cx, error, -1);
                 return;
             }
-
             setFunctionResult(cx, result);
-
             delete state[p];
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.functions, name)) {
+        if (Object.hasOwnProperty.call(this.functions, name)) {
             removeFunction(this.functions[name]);
             delete this.functions[name];
         }
-        if (Object.prototype.hasOwnProperty.call(
-            this.functions,
-            name + "__finalize"
-        )) {
-            removeFunction(this.functions[name + "__finalize"]);
-            delete this.functions[name + "__finalize"];
+        var finalize_name = name + "__finalize";
+        if (Object.hasOwnProperty.call(this.functions, finalize_name)) {
+            removeFunction(this.functions[finalize_name]);
+            delete this.functions[finalize_name];
         }
         // The signature of the wrapped function is :
         // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
@@ -1363,7 +1355,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // void wrapped(sqlite3_context *db)
         var finalize_ptr = addFunction(wrapped_finalize, "vi");
         this.functions[name] = step_ptr;
-        this.functions[name + "__finalize"] = finalize_ptr;
+        this.functions[finalize_name] = finalize_ptr;
 
         // passing null to the sixth parameter defines this as an aggregate
         // function
@@ -1374,7 +1366,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.handleError(sqlite3_create_function_v2(
             this.db,
             name,
-            aggregateFunctions["step"].length - 1,
+            step.length - 1,
             SQLITE_UTF8,
             0,
             0,
