@@ -1200,7 +1200,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Register a custom function with SQLite
-      @example Register a simple function
+      @example <caption>Register a simple function</caption>
           db.create_function("addOne", function (x) {return x+1;})
           db.exec("SELECT addOne(1)") // = 2
 
@@ -1247,30 +1247,33 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Register a custom aggregate with SQLite
-      @example Register a aggregate function
-        db.create_aggregate(
-            "js_sum",
-            function () { return { sum: 0 }; },
-            function (state, value) { state.sum+=value; },
-            function (state) { return state.sum; }
-        );
-        db.exec("CREATE TABLE test (col); INSERT INTO test VALUES (1), (2)");
-        db.exec("SELECT js_sum(col) FROM test"); // = 3
+      @example <caption>Register a custom sum function</caption>
+        db.create_aggregate("js_sum", {
+            init: () => 0,
+            step: (state, value) => state + value,
+            finalize: state => state
+        });
+        db.exec("SELECT js_sum(column1) FROM (VALUES (1), (2))"); // = 3
 
       @param {string} name the name of the aggregate as referenced in
       SQL statements.
-      @param {object} Aggregate function containing at least a step function.
-        Valid keys for this object are:
-        - init: a function receiving no arguments and returning an initial
-                value for the aggregate function. The initial value will be
-                null if this key is omitted.
-        - step (required): a function receiving the current state and one to
-                           many values and returning an updated state value.
-                           Will receive the value from init for the first step.
-        - finalize: a function returning the final value of the aggregate
-                    function. If omitted, the value returned by the last step
-                    wil be used as the final value.
+      @param {object} aggregateFunctions
+                      object containing at least a step function.
+      @param {function(): T} [aggregateFunctions.init = ()=>null]
+            a function receiving no arguments and returning an initial
+            value for the aggregate function. The initial value will be
+            null if this key is omitted.
+      @param {function(T, any) : T} aggregateFunctions.step
+            a function receiving the current state and a value to aggregate
+            and returning a new state.
+            Will receive the value from init for the first step.
+      @param {function(T): any} [aggregateFunctions.finalize = (state)=>state]
+            a function returning the result of the aggregate function
+            given its final state.
+            If omitted, the value returned by the last step
+            will be used as the final value.
       @return {Database} The database object. Useful for method chaining
+      @template T
        */
     Database.prototype["create_aggregate"] = function create_aggregate(
         name,
