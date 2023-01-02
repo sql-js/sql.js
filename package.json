@@ -18,6 +18,7 @@
 	],
 	"license": "MIT",
 	"main": "./dist/sql-wasm.js",
+	"module": "./module.js",
 	"scripts": {
 		"build": "make",
 		"rebuild": "npm run clean && npm run build",
