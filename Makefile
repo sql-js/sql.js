@@ -53,7 +53,8 @@ EMFLAGS_WASM = \
 EMFLAGS_OPTIMIZED= \
 	-Oz \
 	-flto \
-	--closure 1
+	--closure 1 \
+	--closure-args=--externs=./src/externs.js
 
 EMFLAGS_ESMODULE= \
 	-s EXPORT_ES6=1 \
