@@ -743,7 +743,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return true;
     };
 
-    /** Reset a statement, so that it's parameters can be bound to new values
+    /** Reset a statement, so that its parameters can be bound to new values
     It also clears all previous bindings, freeing the memory used
     by bound parameters.
      */
