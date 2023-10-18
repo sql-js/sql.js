@@ -270,7 +270,7 @@ If you need ```BigInt``` support, it is partially supported since most browsers 
   while (stmt.step()) console.log(stmt.get(null, config));
 
   /*OR*/
-  const result = db.exec("SELECT * FROM test", config);
+  const results = db.exec("SELECT * FROM test", config);
   console.log(results[0].values)
 </script>
 ```
