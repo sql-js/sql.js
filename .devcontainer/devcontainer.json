@@ -4,9 +4,9 @@
 	"name": "Node.js & TypeScript",
 	"build": {
 		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick a Node version: 10, 12, 14
+		// Update 'VARIANT' to pick a Node version: 12, 14, 16
 		"args": {
-			"VARIANT": "14-buster"
+			"VARIANT": "16-buster"
 		},
 	},
 	// Set *default* container specific settings.json values on container create.
