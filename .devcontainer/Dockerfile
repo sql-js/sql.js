@@ -6,7 +6,7 @@
 
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/typescript-node/.devcontainer/base.Dockerfile
 # [Choice] Node.js version: 14, 12, 10
-ARG VARIANT="14-buster"
+ARG VARIANT="16-buster"
 FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 
 # [Optional] Uncomment if you want to install an additional version of node using nvm
@@ -24,7 +24,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 # Install EMSDK to /emsdk just like the EMSDK Dockerfile: https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 ENV EMSDK /emsdk
 # We pin the EMSDK version rather than 'latest' so that everyone is using the same compiler version
-ENV EMSCRIPTEN_VERSION 3.1.20
+ENV EMSCRIPTEN_VERSION 3.1.49
 
 RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK
 
@@ -85,47 +85,15 @@ RUN echo 'export EM_NODE_JS="$EMSDK_NODE"' >> /etc/bash.bashrc
 # List taken from:
 # https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
 RUN apt-get update \
-     && apt-get install -y \
-        ca-certificates \
-        fonts-liberation \
-        libappindicator3-1 \
-        libasound2 \
-        libatk-bridge2.0-0 \
-        libatk1.0-0 \
-        libc6 \
-        libcairo2 \
-        libcups2 \
-        libdbus-1-3 \
-        libexpat1 \
-        libfontconfig1 \
-        libgbm1 \
-        libgcc1 \
-        libglib2.0-0 \
-        libgtk-3-0 \
-        libnspr4 \
-        libnss3 \
-        libpango-1.0-0 \
-        libpangocairo-1.0-0 \
-        libstdc++6 \
-        libx11-6 \
-        libx11-xcb1 \
-        libxcb1 \
-        libxcomposite1 \
-        libxcursor1 \
-        libxdamage1 \
-        libxext6 \
-        libxfixes3 \
-        libxi6 \
-        libxrandr2 \
-        libxrender1 \
-        libxss1 \
-        libxtst6 \
-        lsb-release \
-        wget \
-        xdg-utils
-
-# Installs the command "sha3sum", which is used check the download integrity of sqlite source.
-RUN apt-get install -y libdigest-sha3-perl
+    && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-freefont-ttf libxss1 libxshmfence1 libglu1 \
+      --no-install-recommends \
+    # Installs the command "sha3sum", which is used check the download integrity of sqlite source.
+    && apt-get install -y libdigest-sha3-perl \
+    && rm -rf /var/lib/apt/lists/*
 
 # We set this env variable (RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX=1) this to tell our sql.js test harness to run Puppeteer without the sandbox.
 # Otherwise, when we instantiate Puppeteer, we get this error: 
