@@ -279,7 +279,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** @typedef {string|number|null|Uint8Array} Database.SqlValue */
     /** @typedef {
-        Database.SqlValue[]|Object<string, Database.SqlValue>|null
+        Array<Database.SqlValue>|Object<string, Database.SqlValue>|null
     } Statement.BindParams
      */
 
@@ -406,7 +406,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     If the first parameter is not provided, step must have been called before.
     @param {Statement.BindParams} [params] If set, the values will be bound
     to the statement before it is executed
-    @return {Database.SqlValue[]} One row of result
+    @return {Array<Database.SqlValue>} One row of result
 
     @example
     <caption>Print all the rows of the table test to the console</caption>
@@ -449,7 +449,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Get the list of column names of a row of result of a statement.
-    @return {string[]} The names of the columns
+    @return {Array<string>} The names of the columns
     @example
     var stmt = db.prepare(
         "SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;"
@@ -638,7 +638,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Bind values to numbered parameters
-    @param {Database.SqlValue[]} values
+    @param {Array<Database.SqlValue>} values
     @private
     @nodoc
      */
@@ -819,7 +819,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing
     * one stored in the byte array passed in first argument
-    * @param {number[]} data An array of bytes representing
+    * @param {Array<number>} data An array of bytes representing
     * an SQLite database file
     */
     function Database(data) {
@@ -872,12 +872,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /**
      * @typedef {{
-        columns:string[],
-        values:Database.SqlValue[][]
+        columns:Array<string>,
+        values:Array<Array<Database.SqlValue>>
     }} Database.QueryExecResult
-     * @property {string[]} columns the name of the columns of the result
+     * @property {Array<string>} columns the name of the columns of the result
      * (as returned by {@link Statement.getColumnNames})
-     * @property {Database.SqlValue[][]} values one array per row, containing
+     * @property {Array<Array<Database.SqlValue>>} values one array per row, containing
      * the column values
      */
 
@@ -934,7 +934,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     before it is executed. If you use the params argument as an array,
     you **cannot** provide an sql string that contains several statements
     (separated by `;`). This limitation does not apply to params as an object.
-    * @return {Database.QueryExecResult[]} The results of each statement
+    * @return {Array<Database.QueryExecResult>} The results of each statement
     */
     Database.prototype["exec"] = function exec(sql, params, config) {
         if (!this.db) {
@@ -995,7 +995,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     @param {string} sql A string of SQL text. Can contain placeholders
     that will be bound to the parameters given as the second argument
-    @param {Statement.BindParams} [params=[]] Parameters to bind to the query
+    @param {Statement.BindParams=} [params=] Parameters to bind to the query
     @param {function(Object<string, Database.SqlValue>):void} callback
     Function to call on each row of result
     @param {function():void} done A function that will be called when
@@ -1206,7 +1206,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
       @param {string} name the name of the function as referenced in
       SQL statements.
-      @param {function} func the actual function to be executed.
+      @param {function(any)} func the actual function to be executed.
       @return {Database} The database object. Useful for method chaining
        */
     Database.prototype["create_function"] = function create_function(
@@ -1259,7 +1259,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
       SQL statements.
       @param {object} aggregateFunctions
                       object containing at least a step function.
-      @param {function(): T} [aggregateFunctions.init = ()=>null]
+      @param {function(): T} [aggregateFunctions.init=]
             a function receiving no arguments and returning an initial
             value for the aggregate function. The initial value will be
             null if this key is omitted.
@@ -1267,7 +1267,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             a function receiving the current state and a value to aggregate
             and returning a new state.
             Will receive the value from init for the first step.
-      @param {function(T): any} [aggregateFunctions.finalize = (state)=>state]
+      @param {function(T): any} [aggregateFunctions.finalize=]
             a function returning the result of the aggregate function
             given its final state.
             If omitted, the value returned by the last step
