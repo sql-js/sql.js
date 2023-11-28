@@ -1099,9 +1099,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             function (row){console.log(row.name + " is a grown-up.")}
     );
      */
-    Database.prototype["each"] = function each(
-        sql, params, callback, done, config
-    ) {
+    // eslint-disable-next-line max-len
+    Database.prototype["each"] = function each(sql, params, callback, done, config) {
         var stmt;
         if (typeof params === "function") {
             done = callback;
@@ -1279,10 +1278,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                     sqlite3_result_blob(cx, blobptr, result.length, -1);
                     _free(blobptr);
                 } else {
-                    sqlite3_result_error(cx, (
-                        "Wrong API use : tried to return a value "
+                    sqlite3_result_error(
+                        cx, (
+                            "Wrong API use : tried to return a value "
                         + "of an unknown type (" + result + ")."
-                    ), -1);
+                        ), -1
+                    );
                 }
                 break;
             default:

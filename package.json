@@ -41,12 +41,12 @@
 		"url": "https://github.com/sql-js/sql.js/issues"
 	},
 	"devDependencies": {
-		"clean-jsdoc-theme": "^3.3.4",
-		"eslint": "^7.32.0",
-		"eslint-config-airbnb-base": "^14.2.1",
+		"clean-jsdoc-theme": "^4.2.0",
+		"eslint": "^8.54.0",
+		"eslint-config-airbnb-base": "^15.0.0",
 		"eslint-plugin-import": "^2.26.0",
-		"jsdoc": "^3.6.10",
-		"puppeteer": "^10.2.0",
+		"jsdoc": "^4.0.2",
+		"puppeteer": "^21.5.2",
 		"test": "=0.6.0"
 	},
 	"dependencies": {}

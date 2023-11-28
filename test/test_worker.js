@@ -25,7 +25,7 @@ class Worker {
 
   static async launchBrowser(){
     try{
-      return await puppeteer.launch();
+      return await puppeteer.launch({ headless: "new" });
     }
     catch(e){
       if (e.stack.includes('No usable sandbox!')){
@@ -39,7 +39,10 @@ class Worker {
           // This tells puppeteer to launch without worrying about the sandbox.
           // That's not "safe" if you don't trust the code you're loading in the browser, 
           // but we're in a container and we know what we're testing.
-          return await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
+          return await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            headless: 'new'
+          });
         }
         else {
           console.warn("Puppeteer can't start due to a sandbox error. (Details follow.)\nFor a quick, but potentially dangerous workaround, you can set the environment variable 'RUN_WORKER_TEST_WITHOUT_PUPETEER_SANDBOX=1'.\nYou can also simply run this test in the Docker container defined in .devcontainer/Dockerfile.");
