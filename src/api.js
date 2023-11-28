@@ -13,15 +13,14 @@
     UTF8ToString
     stringToUTF8
     lengthBytesUTF8
+    allocate
+    ALLOC_NORMAL
+    allocateUTF8OnStack
+    removeFunction
+    addFunction
 */
 
 "use strict";
-
-/** @external @const @global */ var addFunction;
-/** @external @const @global */ var allocate;
-/** @external @const @global */ var ALLOC_NORMAL;
-/** @external @const @global */ var allocateUTF8OnStack;
-/** @external @const @global */ var removeFunction;
 
 /**
  * @typedef {{Database:Database, Statement:Statement}} SqlJs
