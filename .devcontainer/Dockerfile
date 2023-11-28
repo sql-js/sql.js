@@ -6,7 +6,7 @@
 
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/typescript-node/.devcontainer/base.Dockerfile
 # [Choice] Node.js version: 14, 12, 10
-ARG VARIANT="14-buster"
+ARG VARIANT="16-buster"
 FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 
 # [Optional] Uncomment if you want to install an additional version of node using nvm
@@ -24,7 +24,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 # Install EMSDK to /emsdk just like the EMSDK Dockerfile: https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 ENV EMSDK /emsdk
 # We pin the EMSDK version rather than 'latest' so that everyone is using the same compiler version
-ENV EMSCRIPTEN_VERSION 3.1.20
+ENV EMSCRIPTEN_VERSION 3.1.49
 
 RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK
 
