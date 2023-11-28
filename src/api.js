@@ -1,16 +1,11 @@
 /* global
-    ALLOC_NORMAL
     FS
     HEAP8
     Module
     _malloc
     _free
-    addFunction
-    allocate
-    allocateUTF8OnStack
     getValue
     intArrayFromString
-    removeFunction
     setValue
     stackAlloc
     stackRestore
@@ -21,6 +16,12 @@
 */
 
 "use strict";
+
+/** @external @const @global */ var addFunction;
+/** @external @const @global */ var allocate;
+/** @external @const @global */ var ALLOC_NORMAL;
+/** @external @const @global */ var allocateUTF8OnStack;
+/** @external @const @global */ var removeFunction;
 
 /**
  * @typedef {{Database:Database, Statement:Statement}} SqlJs
@@ -877,7 +878,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     }} Database.QueryExecResult
      * @property {Array<string>} columns the name of the columns of the result
      * (as returned by {@link Statement.getColumnNames})
-     * @property {Array<Array<Database.SqlValue>>} values one array per row, containing
+     * @property {
+     *  Array<Array<Database.SqlValue>>
+     * } values one array per row, containing
      * the column values
      */
 
