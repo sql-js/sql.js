@@ -1090,6 +1090,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
+        registerExtensionFunctions(this.db);
         return binaryDb;
     };
 
