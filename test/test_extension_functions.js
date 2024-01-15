@@ -69,6 +69,9 @@ exports.test = function(sql, assert) {
   var res = db.exec("SELECT reverse(str_data) FROM test;");
   assert.equal(res[0]['values'][0][0], "!dlroW olleH", "reverse() function works");
 
+  db.export()
+  var res = db.exec("SELECT floor(4.1)");
+  assert.equal(res[0]['values'][0][0], 4, "extension function works after export()");
 };
 
 if (module == require.main) {

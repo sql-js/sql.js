@@ -6,13 +6,14 @@
 var puppeteer = require("puppeteer");
 var path = require("path");
 var fs = require("fs");
+const { env } = require("process");
 
 class Worker {
   constructor(handle) {
     this.handle = handle;
   }
   static async fromFile(file) {
-    const browser = await puppeteer.launch();
+    const browser = await Worker.launchBrowser();
     const page = await browser.newPage();
     const source = fs.readFileSync(file, 'utf8');
     const worker = await page.evaluateHandle(x => {
@@ -21,6 +22,37 @@ class Worker {
     }, source);
     return new Worker(worker);
   }
+
+  static async launchBrowser(){
+    try{
+      return await puppeteer.launch({ headless: "new" });
+    }
+    catch(e){
+      if (e.stack.includes('No usable sandbox!')){
+        // It's possible that this exception is n expected error related to not having the ability to create a sandboxed user for Puppeteer in Docker. 
+        // One way around this is to set up the Dockerfile to have a sandboxed user.
+        // Details on getting Puppeteer running sandboxed while in Docker are here:
+        // https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker 
+        // That seemed kinda complicated, so I'm working around it more quickly/straightforwardly by looking for an env variable we set in the Docker fil `RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX`. 
+        // -- Taytay
+        if (env['RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX']=="1"){
+          // This tells puppeteer to launch without worrying about the sandbox.
+          // That's not "safe" if you don't trust the code you're loading in the browser, 
+          // but we're in a container and we know what we're testing.
+          return await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            headless: 'new'
+          });
+        }
+        else {
+          console.warn("Puppeteer can't start due to a sandbox error. (Details follow.)\nFor a quick, but potentially dangerous workaround, you can set the environment variable 'RUN_WORKER_TEST_WITHOUT_PUPETEER_SANDBOX=1'.\nYou can also simply run this test in the Docker container defined in .devcontainer/Dockerfile.");
+        }
+      }
+      // If we're here, we couldn't get out of this cleanly. Re-throw
+      throw e;
+    }
+  }
+
   async postMessage(msg) {
     return await this.handle.evaluate((worker, msg) => {
       return new Promise((accept, reject) => {

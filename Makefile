@@ -1,4 +1,4 @@
-# Note: Last built with version 1.38.30 of Emscripten
+# Note: Last built with version 2.0.15 of Emscripten
 
 # TODO: Emit a file showing which version of emcc and SQLite was used to compile the emitted output.
 # TODO: Create a release on Github with these compiled assets rather than checking them in
@@ -6,9 +6,9 @@
 
 # I got this handy makefile syntax from : https://github.com/mandel59/sqlite-wasm (MIT License) Credited in LICENSE
 # To use another version of Sqlite, visit https://www.sqlite.org/download.html and copy the appropriate values here:
-SQLITE_AMALGAMATION = sqlite-amalgamation-3330000
-SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2020/sqlite-amalgamation-3330000.zip
-SQLITE_AMALGAMATION_ZIP_SHA1 = 5b0a95fc6090499c0cdf7f15fcec9c132f8e021e
+SQLITE_AMALGAMATION = sqlite-amalgamation-3440200
+SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2023/sqlite-amalgamation-3440200.zip
+SQLITE_AMALGAMATION_ZIP_SHA3 = 9df894eb2297c08ab2dd0d85d7bcdc3fd78b8c80f22c91789a714bdf3351961e
 
 # Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated
 EXTENSION_FUNCTIONS = extension-functions.c
@@ -17,8 +17,8 @@ EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
 
 EMCC=emcc
 
-CFLAGS = \
-	-O2 \
+SQLITE_COMPILATION_FLAGS = \
+	-Oz \
 	-DSQLITE_OMIT_LOAD_EXTENSION \
 	-DSQLITE_DISABLE_LFS \
 	-DSQLITE_ENABLE_FTS3 \
@@ -34,7 +34,7 @@ EMFLAGS = \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s ALLOW_TABLE_GROWTH=1 \
 	-s EXPORTED_FUNCTIONS=@src/exported_functions.json \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
+	-s EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
 	-s SINGLE_FILE=0 \
 	-s NODEJS_CATCH_EXIT=0 \
 	-s NODEJS_CATCH_REJECTION=0 \
@@ -52,13 +52,11 @@ EMFLAGS_WASM = \
 	-s ALLOW_MEMORY_GROWTH=1
 
 EMFLAGS_OPTIMIZED= \
-	-s INLINING_LIMIT=50 \
-	-O3 \
+	-Oz \
 	-flto \
 	--closure 1
 
 EMFLAGS_DEBUG = \
-	-s INLINING_LIMIT=10 \
 	-s ASSERTIONS=1 \
 	-O1
 
@@ -148,11 +146,13 @@ dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js src/worker.js
 out/sqlite3.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	mkdir -p out
 	# Generate llvm bitcode
-	$(EMCC) $(CFLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
+	$(EMCC) $(SQLITE_COMPILATION_FLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
 
-out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+# Since the extension-functions.c includes other headers in the sqlite_amalgamation, we declare that this depends on more than just extension-functions.c
+out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	mkdir -p out
-	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+	# Generate llvm bitcode
+	$(EMCC) $(SQLITE_COMPILATION_FLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
@@ -169,18 +169,20 @@ cache/$(EXTENSION_FUNCTIONS):
 
 ## sqlite-src
 .PHONY: sqlite-src
-sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(EXTENSION_FUNCTIONS)
+sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
 
-sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip
-	mkdir -p sqlite-src
-	echo '$(SQLITE_AMALGAMATION_ZIP_SHA1)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
-	sha1sum -c cache/check.txt
-	rm -rf $@
+sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
+	echo '$(SQLITE_AMALGAMATION_ZIP_SHA3)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
+	sha3sum -a 256 -c cache/check.txt
+	# We don't delete the sqlite_amalgamation folder. That's a job for clean
+	# Also, the extension functions get copied here, and if we get the order of these steps wrong,
+	# this step could remove the extension functions, and that's not what we want
 	unzip -u 'cache/$(SQLITE_AMALGAMATION).zip' -d sqlite-src/
 	touch $@
 
 sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNCTIONS)
-	mkdir -p sqlite-src
+	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
 	echo '$(EXTENSION_FUNCTIONS_SHA1)  ./cache/$(EXTENSION_FUNCTIONS)' > cache/check.txt
 	sha1sum -c cache/check.txt
 	cp 'cache/$(EXTENSION_FUNCTIONS)' $@
@@ -189,5 +191,4 @@ sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNC
 .PHONY: clean
 clean:
 	rm -f out/* dist/* cache/*
-	rm -rf sqlite-src/ c/
-
+	rm -rf sqlite-src/

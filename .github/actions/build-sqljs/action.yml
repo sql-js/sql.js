@@ -1,0 +1,7 @@
+# action.yml
+name: 'Build SQL.js'
+description: 'Builds sql.js using the .devcontainer/Dockerfile as its environment'
+runs:
+  using: 'docker'
+  image: '../../../.devcontainer/Dockerfile'
+  entrypoint: "/github/workspace/.github/actions/build-sqljs/entrypoint.sh"

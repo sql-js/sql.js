@@ -16,7 +16,7 @@ SQLite is public domain, sql.js is MIT licensed.
 
 ## API documentation
 A [full API documentation](https://sql.js.org/documentation/) for all the available classes and methods is available.
-Is is generated from comments inside the source code, and is thus always up to date.
+It is generated from comments inside the source code, and is thus always up to date.
 
 ## Usage
 
@@ -25,7 +25,7 @@ By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAss
 ```javascript
 const initSqlJs = require('sql.js');
 // or if you are in a browser:
-// var initSqlJs = window.initSqlJs;
+// const initSqlJs = window.initSqlJs;
 
 const SQL = await initSqlJs({
   // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
@@ -34,15 +34,22 @@ const SQL = await initSqlJs({
 });
 
 // Create a database
-var db = new SQL.Database();
+const db = new SQL.Database();
 // NOTE: You can also use new SQL.Database(data) where
 // data is an Uint8Array representing an SQLite database file
 
+
+// Execute a single SQL string that contains multiple statements
+let sqlstr = "CREATE TABLE hello (a int, b char); \
+INSERT INTO hello VALUES (0, 'hello'); \
+INSERT INTO hello VALUES (1, 'world');";
+db.run(sqlstr); // Run the query without returning anything
+
 // Prepare an sql statement
-var stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
+const stmt = db.prepare("SELECT * FROM hello WHERE a=:aval AND b=:bval");
 
 // Bind values to the parameters and fetch the results of the query
-var result = stmt.getAsObject({':aval' : 1, ':bval' : 'world'});
+const result = stmt.getAsObject({':aval' : 1, ':bval' : 'world'});
 console.log(result); // Will print {a:1, b:'world'}
 
 // Bind other values
@@ -53,13 +60,7 @@ stmt.free();
 // You can not use your statement anymore once it has been freed.
 // But not freeing your statements causes memory leaks. You don't want that.
 
-// Execute a single SQL string that contains multiple statements
-sqlstr = "CREATE TABLE hello (a int, b char);";
-sqlstr += "INSERT INTO hello VALUES (0, 'hello');"
-sqlstr += "INSERT INTO hello VALUES (1, 'world');"
-db.run(sqlstr); // Run the query without returning anything
-
-var res = db.exec("SELECT * FROM hello");
+const res = db.exec("SELECT * FROM hello");
 /*
 [
   {columns:['a','b'], values:[[0,'hello'],[1,'world']]}
@@ -74,8 +75,35 @@ db.create_function("add_js", add);
 // Run a query in which the function is used
 db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
 
+// You can create custom aggregation functions, by passing a name
+// and a set of functions to `db.create_aggregate`:
+//
+// - an `init` function. This function receives no argument and returns
+//   the initial value for the state of the aggregate function.
+// - a `step` function. This function takes two arguments
+//    - the current state of the aggregation
+//    - a new value to aggregate to the state
+//  It should return a new value for the state.
+// - a `finalize` function. This function receives a state object, and
+//   returns the final value of the aggregate. It can be omitted, in which case
+//   the final value of the state will be returned directly by the aggregate function.
+//
+// Here is an example aggregation function, `json_agg`, which will collect all
+// input values and return them as a JSON array:
+db.create_aggregate(
+  "json_agg",
+  {
+    init: () => [],
+    step: (state, val) => [...state, val],
+    finalize: (state) => JSON.stringify(state),
+  }
+);
+
+db.exec("SELECT json_agg(column1) FROM (VALUES ('hello'), ('world'))");
+// -> The result of the query is the string '["hello","world"]'
+
 // Export the database to an Uint8Array containing the SQLite database file
-var binaryArray = db.export();
+const binaryArray = db.export();
 ```
 
 ## Demo
@@ -97,20 +125,20 @@ The test files provide up to date example of the use of the api.
     // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
     initSqlJs(config).then(function(SQL){
       //Create the database
-      var db = new SQL.Database();
+      const db = new SQL.Database();
       // Run a query without reading the results
       db.run("CREATE TABLE test (col1, col2);");
       // Insert two rows: (1,111) and (2,222)
       db.run("INSERT INTO test VALUES (?,?), (?,?)", [1,111,2,222]);
 
       // Prepare a statement
-      var stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
+      const stmt = db.prepare("SELECT * FROM test WHERE col1 BETWEEN $start AND $end");
       stmt.getAsObject({$start:1, $end:1}); // {col1:1, col2:111}
 
       // Bind new values
       stmt.bind({$start:1, $end:2});
       while(stmt.step()) { //
-        var row = stmt.getAsObject();
+        const row = stmt.getAsObject();
         console.log('Here is a row: ' + JSON.stringify(row));
       }
     });
@@ -126,10 +154,10 @@ The test files provide up to date example of the use of the api.
 The following code uses an HTML input as the source for loading a database:
 ```javascript
 dbFileElm.onchange = () => {
-  var f = dbFileElm.files[0];
-  var r = new FileReader();
+  const f = dbFileElm.files[0];
+  const r = new FileReader();
   r.onload = function() {
-    var Uints = new Uint8Array(r.result);
+    const Uints = new Uint8Array(r.result);
     db = new SQL.Database(Uints);
   }
   r.readAsArrayBuffer(f);
@@ -145,7 +173,7 @@ See : https://sql-js.github.io/sql.js/examples/GUI/gui.js
 const sqlPromise = initSqlJs({
   locateFile: file => `https://path/to/your/dist/folder/dist/${file}`
 });
-const dataPromise = fetch("/path/to/databse.sqlite").then(res => res.arrayBuffer());
+const dataPromise = fetch("/path/to/database.sqlite").then(res => res.arrayBuffer());
 const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 const db = new SQL.Database(new Uint8Array(buf));
 ```
@@ -153,15 +181,15 @@ const db = new SQL.Database(new Uint8Array(buf));
 ##### using XMLHttpRequest
 
 ```javascript
-var xhr = new XMLHttpRequest();
+const xhr = new XMLHttpRequest();
 // For example: https://github.com/lerocha/chinook-database/raw/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite
 xhr.open('GET', '/path/to/database.sqlite', true);
 xhr.responseType = 'arraybuffer';
 
 xhr.onload = e => {
-  var uInt8Array = new Uint8Array(xhr.response);
-  var db = new SQL.Database(uInt8Array);
-  var contents = db.exec("SELECT * FROM my_table");
+  const uInt8Array = new Uint8Array(xhr.response);
+  const db = new SQL.Database(uInt8Array);
+  const contents = db.exec("SELECT * FROM my_table");
   // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
 };
 xhr.send();
@@ -176,13 +204,13 @@ Alternatively, you can simply download `sql-wasm.js` and `sql-wasm.wasm`, from t
 
 #### read a database from the disk:
 ```javascript
-var fs = require('fs');
-var initSqlJs = require('sql-wasm.js');
-var filebuffer = fs.readFileSync('test.sqlite');
+const fs = require('fs');
+const initSqlJs = require('sql-wasm.js');
+const filebuffer = fs.readFileSync('test.sqlite');
 
 initSqlJs().then(function(SQL){
   // Load the db
-  var db = new SQL.Database(filebuffer);
+  const db = new SQL.Database(filebuffer);
 });
 
 ```
@@ -190,10 +218,10 @@ initSqlJs().then(function(SQL){
 #### write a database to the disk
 You need to convert the result of `db.export` to a buffer
 ```javascript
-var fs = require("fs");
+const fs = require("fs");
 // [...] (create the database)
-var data = db.export();
-var buffer = new Buffer(data);
+const data = db.export();
+const buffer = Buffer.from(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
@@ -203,12 +231,12 @@ See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 If you don't want to run CPU-intensive SQL queries in your main application thread,
 you can use the *more limited* WebWorker API.
 
-You will need to download [dist/worker.sql-wasm.js](dist/worker.sql-wasm.js) [dist/worker.sql-wasm.wasm](dist/worker.sql-wasm.wasm).
+You will need to download `worker.sql-wasm.js` and `worker.sql-wasm.wasm` from the [release page](https://github.com/sql-js/sql.js/releases).
 
 Example:
 ```html
 <script>
-  var worker = new Worker("/dist/worker.sql-wasm.js");
+  const worker = new Worker("/dist/worker.sql-wasm.js");
   worker.onmessage = () => {
     console.log("Database opened");
     worker.onmessage = event => {
@@ -231,6 +259,33 @@ Example:
   });
 </script>
 ```
+### Enabling BigInt support
+If you need ```BigInt``` support, it is partially supported since most browsers now supports it including Safari.Binding ```BigInt``` is still not supported, only getting ```BigInt``` from the database is supported for now.
+
+```html
+<script>
+  const stmt = db.prepare("SELECT * FROM test");
+  const config = {useBigInt: true};
+  /*Pass optional config param to the get function*/
+  while (stmt.step()) console.log(stmt.get(null, config));
+
+  /*OR*/
+  const results = db.exec("SELECT * FROM test", config);
+  console.log(results[0].values)
+</script>
+```
+On WebWorker, you can just add ```config``` param before posting a message. With this, you wont have to pass config param on ```get``` function.
+
+```html
+<script>
+  worker.postMessage({
+    id:1,
+    action:"exec",
+    sql: "SELECT * FROM test",
+    config: {useBigInt: true}, /*Optional param*/
+  });
+</script>
+```
 
 See [examples/GUI/gui.js](examples/GUI/gui.js) for a full working example.
 
@@ -246,14 +301,14 @@ So in the past, you would:
 ```html
 <script src='js/sql.js'></script>
 <script>
-  var db = new SQL.Database();
+  const db = new SQL.Database();
   //...
 </script>
 ```
 or:
 ```javascript
-var SQL = require('sql.js');
-var db = new SQL.Database();
+const SQL = require('sql.js');
+const db = new SQL.Database();
 //...
 ```
 
@@ -262,16 +317,16 @@ Version 1.x:
 <script src='dist/sql-wasm.js'></script>
 <script>
   initSqlJs({ locateFile: filename => `/dist/${filename}` }).then(function(SQL){
-    var db = new SQL.Database();
+    const db = new SQL.Database();
     //...
   });
 </script>
 ```
 or:
 ```javascript
-var initSqlJs = require('sql-wasm.js');
+const initSqlJs = require('sql-wasm.js');
 initSqlJs().then(function(SQL){
-  var db = new SQL.Database();
+  const db = new SQL.Database();
   //...
 });
 ```
@@ -295,21 +350,8 @@ For each [release](https://github.com/sql-js/sql.js/releases/), you will find a 
  - `sql-asm-debug.js` : The _Debug_ asm.js version of Sql.js. Use this for local development.
  - `worker.*` - Web Worker versions of the above libraries. More limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for a good example of this.
 
-## Compiling
+## Compiling/Contributing
 
-- Install the EMSDK, [as described here](https://emscripten.org/docs/getting_started/downloads.html)
-- Run `npm run rebuild`
+General consumers of this library don't need to read any further. (The compiled files are available via the [release page](https://github.com/sql-js/sql.js/releases).)
 
-In order to enable extensions like JSON1 or FTS5, change the CFLAGS in the [Makefile](Makefile) and rebuild:
-
-``` diff
-CFLAGS = \
-        -O2 \
-        -DSQLITE_OMIT_LOAD_EXTENSION \
-        -DSQLITE_DISABLE_LFS \
-        -DSQLITE_ENABLE_FTS3 \
-        -DSQLITE_ENABLE_FTS3_PARENTHESIS \
-+       -DSQLITE_ENABLE_FTS5 \
-+       -DSQLITE_ENABLE_JSON1 \
-        -DSQLITE_THREADSAFE=0
-```
+If you want to compile your own version of SQLite for WebAssembly, or want to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
