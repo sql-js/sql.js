@@ -6,9 +6,9 @@
 
 # I got this handy makefile syntax from : https://github.com/mandel59/sqlite-wasm (MIT License) Credited in LICENSE
 # To use another version of Sqlite, visit https://www.sqlite.org/download.html and copy the appropriate values here:
-SQLITE_AMALGAMATION = sqlite-amalgamation-3440200
-SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2023/sqlite-amalgamation-3440200.zip
-SQLITE_AMALGAMATION_ZIP_SHA3 = 9df894eb2297c08ab2dd0d85d7bcdc3fd78b8c80f22c91789a714bdf3351961e
+SQLITE_AMALGAMATION = sqlite-amalgamation-3450000
+SQLITE_AMALGAMATION_ZIP_URL = https://www.sqlite.org/2024/sqlite-amalgamation-3450000.zip
+SQLITE_AMALGAMATION_ZIP_SHA3 = ae8e3bc692b9672c01bb83111971a59de55485a9b3eac051b1c946e36dc401e2
 
 # Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated
 EXTENSION_FUNCTIONS = extension-functions.c
