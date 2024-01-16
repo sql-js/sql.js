@@ -2009,9 +2009,7 @@ function getUniqueRunDependency(id) {
 function addRunDependency(id) {
   runDependencies++;
 
-  if (Module['monitorRunDependencies']) {
-    Module['monitorRunDependencies'](runDependencies);
-  }
+  Module['monitorRunDependencies']?.(runDependencies);
 
   if (id) {
     assert(!runDependencyTracking[id]);
@@ -2045,9 +2043,7 @@ function addRunDependency(id) {
 function removeRunDependency(id) {
   runDependencies--;
 
-  if (Module['monitorRunDependencies']) {
-    Module['monitorRunDependencies'](runDependencies);
-  }
+  Module['monitorRunDependencies']?.(runDependencies);
 
   if (id) {
     assert(runDependencyTracking[id]);
@@ -2070,9 +2066,7 @@ function removeRunDependency(id) {
 
 /** @param {string|number=} what */
 function abort(what) {
-  if (Module['onAbort']) {
-    Module['onAbort'](what);
-  }
+  Module['onAbort']?.(what);
 
   what = 'Aborted(' + what + ')';
   // TODO(sbc): Should we remove printing and leave it up to whoever
@@ -2476,7 +2470,7 @@ function dbg(text) {
   }
 
   var warnOnce = (text) => {
-      if (!warnOnce.shown) warnOnce.shown = {};
+      warnOnce.shown ||= {};
       if (!warnOnce.shown[text]) {
         warnOnce.shown[text] = 1;
         if (ENVIRONMENT_IS_NODE) text = 'warning: ' + text;
@@ -3024,55 +3018,53 @@ function dbg(text) {
           // no supported
           throw new FS.ErrnoError(63);
         }
-        if (!MEMFS.ops_table) {
-          MEMFS.ops_table = {
-            dir: {
-              node: {
-                getattr: MEMFS.node_ops.getattr,
-                setattr: MEMFS.node_ops.setattr,
-                lookup: MEMFS.node_ops.lookup,
-                mknod: MEMFS.node_ops.mknod,
-                rename: MEMFS.node_ops.rename,
-                unlink: MEMFS.node_ops.unlink,
-                rmdir: MEMFS.node_ops.rmdir,
-                readdir: MEMFS.node_ops.readdir,
-                symlink: MEMFS.node_ops.symlink
-              },
-              stream: {
-                llseek: MEMFS.stream_ops.llseek
-              }
+        MEMFS.ops_table ||= {
+          dir: {
+            node: {
+              getattr: MEMFS.node_ops.getattr,
+              setattr: MEMFS.node_ops.setattr,
+              lookup: MEMFS.node_ops.lookup,
+              mknod: MEMFS.node_ops.mknod,
+              rename: MEMFS.node_ops.rename,
+              unlink: MEMFS.node_ops.unlink,
+              rmdir: MEMFS.node_ops.rmdir,
+              readdir: MEMFS.node_ops.readdir,
+              symlink: MEMFS.node_ops.symlink
             },
-            file: {
-              node: {
-                getattr: MEMFS.node_ops.getattr,
-                setattr: MEMFS.node_ops.setattr
-              },
-              stream: {
-                llseek: MEMFS.stream_ops.llseek,
-                read: MEMFS.stream_ops.read,
-                write: MEMFS.stream_ops.write,
-                allocate: MEMFS.stream_ops.allocate,
-                mmap: MEMFS.stream_ops.mmap,
-                msync: MEMFS.stream_ops.msync
-              }
-            },
-            link: {
-              node: {
-                getattr: MEMFS.node_ops.getattr,
-                setattr: MEMFS.node_ops.setattr,
-                readlink: MEMFS.node_ops.readlink
-              },
-              stream: {}
-            },
-            chrdev: {
-              node: {
-                getattr: MEMFS.node_ops.getattr,
-                setattr: MEMFS.node_ops.setattr
-              },
-              stream: FS.chrdev_stream_ops
+            stream: {
+              llseek: MEMFS.stream_ops.llseek
             }
-          };
-        }
+          },
+          file: {
+            node: {
+              getattr: MEMFS.node_ops.getattr,
+              setattr: MEMFS.node_ops.setattr
+            },
+            stream: {
+              llseek: MEMFS.stream_ops.llseek,
+              read: MEMFS.stream_ops.read,
+              write: MEMFS.stream_ops.write,
+              allocate: MEMFS.stream_ops.allocate,
+              mmap: MEMFS.stream_ops.mmap,
+              msync: MEMFS.stream_ops.msync
+            }
+          },
+          link: {
+            node: {
+              getattr: MEMFS.node_ops.getattr,
+              setattr: MEMFS.node_ops.setattr,
+              readlink: MEMFS.node_ops.readlink
+            },
+            stream: {}
+          },
+          chrdev: {
+            node: {
+              getattr: MEMFS.node_ops.getattr,
+              setattr: MEMFS.node_ops.setattr
+            },
+            stream: FS.chrdev_stream_ops
+          }
+        };
         var node = FS.createNode(parent, name, mode, dev);
         if (FS.isDir(node.mode)) {
           node.node_ops = MEMFS.ops_table.dir.node;
@@ -3215,10 +3207,7 @@ function dbg(text) {
         },
   readdir(node) {
           var entries = ['.', '..'];
-          for (var key in node.contents) {
-            if (!node.contents.hasOwnProperty(key)) {
-              continue;
-            }
+          for (var key of Object.keys(node.contents)) {
             entries.push(key);
           }
           return entries;
@@ -3393,15 +3382,15 @@ function dbg(text) {
       var dep = getUniqueRunDependency(`cp ${fullname}`); // might have several active requests for the same fullname
       function processData(byteArray) {
         function finish(byteArray) {
-          if (preFinish) preFinish();
+          preFinish?.();
           if (!dontCreateFile) {
             FS_createDataFile(parent, name, byteArray, canRead, canWrite, canOwn);
           }
-          if (onload) onload();
+          onload?.();
           removeRunDependency(dep);
         }
         if (FS_handledByPreloadPlugin(byteArray, fullname, finish, () => {
-          if (onerror) onerror();
+          onerror?.();
           removeRunDependency(dep);
         })) {
           return;
@@ -4017,9 +4006,7 @@ function dbg(text) {
           // override node's stream ops with the device's
           stream.stream_ops = device.stream_ops;
           // forward the open call
-          if (stream.stream_ops.open) {
-            stream.stream_ops.open(stream);
-          }
+          stream.stream_ops.open?.(stream);
         },
   llseek() {
           throw new FS.ErrnoError(70);
@@ -5041,7 +5028,7 @@ function dbg(text) {
           },
           close(stream) {
             // flush any pending line data
-            if (output && output.buffer && output.buffer.length) {
+            if (output?.buffer?.length) {
               output(10);
             }
           },
@@ -6087,7 +6074,7 @@ function dbg(text) {
   try {
   
       var stream = SYSCALLS.getStreamFromFD(fd);
-      if (stream.stream_ops && stream.stream_ops.fsync) {
+      if (stream.stream_ops?.fsync) {
         return stream.stream_ops.fsync(stream);
       }
       return 0; // we can't do anything synchronously; the in-memory FS is already synced to
@@ -6753,6 +6740,7 @@ var missingLibrarySymbols = [
   'registerTouchEventCallback',
   'fillGamepadEventData',
   'registerGamepadEventCallback',
+  'disableGamepadApiIfItThrows',
   'registerBeforeUnloadEventCallback',
   'fillBatteryEventData',
   'battery',
@@ -6775,6 +6763,7 @@ var missingLibrarySymbols = [
   'makePromiseCallback',
   'ExceptionInfo',
   'findMatchingCatch',
+  'Browser_asyncPrepareDataCounter',
   'setMainLoop',
   'getSocketFromFD',
   'getSocketAddress',
@@ -7031,7 +7020,7 @@ function checkUnflushedContent() {
       var stream = info.object;
       var rdev = stream.rdev;
       var tty = TTY.ttys[rdev];
-      if (tty && tty.output && tty.output.length) {
+      if (tty?.output?.length) {
         has = true;
       }
     });
