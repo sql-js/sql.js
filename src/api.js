@@ -176,10 +176,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             "number",
             "number",
             "number",
-            "number",
-            "number",
-            "number",
-            "number"
+          
+          
+          
         ]
     );
     var sqlite3_value_type = cwrap("sqlite3_value_type", "number", ["number"]);
@@ -819,14 +818,21 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @memberof module:SqlJs
     * Open a new database either by creating a new one or opening an existing
     * one stored in the byte array passed in first argument
-    * @param {Array<number>} data An array of bytes representing
+    * @param {Array<number>|string} data An array of bytes representing,
+    * or a string for mapped file name
     * an SQLite database file
     */
     function Database(data) {
-        this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
-        if (data != null) {
-            FS.createDataFile("/", this.filename, data, true, true);
+        if (data != null && typeof data === "string") {
+            this.filename = data;
+            this.filetype = "FS";
+        } else {
+            this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
+            if (data != null) {
+                FS.createDataFile("/", this.filename, data, true, true);
+            }
         }
+
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
@@ -1113,7 +1119,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
         this.handleError(sqlite3_close_v2(this.db));
-        FS.unlink("/" + this.filename);
+        if (this.filetype !== "FS") {
+            FS.unlink("/" + this.filename);
+        }
         this.db = null;
     };
 
@@ -1250,6 +1258,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return this;
     };
 
+    var vfs = Module["FS"];
+
+    /** Create database instance
+    @param {string} vdir directory name to mount for virtual fs
+    @param {string} osdir system directory to mount
+     */
+    Module["mount"] = function mount(vdir, osdir) {
+        if (vfs.mayCreate(vdir)) {
+            vfs.mkdir(vdir);
+        }
+        vfs.mount(vfs.filesystems["NODEFS"], { root: osdir }, vdir);
+    };
+
+    var mountpoints = Module["mountpoints"];
+    if (mountpoints) {
+        Array.prototype.forEach.call(Object.keys(mountpoints),
+            function mount(mp) {
+                Module["mount"](mp, mountpoints[mp]);
+            });
+    }
+ 
     /** Register a custom aggregate with SQLite
       @example <caption>Register a custom sum function</caption>
         db.create_aggregate("js_sum", {

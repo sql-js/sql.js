@@ -3,7 +3,8 @@
 "stackAlloc",
 "stackSave",
 "stackRestore",
-"UTF8ToString",
+"FS",
+"UTF8ToString"
 
 "allocate",
 "ALLOC_NORMAL",
