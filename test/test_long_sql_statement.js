@@ -6,7 +6,6 @@ exports.test = function (sql, assert) {
     var many_a = "";
     for (var i = 0; i < len; i++) many_a += 'a';
 
-    console.log('xxx');
     var res = db.exec("select length('" + many_a + "') as len");
     var expectedResult = [
         {
