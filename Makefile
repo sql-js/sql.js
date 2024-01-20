@@ -37,7 +37,8 @@ EMFLAGS = \
 	-s EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
 	-s SINGLE_FILE=0 \
 	-s NODEJS_CATCH_EXIT=0 \
-	-s NODEJS_CATCH_REJECTION=0
+	-s NODEJS_CATCH_REJECTION=0 \
+	-s STACK_SIZE=5MB
 
 EMFLAGS_ASM = \
 	-s WASM=0
@@ -56,7 +57,7 @@ EMFLAGS_OPTIMIZED= \
 	--closure 1
 
 EMFLAGS_DEBUG = \
-	-s ASSERTIONS=1 \
+	-s ASSERTIONS=2 \
 	-O1
 
 BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
