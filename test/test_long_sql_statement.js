@@ -2,11 +2,12 @@
 exports.test = function (sql, assert) {
     // Create a database
     var db = new sql.Database();
-    var len = 70000;
+    var len = 1000000;
     var many_a = "";
-    for (var i = 0; i < len; i++) many_a += 'a';
+    for (var a = 'a'; many_a.length < len; a += a)
+        if ((len / a.length) & 1)
+            many_a += a;
 
-    console.log('xxx');
     var res = db.exec("select length('" + many_a + "') as len");
     var expectedResult = [
         {
