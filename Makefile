@@ -48,7 +48,8 @@ EMFLAGS_ASM_MEMORY_GROWTH = \
 
 EMFLAGS_WASM = \
 	-s WASM=1 \
-	-s ALLOW_MEMORY_GROWTH=1
+	-s ALLOW_MEMORY_GROWTH=1 \
+	-s STACK_SIZE=5MB
 
 EMFLAGS_OPTIMIZED= \
 	-Oz \
@@ -56,7 +57,7 @@ EMFLAGS_OPTIMIZED= \
 	--closure 1
 
 EMFLAGS_DEBUG = \
-	-s ASSERTIONS=1 \
+	-s ASSERTIONS=2 \
 	-O1
 
 BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
