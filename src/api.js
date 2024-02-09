@@ -1075,7 +1075,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return new StatementIterator(sql, this);
     };
 
-    /** Exports the contents of the database to a binary array
+    /** Exports the contents of the database to a binary array. This 
+     * operation will close and re-open the database which will cause
+     * any pragmas to be set back to their default values.
     @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
     Database.prototype["export"] = function exportDatabase() {
