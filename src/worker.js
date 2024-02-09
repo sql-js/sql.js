@@ -29,7 +29,7 @@ function onModuleReady(SQL) {
                 createDb();
             }
             if (!data["sql"]) {
-                throw "exec: Missing query string";
+                throw new Error("exec: Missing query string");
             }
             return postMessage({
                 id: data["id"],
