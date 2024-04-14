@@ -10,7 +10,7 @@ body {
 
 a,
 a:active {
-    color: #00bbff;
+    color: #0bf;
 }
 
 hr {
@@ -43,12 +43,18 @@ h6 {
     background: #252525;
 }
 
+
+
 .with-arrow {
     fill: #999;
 }
 
 .sidebar-section-children-container {
     background: #292929;
+}
+
+.sidebar-section-children.active {
+    background: #444;
 }
 
 .sidebar-section-children a:hover {
@@ -86,8 +92,8 @@ h6 {
 }
 
 .navbar-item a:active {
-    color: #aaa;
     background-color: #222;
+    color: #aaa;
 }
 
 .navbar-item:hover {
@@ -105,8 +111,8 @@ h6 {
 
 .toc-link {
     color: #777;
-    transition: color 0.3s;
     font-size: 0.875rem;
+    transition: color 0.3s;
 }
 
 .toc-link.is-active-link {
@@ -193,7 +199,6 @@ samp {
     color: #eee;
 }
 
-/* stylelint-enable */
 
 table .name,
 .params .name,
@@ -396,12 +401,12 @@ blockquote {
     background: #222;
 }
 
-/* scroll bar */
-::-webkit-scrollbar-track {
-    background: #333;
+
+.child-tutorial {
+    border-color: #555;
+    color: #f3f3f3;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #555;
-    outline: 0.06125rem solid #555;
+.child-tutorial:hover {
+    background: #222;
 }

@@ -632,6 +632,29 @@ function addHrefToSidebarTitle() {
     });
 }
 
+function highlightActiveLinkInSidebar() {
+    const list = document.location.href.split('/');
+    const targetURL = list[list.length - 1];
+    let element = document.querySelector(`.sidebar a[href*='${targetURL}']`);
+
+    if (!element) {
+        try {
+            element = document.querySelector(
+                `.sidebar a[href*='${targetURL.split('#')[0]}']`
+            );
+        } catch (e) {
+            console.error(e);
+
+            return;
+        }
+    }
+
+    if (!element) return;
+
+    element.parentElement.classList.add('active');
+    element.scrollIntoView();
+}
+
 function onDomContentLoaded() {
     var themeButton = document.querySelectorAll('.theme-toggle');
 
@@ -676,6 +699,7 @@ function onDomContentLoaded() {
     initTooltip();
     fixTable();
     addHrefToSidebarTitle();
+    highlightActiveLinkInSidebar();
 }
 
 // eslint-disable-next-line no-undef

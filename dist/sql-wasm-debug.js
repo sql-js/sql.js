@@ -6639,8 +6639,13 @@ var _sqlite3_value_text = Module['_sqlite3_value_text'] = createExportWrapper('s
 var ___errno_location = createExportWrapper('__errno_location');
 var _sqlite3_prepare_v2 = Module['_sqlite3_prepare_v2'] = createExportWrapper('sqlite3_prepare_v2');
 var _sqlite3_step = Module['_sqlite3_step'] = createExportWrapper('sqlite3_step');
-var _sqlite3_finalize = Module['_sqlite3_finalize'] = createExportWrapper('sqlite3_finalize');
 var _sqlite3_reset = Module['_sqlite3_reset'] = createExportWrapper('sqlite3_reset');
+var _sqlite3_exec = Module['_sqlite3_exec'] = createExportWrapper('sqlite3_exec');
+var _sqlite3_finalize = Module['_sqlite3_finalize'] = createExportWrapper('sqlite3_finalize');
+var _sqlite3_column_name = Module['_sqlite3_column_name'] = createExportWrapper('sqlite3_column_name');
+var _sqlite3_column_text = Module['_sqlite3_column_text'] = createExportWrapper('sqlite3_column_text');
+var _sqlite3_column_type = Module['_sqlite3_column_type'] = createExportWrapper('sqlite3_column_type');
+var _sqlite3_errmsg = Module['_sqlite3_errmsg'] = createExportWrapper('sqlite3_errmsg');
 var _sqlite3_clear_bindings = Module['_sqlite3_clear_bindings'] = createExportWrapper('sqlite3_clear_bindings');
 var _sqlite3_value_blob = Module['_sqlite3_value_blob'] = createExportWrapper('sqlite3_value_blob');
 var _sqlite3_value_bytes = Module['_sqlite3_value_bytes'] = createExportWrapper('sqlite3_value_bytes');
@@ -6660,9 +6665,6 @@ var _sqlite3_data_count = Module['_sqlite3_data_count'] = createExportWrapper('s
 var _sqlite3_column_blob = Module['_sqlite3_column_blob'] = createExportWrapper('sqlite3_column_blob');
 var _sqlite3_column_bytes = Module['_sqlite3_column_bytes'] = createExportWrapper('sqlite3_column_bytes');
 var _sqlite3_column_double = Module['_sqlite3_column_double'] = createExportWrapper('sqlite3_column_double');
-var _sqlite3_column_text = Module['_sqlite3_column_text'] = createExportWrapper('sqlite3_column_text');
-var _sqlite3_column_type = Module['_sqlite3_column_type'] = createExportWrapper('sqlite3_column_type');
-var _sqlite3_column_name = Module['_sqlite3_column_name'] = createExportWrapper('sqlite3_column_name');
 var _sqlite3_bind_blob = Module['_sqlite3_bind_blob'] = createExportWrapper('sqlite3_bind_blob');
 var _sqlite3_bind_double = Module['_sqlite3_bind_double'] = createExportWrapper('sqlite3_bind_double');
 var _sqlite3_bind_int = Module['_sqlite3_bind_int'] = createExportWrapper('sqlite3_bind_int');
@@ -6670,8 +6672,6 @@ var _sqlite3_bind_text = Module['_sqlite3_bind_text'] = createExportWrapper('sql
 var _sqlite3_bind_parameter_index = Module['_sqlite3_bind_parameter_index'] = createExportWrapper('sqlite3_bind_parameter_index');
 var _sqlite3_sql = Module['_sqlite3_sql'] = createExportWrapper('sqlite3_sql');
 var _sqlite3_normalized_sql = Module['_sqlite3_normalized_sql'] = createExportWrapper('sqlite3_normalized_sql');
-var _sqlite3_errmsg = Module['_sqlite3_errmsg'] = createExportWrapper('sqlite3_errmsg');
-var _sqlite3_exec = Module['_sqlite3_exec'] = createExportWrapper('sqlite3_exec');
 var _sqlite3_changes = Module['_sqlite3_changes'] = createExportWrapper('sqlite3_changes');
 var _sqlite3_close_v2 = Module['_sqlite3_close_v2'] = createExportWrapper('sqlite3_close_v2');
 var _sqlite3_create_function_v2 = Module['_sqlite3_create_function_v2'] = createExportWrapper('sqlite3_create_function_v2');
