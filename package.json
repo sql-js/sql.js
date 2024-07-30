@@ -1,6 +1,6 @@
 {
 	"name": "sql.js",
-	"version": "1.10.3",
+	"version": "1.11.0",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
 	"keywords": [
 		"sql",
@@ -46,8 +46,7 @@
 		"eslint-config-airbnb-base": "^15.0.0",
 		"eslint-plugin-import": "^2.26.0",
 		"jsdoc": "^4.0.2",
-		"puppeteer": "^21.5.2",
+		"puppeteer": "^22.14.0",
 		"test": "=0.6.0"
-	},
-	"dependencies": {}
+	}
 }

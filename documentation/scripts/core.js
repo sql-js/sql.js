@@ -634,7 +634,7 @@ function addHrefToSidebarTitle() {
 
 function highlightActiveLinkInSidebar() {
     const list = document.location.href.split('/');
-    const targetURL = list[list.length - 1];
+    const targetURL = decodeURI(list[list.length - 1]);
     let element = document.querySelector(`.sidebar a[href*='${targetURL}']`);
 
     if (!element) {
