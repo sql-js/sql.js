@@ -6,10 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: make
       uses: ./.github/actions/build-sqljs
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with: {name: dist, path: dist}
     - name: test
       run: npm ci && npm test
