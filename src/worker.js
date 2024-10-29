@@ -35,6 +35,11 @@ function onModuleReady(SQL) {
                 id: data["id"],
                 results: db.exec(data["sql"], data["params"], config)
             });
+        case "getRowsModified":
+            return postMessage({
+                id: data["id"],
+                rowsModified: db.getRowsModified()
+            });
         case "each":
             if (db === null) {
                 createDb();

@@ -118,6 +118,9 @@ exports.test = async function test(SQL, assert) {
   assert.strictEqual(table.values[2][1], 'c', 'Reading string');
   assert.deepEqual(obj2array(table.values[2][2]), [0x00, 0x44], 'Reading BLOB byte');
 
+  data = await worker.postMessage({ action: 'getRowsModified' });
+  assert.equal(data.rowsModified, 1, 'Number of changed rows')
+
   data = await worker.postMessage({ action: 'export' });
   var header = "SQLite format 3\0";
   var actual = "";
