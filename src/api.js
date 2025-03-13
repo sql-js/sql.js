@@ -1124,6 +1124,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         });
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
+
+        if (this.updateHookFunctionPtr) {
+            removeFunction(this.updateHookFunctionPtr);
+            this.updateHookFunctionPtr = undefined;
+        }
+
         this.handleError(sqlite3_close_v2(this.db));
         FS.unlink("/" + this.filename);
         this.db = null;
@@ -1394,12 +1400,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Registers the update hook with SQLite
-        @param {function(operation, tableName, rowId)} callback
+        @param {function(operation, database, table, rowId) | null} callback
              executed whenever a row in any rowid table is changed
 
         For each changed row, the callback is called once with the change
-        ('insert', 'update' or 'delete'), the table name where the change
-        happened and the rowid of the row that has been changed.
+        ('insert', 'update' or 'delete'), the database name and table name
+        where the change happened and the rowid of the row that has been
+        changed.
 
         rowid is cast to a plain number, if it exceeds Number.MAX_SAFE_INTEGER
         an error will be thrown.
@@ -1407,14 +1414,25 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         The callback MUST NOT modify the database in any way.
 
         Only a single callback can be registered. Unregister the callback by
-        passing an empty function.
+        passing null.
 
-        Not called for some updates like ON REPLACE CONFLICT and TRUNCATE.
+        Not called for some updates like ON REPLACE CONFLICT and TRUNCATE (a
+        DELETE FROM without a WHERE clause).
 
         See sqlite docs on sqlite3_update_hook for more details.
        */
     Database.prototype["updateHook"] = function updateHook(callback) {
-        this.updateHookCallback = callback;
+        if (this.updateHookFunctionPtr) {
+            // unregister and cleanup a previously registered update hook
+            sqlite3_update_hook(this.db, 0, 0);
+            removeFunction(this.updateHookFunctionPtr);
+            this.updateHookFunctionPtr = undefined;
+        }
+
+        if (!callback) {
+            // no new callback to register
+            return;
+        }
 
         // void(*)(void *,int ,char const *,char const *,sqlite3_int64)
         function wrappedCallback(
@@ -1441,6 +1459,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                         + operationCode;
             }
 
+            var databaseName = UTF8ToString(databaseNamePtr);
             var tableName = UTF8ToString(tableNamePtr);
 
             if (rowIdBigInt > Number.MAX_SAFE_INTEGER) {
@@ -1449,18 +1468,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
             var rowId = Number(rowIdBigInt);
 
-            if (this.updateHookCallback) {
-                this.updateHookCallback(operation, tableName, rowId);
-            }
+            callback(operation, databaseName, tableName, rowId);
         }
 
-        var funcPtr = addFunction(wrappedCallback.bind(this), "viiiij");
+        this.updateHookFunctionPtr = addFunction(wrappedCallback, "viiiij");
 
-        this.handleError(sqlite3_update_hook(
+        sqlite3_update_hook(
             this.db,
-            funcPtr,
+            this.updateHookFunctionPtr,
             0 // passed as the first arg to wrappedCallback
-        ));
+        );
     };
 
     // export Database to Module
