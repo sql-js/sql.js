@@ -112,6 +112,18 @@ There are a few examples [available here](https://sql-js.github.io/sql.js/index.
 ## Examples
 The test files provide up to date example of the use of the api.
 ### Inside the browser
+
+#### Using ES Modules
+This package supports exports an es module that works with bundlers like webpack:
+```js
+const SQL = await import("sql.js");
+
+const db = new SQL.Database();
+console.log(db.exec("select 1"));
+```
+
+You may need to enable features in your bundler, e.g. `asyncWebassembly` and `topLevelAwait` in [Webpack 5](https://webpack.js.org/configuration/experiments/).
+
 #### Example **HTML** file:
 ```html
 <meta charset="utf8" />
