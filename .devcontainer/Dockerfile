@@ -1,13 +1,13 @@
 # We build our DevContainer on MS' Typescript-Node Devcontainer
-# This gives us lots of standard stuff, and lets us layer a few custom things on top, like the Emscripten compiler, Puppeteer
+# This gives us lots of standard stuff, and lets us layer a few custom things on top, like the Emscripten compiler
 
 # --------------------------------------------------------------------
 # BEGIN Standard MS Devcontainer for Typescript-Node 
 
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/typescript-node/.devcontainer/base.Dockerfile
 # [Choice] Node.js version: 14, 12, 10
-ARG VARIANT="16-buster"
-FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
+ARG VARIANT="22-bullseye"
+FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:1-${VARIANT}
 
 # [Optional] Uncomment if you want to install an additional version of node using nvm
 # ARG EXTRA_NODE_VERSION=10
@@ -24,7 +24,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
 # Install EMSDK to /emsdk just like the EMSDK Dockerfile: https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
 ENV EMSDK /emsdk
 # We pin the EMSDK version rather than 'latest' so that everyone is using the same compiler version
-ENV EMSCRIPTEN_VERSION 3.1.64
+ENV EMSCRIPTEN_VERSION 4.0.5
 
 RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK
 
@@ -70,36 +70,7 @@ RUN echo 'export EM_NODE_JS="$EMSDK_NODE"' >> /etc/bash.bashrc
 # END EMSDK
 # --------------------------------------------------------------------
 
-# --------------------------------------------------------------------
-# BEGIN PUPPETEER dependencies
-# Here we install all of the packages depended upon by Chrome (that Puppeteer will use for headless tests).
-# We could also take a page from https://github.com/buildkite/docker-puppeteer/blob/master/Dockerfile instead,
-# and install the latest stable version of Chrome to get the right dependencies, but that version changes over time,
-# so the stable version of Chrome and the version installed by Puppeteer might diverge over time. 
-# It also means they end up having Chrome downloaded and installed twice.
-# We could install the particular version of Chrome that our version of Puppeteer would use and then tell Puppeteer not to download its own version of Chrome,
-# but then we'd have to rebuild our Docker container every time we revved Puppeteer, and that feels fiddly too.
-# For all of these reasons, it seems safer to simply install the explicit list packages depended upon by Chrome, assume that's unlikely to change
-# and move on.
-
-# List taken from:
-# https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
+# Install wget, gnupg, and sha3sum
 RUN apt-get update \
-    && apt-get install -y wget gnupg \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable fonts-freefont-ttf libxss1 libxshmfence1 libglu1 \
-      --no-install-recommends \
-    # Installs the command "sha3sum", which is used check the download integrity of sqlite source.
-    && apt-get install -y libdigest-sha3-perl \
+    && apt-get install -y wget gnupg libdigest-sha3-perl \
     && rm -rf /var/lib/apt/lists/*
-
-# We set this env variable (RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX=1) this to tell our sql.js test harness to run Puppeteer without the sandbox.
-# Otherwise, when we instantiate Puppeteer, we get this error: 
-# Puppeteer can't start due to a sandbox error. (Details follow.)
-#     [0321/173044.694524:FATAL:zygote_host_impl_linux.cc(117)] No usable sandbox! Update your kernel or see https://chromium.googlesource.com/chromium/src/+/master/docs/linux/suid_sandbox_development.md for more information on developing with the SUID sandbox. If you want to live dangerously and need an immediate workaround, you can try using --no-sandbox.
-ENV RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX=1
-
-# END PUPPETEER
-# --------------------------------------------------------------------
