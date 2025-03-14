@@ -1,0 +1,23 @@
+<pre id="output"></pre>
+<p id="instructions">
+    Run <code>python -m http.server 2255</code>,
+    then open <a href="http://localhost:2255/test/test_workers.html">this file</a>.
+</p>
+<script>
+    for (const dbg of ["-debug", ""]) {
+        for (const asm of ["-asm", "-wasm"]) {
+            const url = `../dist/worker.sql${asm}${dbg}.js`;
+            const start_time = performance.now();
+            const worker = new Worker(url);
+            worker.onmessage = (e) => {
+                output.textContent += `[${url}] [${(performance.now() - start_time).toFixed(2)}ms] ${JSON.stringify(e.data)}\n\n`;
+                instructions.style.display = "none";
+            }
+            worker.onerror = (e) => {
+                output.textContent += `[error] [${url}] [${(performance.now() - start_time).toFixed(2)}ms] ${JSON.stringify(e)}\n\n`;
+            }
+            worker.postMessage({"action": "open", "id": 0});
+            worker.postMessage({"action": "close", "id": 0});
+        }
+    }
+</script>
