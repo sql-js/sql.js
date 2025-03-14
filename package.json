@@ -1,6 +1,6 @@
 {
 	"name": "sql.js",
-	"version": "1.12.0",
+	"version": "1.13.0",
 	"description": "SQLite library with support for opening and writing databases, prepared statements, and more. This SQLite library is in pure javascript (compiled with emscripten).",
 	"keywords": [
 		"sql",
