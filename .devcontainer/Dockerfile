@@ -69,3 +69,8 @@ RUN echo 'export EM_NODE_JS="$EMSDK_NODE"' >> /etc/bash.bashrc
 
 # END EMSDK
 # --------------------------------------------------------------------
+
+# Install wget, gnupg, and sha3sum
+RUN apt-get update \
+    && apt-get install -y wget gnupg libdigest-sha3-perl \
+    && rm -rf /var/lib/apt/lists/*
