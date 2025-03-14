@@ -1,80 +1,82 @@
-// TODO: Instead of using puppeteer, we could use the new Node 11 workers via
-// node --experimental-worker test/all.js
-// Then we could do this:
-//const { Worker } = require('worker_threads');
-// But it turns out that the worker_threads interface is just different enough not to work.
-var puppeteer = require("puppeteer");
-var path = require("path");
-var fs = require("fs");
-const { env } = require("process");
+const { Worker } = require("worker_threads");
+const path = require("path");
 
-class Worker {
-  constructor(handle) {
-    this.handle = handle;
-  }
-  static async fromFile(file) {
-    const browser = await Worker.launchBrowser();
-    const page = await browser.newPage();
-    const source = fs.readFileSync(file, 'utf8');
-    const worker = await page.evaluateHandle(x => {
-      const url = URL.createObjectURL(new Blob([x]), { type: 'application/javascript; charset=utf-8' });
-      return new Worker(url);
-    }, source);
-    return new Worker(worker);
-  }
+class SQLWorker {
+  constructor(worker) {
+    this.worker = worker;
+    this.callbacks = new Map();
+    this.nextId = 1;
 
-  static async launchBrowser(){
-    try{
-      return await puppeteer.launch({ headless: "new" });
-    }
-    catch(e){
-      if (e.stack.includes('No usable sandbox!')){
-        // It's possible that this exception is n expected error related to not having the ability to create a sandboxed user for Puppeteer in Docker. 
-        // One way around this is to set up the Dockerfile to have a sandboxed user.
-        // Details on getting Puppeteer running sandboxed while in Docker are here:
-        // https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker 
-        // That seemed kinda complicated, so I'm working around it more quickly/straightforwardly by looking for an env variable we set in the Docker fil `RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX`. 
-        // -- Taytay
-        if (env['RUN_WORKER_TEST_WITHOUT_PUPPETEER_SANDBOX']=="1"){
-          // This tells puppeteer to launch without worrying about the sandbox.
-          // That's not "safe" if you don't trust the code you're loading in the browser, 
-          // but we're in a container and we know what we're testing.
-          return await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            headless: 'new'
-          });
+    this.worker.stderr.on('data', (data) => {
+      console.log(data);
+    });
+
+    this.worker.stdout.on('data', (data) => {
+      console.log(data);
+    });
+
+    this.worker.on('message', (data) => {
+      if (data.error) {
+        console.log("Worker error: ", data.error);
+        for (const callback of this.callbacks.values()) {
+          callback.reject(data.error);
         }
-        else {
-          console.warn("Puppeteer can't start due to a sandbox error. (Details follow.)\nFor a quick, but potentially dangerous workaround, you can set the environment variable 'RUN_WORKER_TEST_WITHOUT_PUPETEER_SANDBOX=1'.\nYou can also simply run this test in the Docker container defined in .devcontainer/Dockerfile.");
-        }
+        return;
       }
-      // If we're here, we couldn't get out of this cleanly. Re-throw
-      throw e;
-    }
+      const callback = this.callbacks.get(data.id);
+      if (callback) {
+        this.callbacks.delete(data.id);
+        callback.resolve(data);
+      } else {
+        console.log("Received message from worker but no callback found for id", data);
+      }
+    });
+
+    this.worker.on('error', (err) => {
+      console.log("Worker error", err);
+      for (const callback of this.callbacks.values()) {
+        callback.reject(err);
+      }
+      this.callbacks.clear();
+    });
+  }
+
+  static async fromFile(file) {
+    // Create a worker directly from the file
+    const worker = new Worker(file);
+    return new SQLWorker(worker);
   }
 
   async postMessage(msg) {
-    return await this.handle.evaluate((worker, msg) => {
-      return new Promise((accept, reject) => {
-        setTimeout(reject, 20000, new Error("time out"));
-        worker.onmessage = evt => accept(evt.data);
-        worker.onerror = reject;
-        worker.postMessage(msg);
-      })
-    }, msg);
+    return new Promise((resolve, reject) => {
+      const id = msg.id || this.nextId++;
+      const messageWithId = { ...msg, id };
+      
+      this.callbacks.set(id, { resolve, reject });
+      
+      // Set a timeout to reject the promise if no response is received
+      setTimeout(() => {
+        if (this.callbacks.has(id)) {
+          this.callbacks.delete(id);
+          reject(new Error("Worker response timeout"));
+        }
+      }, 20000);
+      
+      // Send the message to the worker
+      this.worker.postMessage(messageWithId);
+    });
   }
 }
 
 exports.test = async function test(SQL, assert) {
   var target = process.argv[2];
   var file = target ? "sql-" + target : "sql-wasm";
-  if (file.indexOf('wasm') > -1 || file.indexOf('memory-growth') > -1) {
+  if (file.indexOf('memory-growth') > -1) {
     console.error("Skipping worker test for " + file + ". Not implemented yet");
     return;
   };
-  // If we use puppeteer, we need to pass in this new cwd as the root of the file being loaded:
   const filename = "../dist/worker." + file + ".js";
-  var worker = await Worker.fromFile(path.join(__dirname, filename));
+  var worker = await SQLWorker.fromFile(path.join(__dirname, filename));
   var data = await worker.postMessage({ id: 1, action: 'open' });
   assert.strictEqual(data.id, 1, "Return the given id in the correct format");
   assert.deepEqual(data, { id: 1, ready: true }, 'Correct data answered to the "open" query');
@@ -148,5 +150,4 @@ if (module == require.main) {
       exports.test(null, assert).then(done);
     }
   });
-
 }
