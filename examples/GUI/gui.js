@@ -583,6 +583,14 @@ function addToHistory(query) {
 function updateHistoryUI() {
 	elements.queryHistoryElm.innerHTML = '';
 	
+	if (state.queryHistory.length === 0) {
+		const emptyMessage = document.createElement('div');
+		emptyMessage.className = 'query-history-empty';
+		emptyMessage.textContent = 'No query history yet';
+		elements.queryHistoryElm.appendChild(emptyMessage);
+		return;
+	}
+	
 	state.queryHistory.forEach((item) => {
 		const historyItem = createHistoryItem(item);
 		elements.queryHistoryElm.appendChild(historyItem);
@@ -621,7 +629,29 @@ function truncateString(str, maxLength) {
 }
 
 function toggleQueryHistory() {
-	elements.queryHistoryElm.classList.toggle('show');
+	// Don't open history if there are no items
+	if (!elements.queryHistoryElm.classList.contains('show') && state.queryHistory.length === 0) {
+		showNotification('No query history yet');
+		return;
+	}
+
+	const historyElement = elements.queryHistoryElm;
+	const isVisible = historyElement.classList.contains('show');
+	
+	if (!isVisible) {
+		// Position the history panel over the editor
+		const editorRect = editor.getWrapperElement().getBoundingClientRect();
+		historyElement.style.width = `${editorRect.width - 20}px`;
+		historyElement.style.top = '10px';
+		historyElement.style.height = 'auto';
+		historyElement.style.maxHeight = `${editorRect.height - 20}px`;
+	}
+	
+	historyElement.classList.toggle('show');
+}
+
+function closeQueryHistory() {
+	elements.queryHistoryElm.classList.remove('show');
 }
 
 // Toggle history button
@@ -632,7 +662,21 @@ document.addEventListener('click', function(e) {
 	if (elements.queryHistoryElm.classList.contains('show') && 
 			!elements.queryHistoryElm.contains(e.target) && 
 			e.target !== elements.toggleHistoryBtn) {
-		elements.queryHistoryElm.classList.remove('show');
+		closeQueryHistory();
+	}
+});
+
+// Close history when pressing Escape
+document.addEventListener('keydown', function(e) {
+	if (e.key === 'Escape' && elements.queryHistoryElm.classList.contains('show')) {
+		closeQueryHistory();
+	}
+});
+
+// Close history when editing code
+editor.on('change', function() {
+	if (elements.queryHistoryElm.classList.contains('show')) {
+		closeQueryHistory();
 	}
 });
 

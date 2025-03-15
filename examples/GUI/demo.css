@@ -453,21 +453,37 @@ footer a:hover {
 
 .query-history {
 	position: absolute;
-	top: 100%;
+	top: 0;
 	left: 0;
 	right: 0;
 	background: rgba(30, 40, 50, 0.95);
-	border-top: 1px solid var(--border-subtle);
+	border: 1px solid var(--border-subtle);
 	max-height: 0;
+	height: 0;
+	opacity: 0;
+	visibility: hidden;
 	overflow: hidden;
-	transition: max-height 0.3s ease;
+	transition: all 0.3s ease;
 	z-index: 100;
-	box-shadow: var(--shadow-strong);
+	box-shadow: none;
+	border-radius: var(--radius-md);
+	margin: 10px;
 }
 
 .query-history.show {
 	max-height: 300px;
+	height: auto;
+	opacity: 1;
+	visibility: visible;
 	overflow-y: auto;
+	box-shadow: 0 0 20px rgba(79, 190, 255, 0.2), var(--shadow-strong);
+}
+
+.query-history-empty {
+	padding: 20px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
 }
 
 .history-item {
