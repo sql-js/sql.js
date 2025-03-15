@@ -1401,28 +1401,76 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return this;
     };
 
-    /** Registers the update hook with SQLite
-        @param {function(operation, database, table, rowId) | null} callback
-             executed whenever a row in any rowid table is changed
-
-        For each changed row, the callback is called once with the change
-        ('insert', 'update' or 'delete'), the database name and table name
-        where the change happened and the rowid of the row that has been
-        changed.
-
-        rowid is cast to a plain number, if it exceeds Number.MAX_SAFE_INTEGER
-        an error will be thrown.
-
-        The callback MUST NOT modify the database in any way.
-
-        Only a single callback can be registered. Unregister the callback by
-        passing null.
-
-        Not called for some updates like ON REPLACE CONFLICT and TRUNCATE (a
-        DELETE FROM without a WHERE clause).
-
-        See sqlite docs on sqlite3_update_hook for more details.
-       */
+    /** Registers an update hook with SQLite.
+     *
+     * Every time a row is changed by whatever means, the callback is called
+     * once with the change (`'insert'`, `'update'` or `'delete'`), the database
+     * name and table name where the change happened and the
+     * [rowid](https://www.sqlite.org/rowidtable.html)
+     * of the row that has been changed.
+     *
+     * The rowid is cast to a plain number. If it exceeds
+     * `Number.MAX_SAFE_INTEGER` (2^53 - 1), an error will be thrown.
+     *
+     * **Important notes:**
+     * - The callback **MUST NOT** modify the database in any way
+     * - Only a single callback can be registered at a time
+     * - Unregister the callback by passing `null`
+     * - Not called for some updates like `ON REPLACE CONFLICT` and `TRUNCATE`
+     *   (a `DELETE FROM` without a `WHERE` clause)
+     *
+     * See SQLite documentation on
+     * [sqlite3_update_hook](https://www.sqlite.org/c3ref/update_hook.html)
+     * for more details
+     *
+     * @example
+     * // Create a database and table
+     * var db = new SQL.Database();
+     * db.exec(`
+     * CREATE TABLE users (
+     *   id INTEGER PRIMARY KEY, -- this is the rowid column
+     *   name TEXT,
+     *   active INTEGER
+     * )
+     * `);
+     *
+     * // Register an update hook
+     * var changes = [];
+     * db.updateHook(function(operation, database, table, rowId) {
+     *   changes.push({operation, database, table, rowId});
+     *   console.log(`${operation} on ${database}.${table} row ${rowId}`);
+     * });
+     *
+     * // Insert a row - triggers the update hook with 'insert'
+     * db.run("INSERT INTO users VALUES (1, 'Alice', 1)");
+     * // Logs: "insert on main.users row 1"
+     *
+     * // Update a row - triggers the update hook with 'update'
+     * db.run("UPDATE users SET active = 0 WHERE id = 1");
+     * // Logs: "update on main.users row 1"
+     *
+     * // Delete a row - triggers the update hook with 'delete'
+     * db.run("DELETE FROM users WHERE id = 1");
+     * // Logs: "delete on main.users row 1"
+     *
+     * // Unregister the update hook
+     * db.updateHook(null);
+     *
+     * // This won't trigger any callback
+     * db.run("INSERT INTO users VALUES (2, 'Bob', 1)");
+     *
+     * @param {function|null} callback -
+     * Callback to be executed whenever a row changes.
+     * Set to `null` to unregister the callback.
+     * @param {string} callback.operation -
+     * 'insert', 'update', or 'delete'
+     * @param {string} callback.database -
+     * database where the change occurred
+     * @param {string} callback.table -
+     * table where the change occurred
+     * @param {number} callback.rowId -
+     * rowid of the changed row
+     */
     Database.prototype["updateHook"] = function updateHook(callback) {
         if (this.updateHookFunctionPtr) {
             // unregister and cleanup a previously registered update hook
