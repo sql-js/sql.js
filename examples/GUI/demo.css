@@ -306,6 +306,9 @@ th {
 td {
 	padding: 10px 15px;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Source Code Pro', 'Roboto Mono', 'IBM Plex Mono', 'Ubuntu Mono', 'Inconsolata', 'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
+	white-space: break-spaces;
+	font-size: 1rem;
 }
 
 tr:last-child td {
