@@ -297,6 +297,7 @@ function execEditorContents() {
 	
 	addButtonClickFeedback(elements.execBtn);
 }
+elements.execBtn.addEventListener('click', execEditorContents);
 
 function addButtonClickFeedback(button) {
 	button.classList.add('active');
