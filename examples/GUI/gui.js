@@ -46,7 +46,20 @@ function error(e) {
 	// Clear loading spinner in the current tab when an error occurs
 	const tabOutputElm = document.querySelector(`#${currentTabId} .results-content`);
 	if (tabOutputElm) {
-		tabOutputElm.innerHTML = `<div class="no-results error-result">Query failed: ${e.message}</div>`;
+		tabOutputElm.innerHTML = '';
+		
+		// Use error template
+		const errorTemplate = document.getElementById('error-template');
+		const errorClone = errorTemplate.content.cloneNode(true);
+		const errorDiv = errorClone.querySelector('.error-result');
+		
+		// Set error message
+		const errorMessage = document.createElement('span');
+		errorMessage.slot = 'error-message';
+		errorMessage.textContent = `Query failed: ${e.message}`;
+		errorDiv.appendChild(errorMessage);
+		
+		tabOutputElm.appendChild(errorDiv);
 	}
 	
 	setTimeout(() => {
@@ -64,19 +77,38 @@ function noerror() {
 
 // Status updates
 function updateStatus(type, message) {
+	const createStatusSpan = (className, text) => {
+		const span = document.createElement('span');
+		span.className = className;
+		span.textContent = text;
+		return span;
+	};
+
 	switch(type) {
 		case 'executing':
-			editorStatusElm.innerHTML = `<span class="status-info">Executing query...</span>`;
-			resultsStatusElm.innerHTML = `<span class="status-info">Executing query...</span>`;
+			editorStatusElm.innerHTML = '';
+			editorStatusElm.appendChild(createStatusSpan('status-info', 'Executing query...'));
+			
+			resultsStatusElm.innerHTML = '';
+			resultsStatusElm.appendChild(createStatusSpan('status-info', 'Executing query...'));
 			break;
+			
 		case 'success':
-			editorStatusElm.innerHTML = `<span class="status-success">Query executed successfully</span>`;
-			resultsStatusElm.innerHTML = `<span class="status-success">${message}</span>`;
+			editorStatusElm.innerHTML = '';
+			editorStatusElm.appendChild(createStatusSpan('status-success', 'Query executed successfully'));
+			
+			resultsStatusElm.innerHTML = '';
+			resultsStatusElm.appendChild(createStatusSpan('status-success', message));
 			break;
+			
 		case 'error':
-			editorStatusElm.innerHTML = `<span class="status-error">Query failed</span>`;
-			resultsStatusElm.innerHTML = `<span class="status-error">${message}</span>`;
+			editorStatusElm.innerHTML = '';
+			editorStatusElm.appendChild(createStatusSpan('status-error', 'Query failed'));
+			
+			resultsStatusElm.innerHTML = '';
+			resultsStatusElm.appendChild(createStatusSpan('status-error', message));
 			break;
+			
 		default:
 			editorStatusElm.textContent = message;
 			break;
@@ -93,12 +125,27 @@ function execute(commands, tabId = currentTabId) {
 	tic();
 	updateStatus('executing');
 	
+	// Check if we need to create a new tab
+	// If the current tab is the initial tab and it hasn't been used yet, use it
+	// Otherwise, create a new tab
+	const currentTabPanel = document.getElementById(currentTabId);
+	const isInitialUnusedTab = currentTabId === 'tab1' && 
+		currentTabPanel && 
+		currentTabPanel.querySelector('.results-content').innerHTML.includes('Results will be displayed here');
+	
+	if (!isInitialUnusedTab) {
+		tabId = createNewTab();
+	}
+	
 	// Get the output element for the current tab
 	const tabOutputElm = document.querySelector(`#${tabId} .results-content`);
 	if (!tabOutputElm) return;
 	
-	// Show loading indicator
-	tabOutputElm.innerHTML = '<div class="loading"><div class="spinner"></div><span>Executing query...</span></div>';
+	// Show loading indicator using template
+	tabOutputElm.innerHTML = '';
+	const loadingTemplate = document.getElementById('loading-template');
+	const loadingClone = loadingTemplate.content.cloneNode(true);
+	tabOutputElm.appendChild(loadingClone);
 	
 	// Add to query history
 	addToHistory(commands);
@@ -116,7 +163,10 @@ function execute(commands, tabId = currentTabId) {
 		tabOutputElm.innerHTML = "";
 		
 		if (results.length === 0) {
-			tabOutputElm.innerHTML = '<div class="no-results">Query executed successfully. No results to display.</div>';
+			const noResultsDiv = document.createElement('div');
+			noResultsDiv.className = 'no-results';
+			noResultsDiv.textContent = 'Query executed successfully. No results to display.';
+			tabOutputElm.appendChild(noResultsDiv);
 			updateStatus('success', 'Query executed with no results');
 			return;
 		}
@@ -140,35 +190,49 @@ function execute(commands, tabId = currentTabId) {
 
 // Create an HTML table
 var tableCreate = function () {
-	function valconcat(vals, tagName) {
-		if (vals.length === 0) return '';
-		var open = '<' + tagName + '>', close = '</' + tagName + '>';
-		return open + vals.join(close + open) + close;
-	}
 	return function (columns, values) {
-		var tbl = document.createElement('table');
-		var html = '<thead>' + valconcat(columns, 'th') + '</thead>';
+		// Use the table template
+		const tableTemplate = document.getElementById('table-template');
+		const tableClone = tableTemplate.content.cloneNode(true);
+		const wrapper = tableClone.querySelector('.table-wrapper');
+		const table = tableClone.querySelector('table');
+		
+		// Set row and column counts
+		wrapper.querySelector('.row-count').textContent = `${values.length} row${values.length !== 1 ? 's' : ''}`;
+		wrapper.querySelector('.column-count').textContent = `${columns.length} column${columns.length !== 1 ? 's' : ''}`;
+		
+		// Create header cells
+		const thead = table.querySelector('thead tr');
+		thead.innerHTML = ''; // Clear the slot
+		columns.forEach(column => {
+			const th = document.createElement('th');
+			th.textContent = column;
+			thead.appendChild(th);
+		});
+		
+		// Create data rows
+		const tbody = table.querySelector('tbody');
+		tbody.innerHTML = ''; // Clear the slot
 		
 		if (values.length === 0) {
-			html += '<tbody><tr><td colspan="' + columns.length + '" class="no-results">No results</td></tr></tbody>';
+			const emptyRow = document.createElement('tr');
+			const emptyCell = document.createElement('td');
+			emptyCell.className = 'no-results';
+			emptyCell.textContent = 'No results';
+			emptyCell.colSpan = columns.length;
+			emptyRow.appendChild(emptyCell);
+			tbody.appendChild(emptyRow);
 		} else {
-			var rows = values.map(function (v) { return valconcat(v, 'td'); });
-			html += '<tbody>' + valconcat(rows, 'tr') + '</tbody>';
+			values.forEach(rowData => {
+				const row = document.createElement('tr');
+				rowData.forEach(cellData => {
+					const cell = document.createElement('td');
+					cell.textContent = cellData;
+					row.appendChild(cell);
+				});
+				tbody.appendChild(row);
+			});
 		}
-		
-		tbl.innerHTML = html;
-		
-		// Add a wrapper with a caption showing the number of rows
-		var wrapper = document.createElement('div');
-		wrapper.className = 'table-wrapper';
-		var caption = document.createElement('div');
-		caption.className = 'table-caption';
-		caption.innerHTML = `
-			<span>${values.length} row${values.length !== 1 ? 's' : ''}</span>
-			<span>${columns.length} column${columns.length !== 1 ? 's' : ''}</span>
-		`;
-		wrapper.appendChild(caption);
-		wrapper.appendChild(tbl);
 		
 		return wrapper;
 	}
@@ -178,11 +242,7 @@ var tableCreate = function () {
 function execEditorContents() {
 	noerror();
 	
-	// Create a new tab if needed
-	if (document.querySelectorAll('.results-tabs .tab').length <= 2) { // Only the first tab and + button
-		createNewTab();
-	}
-	
+	// Use the current tab if it exists, otherwise create a new one
 	try {
 		execute(editor.getValue() + ';');
 	} catch (e) {
@@ -237,8 +297,7 @@ dbFileElm.onchange = function () {
 			// Show the schema of the loaded database
 			editor.setValue("SELECT `name`, `sql`\n  FROM `sqlite_master`\n  WHERE type='table';");
 			
-			// Create a new tab for the results
-			createNewTab();
+			// Execute the query (this will create a new tab if needed)
 			execEditorContents();
 			
 			// Show success notification
@@ -300,8 +359,11 @@ function showNotification(message) {
 		document.body.appendChild(notification);
 	}
 	
-	// Set message and show
+	// Clear existing content and set new message
+	notification.textContent = '';
 	notification.textContent = message;
+	
+	// Show notification
 	notification.classList.add('show');
 	
 	// Hide after 3 seconds
@@ -397,6 +459,18 @@ function initTabs() {
 	// Initialize the first tab
 	const firstTab = document.querySelector('.tab[data-tab="tab1"]');
 	if (firstTab) {
+		// Clear the first tab's content
+		firstTab.innerHTML = '';
+		
+		// Add the tab text directly
+		firstTab.textContent = `Result ${tabCounter}`;
+		
+		// Add close button
+		const closeBtn = document.createElement('span');
+		closeBtn.className = 'tab-close';
+		closeBtn.textContent = '×';
+		firstTab.appendChild(closeBtn);
+		
 		setActiveTab('tab1');
 	}
 }
@@ -406,26 +480,33 @@ function createNewTab() {
 	tabCounter++;
 	const tabId = `tab${tabCounter}`;
 	
-	// Create tab button
-	const tab = document.createElement('button');
-	tab.className = 'tab';
+	// Create tab button using template
+	const tabTemplate = document.getElementById('tab-template');
+	const tabClone = tabTemplate.content.cloneNode(true);
+	const tab = tabClone.querySelector('.tab');
 	tab.dataset.tab = tabId;
-	tab.innerHTML = `Result ${tabCounter} <span class="tab-close">×</span>`;
+	
+	// Clear any existing content in the tab
+	tab.innerHTML = '';
+	
+	// Add the tab text directly (no slots)
+	tab.textContent = `Result ${tabCounter}`;
+	
+	// Add close button
+	const closeBtn = document.createElement('span');
+	closeBtn.className = 'tab-close';
+	closeBtn.textContent = '×';
+	tab.appendChild(closeBtn);
 	
 	// Insert before the + button
 	resultsTabs.insertBefore(tab, newTabBtn);
 	
-	// Create tab panel
-	const tabPanel = document.createElement('div');
-	tabPanel.className = 'tab-panel';
+	// Create tab panel using template
+	const panelTemplate = document.getElementById('tab-panel-template');
+	const panelClone = panelTemplate.content.cloneNode(true);
+	const tabPanel = panelClone.querySelector('.tab-panel');
 	tabPanel.id = tabId;
 	
-	// Create results content container
-	const resultsContent = document.createElement('div');
-	resultsContent.className = 'results-content';
-	resultsContent.textContent = 'Execute a query to see results';
-	
-	tabPanel.appendChild(resultsContent);
 	document.querySelector('.results-panel .panel-content').appendChild(tabPanel);
 	
 	// Set as active
@@ -506,9 +587,11 @@ function addToHistory(query) {
 function updateHistoryUI() {
 	queryHistoryElm.innerHTML = '';
 	
-	queryHistory.forEach((item, index) => {
-		const historyItem = document.createElement('div');
-		historyItem.className = 'history-item';
+	queryHistory.forEach((item) => {
+		// Use history item template
+		const historyTemplate = document.getElementById('history-item-template');
+		const historyClone = historyTemplate.content.cloneNode(true);
+		const historyItem = historyClone.querySelector('.history-item');
 		
 		// Format timestamp
 		const timestamp = item.timestamp;
@@ -519,10 +602,18 @@ function updateHistoryUI() {
 			item.query.substring(0, 60) + '...' : 
 			item.query;
 		
-		historyItem.innerHTML = `
-			<div class="history-query" title="${item.query}">${queryPreview}</div>
-			<div class="history-time">${timeString}</div>
-		`;
+		// Set query preview
+		const queryPreviewEl = document.createElement('span');
+		queryPreviewEl.slot = 'query-preview';
+		queryPreviewEl.textContent = queryPreview;
+		historyItem.querySelector('.history-query').appendChild(queryPreviewEl);
+		historyItem.querySelector('.history-query').title = item.query;
+		
+		// Set query time
+		const queryTimeEl = document.createElement('span');
+		queryTimeEl.slot = 'query-time';
+		queryTimeEl.textContent = timeString;
+		historyItem.querySelector('.history-time').appendChild(queryTimeEl);
 		
 		// Add click handler to load query
 		historyItem.addEventListener('click', () => {
@@ -572,17 +663,27 @@ document.addEventListener('DOMContentLoaded', function() {
 	if (editorHeader) {
 		const shortcuts = document.createElement('div');
 		shortcuts.className = 'shortcuts';
-		shortcuts.innerHTML = `
-			<span title="Execute: Ctrl/Cmd+Enter">
-				<span class="shortcut-key">Ctrl+Enter</span>
-			</span>
-			<span title="Save DB: Ctrl/Cmd+S">
-				<span class="shortcut-key">Ctrl+S</span>
-			</span>
-			<span title="Toggle History: Ctrl+Space">
-				<span class="shortcut-key">Ctrl+Space</span>
-			</span>
-		`;
+		
+		// Create shortcut elements using template
+		const addShortcut = (title, keyText) => {
+			const shortcutTemplate = document.getElementById('shortcut-template');
+			const shortcutClone = shortcutTemplate.content.cloneNode(true);
+			const shortcut = shortcutClone.querySelector('span');
+			shortcut.title = title;
+			
+			const keySlot = document.createElement('span');
+			keySlot.slot = 'key';
+			keySlot.textContent = keyText;
+			shortcut.appendChild(keySlot);
+			
+			shortcuts.appendChild(shortcut);
+		};
+		
+		// Add all shortcuts
+		addShortcut('Execute: Ctrl/Cmd+Enter', 'Ctrl+Enter');
+		addShortcut('Save DB: Ctrl/Cmd+S', 'Ctrl+S');
+		addShortcut('Toggle History: Ctrl+Space', 'Ctrl+Space');
+		
 		editorHeader.appendChild(shortcuts);
 	}
 });

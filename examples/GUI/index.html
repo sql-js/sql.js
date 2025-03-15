@@ -123,6 +123,73 @@ SELECT name,hired_on FROM employees ORDER BY hired_on;</textarea>
     </p>
   </footer>
 
+  <!-- Templates -->
+  <template id="tab-template">
+    <button class="tab">
+      <slot name="tab-title">Result</slot>
+      <span class="tab-close">×</span>
+    </button>
+  </template>
+
+  <template id="tab-panel-template">
+    <div class="tab-panel">
+      <div class="results-content">
+        <slot name="panel-content">Execute a query to see results</slot>
+      </div>
+    </div>
+  </template>
+
+  <template id="loading-template">
+    <div class="loading">
+      <div class="spinner"></div>
+      <span>Executing query...</span>
+    </div>
+  </template>
+
+  <template id="table-template">
+    <div class="table-wrapper">
+      <div class="table-caption">
+        <span class="row-count"></span>
+        <span class="column-count"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <slot name="table-headers"></slot>
+          </tr>
+        </thead>
+        <tbody>
+          <slot name="table-rows"></slot>
+        </tbody>
+      </table>
+    </div>
+  </template>
+
+  <template id="error-template">
+    <div class="no-results error-result">
+      <slot name="error-message">Query failed</slot>
+    </div>
+  </template>
+
+  <template id="history-item-template">
+    <div class="history-item">
+      <div class="history-query">
+        <slot name="query-preview"></slot>
+      </div>
+      <div class="history-time">
+        <slot name="query-time"></slot>
+      </div>
+    </div>
+  </template>
+
+  <template id="shortcut-template">
+    <span>
+      <span class="shortcut-key">
+        <slot name="key"></slot>
+      </span>
+    </span>
+  </template>
+
   <!-- GitHub corner -->
   <a href="https://github.com/sql-js/sql.js" class="github-corner" aria-label="View on GitHub">
     <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#4fbeff; color:#0f1923; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
