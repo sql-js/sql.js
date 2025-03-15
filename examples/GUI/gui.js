@@ -1,78 +1,82 @@
 // DOM Elements
-const execBtn = document.getElementById("execute");
-const outputElm = document.getElementById('output');
-const errorElm = document.getElementById('error');
-const commandsElm = document.getElementById('commands');
-const dbFileElm = document.getElementById('dbfile');
-const savedbElm = document.getElementById('savedb');
-const editorStatusElm = document.getElementById('editorStatus');
-const resultsStatusElm = document.getElementById('resultsStatus');
-const queryTimeElm = document.getElementById('queryTime');
-const panelResizerElm = document.getElementById('panelResizer');
-const queryHistoryElm = document.getElementById('queryHistory');
-const toggleHistoryBtn = document.getElementById('toggleHistory');
-const resultsTabs = document.getElementById('resultsTabs');
-const newTabBtn = document.getElementById('newTabBtn');
+const elements = {
+	execBtn: document.getElementById("execute"),
+	outputElm: document.getElementById('output'),
+	errorElm: document.getElementById('error'),
+	commandsElm: document.getElementById('commands'),
+	dbFileElm: document.getElementById('dbfile'),
+	savedbElm: document.getElementById('savedb'),
+	editorStatusElm: document.getElementById('editorStatus'),
+	resultsStatusElm: document.getElementById('resultsStatus'),
+	queryTimeElm: document.getElementById('queryTime'),
+	panelResizerElm: document.getElementById('panelResizer'),
+	queryHistoryElm: document.getElementById('queryHistory'),
+	toggleHistoryBtn: document.getElementById('toggleHistory'),
+	resultsTabs: document.getElementById('resultsTabs'),
+	newTabBtn: document.getElementById('newTabBtn')
+};
 
 // State
-let currentTabId = 'tab1';
-let tabCounter = 1;
-let queryHistory = [];
-let isResizing = false;
-let lastExecutionTime = 0;
+const state = {
+	currentTabId: 'tab1',
+	tabCounter: 1,
+	queryHistory: [],
+	isResizing: false,
+	lastExecutionTime: 0
+};
 
 // Start the worker in which sql.js will run
 const worker = new Worker("../../dist/worker.sql-wasm.js");
-worker.onerror = error;
+worker.onerror = handleError;
 
 // Open a database
 worker.postMessage({ action: 'open' });
 
-// Initialize resizable panels
+// Initialize UI components
 initResizer();
-
-// Initialize tabs
 initTabs();
+initKeyboardShortcuts();
 
 // Error handling
-function error(e) {
+function handleError(e) {
 	console.log(e);
-	errorElm.style.height = 'auto';
-	errorElm.textContent = e.message;
-	errorElm.style.opacity = 1;
+	elements.errorElm.style.height = 'auto';
+	elements.errorElm.textContent = e.message;
+	elements.errorElm.style.opacity = 1;
 	
 	updateStatus('error', `Error: ${e.message}`);
 	
-	// Clear loading spinner in the current tab when an error occurs
-	const tabOutputElm = document.querySelector(`#${currentTabId} .results-content`);
-	if (tabOutputElm) {
-		tabOutputElm.innerHTML = '';
-		
-		// Use error template
-		const errorTemplate = document.getElementById('error-template');
-		const errorClone = errorTemplate.content.cloneNode(true);
-		const errorDiv = errorClone.querySelector('.error-result');
-		
-		// Set error message
-		const errorMessage = document.createElement('span');
-		errorMessage.slot = 'error-message';
-		errorMessage.textContent = `Query failed: ${e.message}`;
-		errorDiv.appendChild(errorMessage);
-		
-		tabOutputElm.appendChild(errorDiv);
-	}
+	showErrorInCurrentTab(e.message);
 	
 	setTimeout(() => {
-		errorElm.style.opacity = 0;
+		elements.errorElm.style.opacity = 0;
 		setTimeout(() => {
-			errorElm.style.height = '0';
+			elements.errorElm.style.height = '0';
 		}, 300);
 	}, 5000);
 }
 
-function noerror() {
-	errorElm.style.height = '0';
-	errorElm.style.opacity = 0;
+function showErrorInCurrentTab(errorMessage) {
+	const tabOutputElm = document.querySelector(`#${state.currentTabId} .results-content`);
+	if (!tabOutputElm) return;
+	
+	tabOutputElm.innerHTML = '';
+	
+	const errorTemplate = document.getElementById('error-template');
+	const errorClone = errorTemplate.content.cloneNode(true);
+	const errorDiv = errorClone.querySelector('.error-result');
+	
+	const errorMessageSpan = document.createElement('span');
+	errorMessageSpan.slot = 'error-message';
+	errorMessageSpan.textContent = `Query failed: ${errorMessage}`;
+	errorDiv.appendChild(errorMessageSpan);
+	
+	tabOutputElm.appendChild(errorDiv);
+}
+
+function clearError() {
+	elements.errorElm.style.height = '0';
+	elements.errorElm.style.opacity = 0;
 }
 
 // Status updates
@@ -84,179 +88,197 @@ function updateStatus(type, message) {
 		return span;
 	};
 
-	switch(type) {
-		case 'executing':
-			editorStatusElm.innerHTML = '';
-			editorStatusElm.appendChild(createStatusSpan('status-info', 'Executing query...'));
-			
-			resultsStatusElm.innerHTML = '';
-			resultsStatusElm.appendChild(createStatusSpan('status-info', 'Executing query...'));
-			break;
-			
-		case 'success':
-			editorStatusElm.innerHTML = '';
-			editorStatusElm.appendChild(createStatusSpan('status-success', 'Query executed successfully'));
-			
-			resultsStatusElm.innerHTML = '';
-			resultsStatusElm.appendChild(createStatusSpan('status-success', message));
-			break;
-			
-		case 'error':
-			editorStatusElm.innerHTML = '';
-			editorStatusElm.appendChild(createStatusSpan('status-error', 'Query failed'));
-			
-			resultsStatusElm.innerHTML = '';
-			resultsStatusElm.appendChild(createStatusSpan('status-error', message));
-			break;
-			
-		default:
-			editorStatusElm.textContent = message;
-			break;
+	const statusMap = {
+		'executing': {
+			editorStatus: createStatusSpan('status-info', 'Executing query...'),
+			resultsStatus: createStatusSpan('status-info', 'Executing query...')
+		},
+		'success': {
+			editorStatus: createStatusSpan('status-success', 'Query executed successfully'),
+			resultsStatus: createStatusSpan('status-success', message)
+		},
+		'error': {
+			editorStatus: createStatusSpan('status-error', 'Query failed'),
+			resultsStatus: createStatusSpan('status-error', message)
+		},
+		'info': {
+			editorStatus: createStatusSpan('status-info', message),
+			resultsStatus: createStatusSpan('status-info', message)
+		}
+	};
+
+	if (statusMap[type]) {
+		elements.editorStatusElm.innerHTML = '';
+		elements.editorStatusElm.appendChild(statusMap[type].editorStatus);
+		
+		elements.resultsStatusElm.innerHTML = '';
+		elements.resultsStatusElm.appendChild(statusMap[type].resultsStatus);
+	} else {
+		elements.editorStatusElm.textContent = message;
 	}
 }
 
 function updateQueryTime(time) {
-	queryTimeElm.textContent = `Execution time: ${time.toFixed(2)}ms`;
-	lastExecutionTime = time;
+	elements.queryTimeElm.textContent = `Execution time: ${time.toFixed(2)}ms`;
+	state.lastExecutionTime = time;
 }
 
 // Run a command in the database
-function execute(commands, tabId = currentTabId) {
+function execute(commands, tabId = state.currentTabId) {
 	tic();
 	updateStatus('executing');
 	
-	// Check if we need to create a new tab
-	// If the current tab is the initial tab and it hasn't been used yet, use it
-	// Otherwise, create a new tab
-	const currentTabPanel = document.getElementById(currentTabId);
-	const isInitialUnusedTab = currentTabId === 'tab1' && 
-		currentTabPanel && 
-		currentTabPanel.querySelector('.results-content').innerHTML.includes('Results will be displayed here');
-	
-	if (!isInitialUnusedTab) {
-		tabId = createNewTab();
-	}
-	
-	// Get the output element for the current tab
-	const tabOutputElm = document.querySelector(`#${tabId} .results-content`);
+	const tabToUse = determineTabForResults(tabId);
+	const tabOutputElm = document.querySelector(`#${tabToUse} .results-content`);
 	if (!tabOutputElm) return;
 	
-	// Show loading indicator using template
-	tabOutputElm.innerHTML = '';
-	const loadingTemplate = document.getElementById('loading-template');
-	const loadingClone = loadingTemplate.content.cloneNode(true);
-	tabOutputElm.appendChild(loadingClone);
-	
-	// Add to query history
+	showLoadingIndicator(tabOutputElm);
 	addToHistory(commands);
 	
 	worker.onmessage = function (event) {
-		const results = event.data.results;
-		const executionTime = toc("Executing SQL");
-		
-		if (!results) {
-			error({message: event.data.error || "Unknown error occurred"});
-			return;
-		}
-
-		tic();
-		tabOutputElm.innerHTML = "";
-		
-		if (results.length === 0) {
-			const noResultsDiv = document.createElement('div');
-			noResultsDiv.className = 'no-results';
-			noResultsDiv.textContent = 'Query executed successfully. No results to display.';
-			tabOutputElm.appendChild(noResultsDiv);
-			updateStatus('success', 'Query executed with no results');
-			return;
-		}
-		
-		for (var i = 0; i < results.length; i++) {
-			tabOutputElm.appendChild(tableCreate(results[i].columns, results[i].values));
-		}
-		
-		const displayTime = toc("Displaying results");
-		updateQueryTime(executionTime + displayTime);
-		updateStatus('success', `Returned ${results.length} result set${results.length !== 1 ? 's' : ''}`);
-	}
+		handleQueryResults(event, tabOutputElm);
+	};
 	
 	worker.postMessage({ action: 'exec', sql: commands });
-	
-	// Set up error handling for the worker
-	worker.onerror = function(e) {
-		error(e);
-	};
+	worker.onerror = handleError;
 }
 
-// Create an HTML table
-var tableCreate = function () {
-	return function (columns, values) {
-		// Use the table template
-		const tableTemplate = document.getElementById('table-template');
-		const tableClone = tableTemplate.content.cloneNode(true);
-		const wrapper = tableClone.querySelector('.table-wrapper');
-		const table = tableClone.querySelector('table');
-		
-		// Set row and column counts
-		wrapper.querySelector('.row-count').textContent = `${values.length} row${values.length !== 1 ? 's' : ''}`;
-		wrapper.querySelector('.column-count').textContent = `${columns.length} column${columns.length !== 1 ? 's' : ''}`;
-		
-		// Create header cells
-		const thead = table.querySelector('thead tr');
-		thead.innerHTML = ''; // Clear the slot
-		columns.forEach(column => {
-			const th = document.createElement('th');
-			th.textContent = column;
-			thead.appendChild(th);
-		});
-		
-		// Create data rows
-		const tbody = table.querySelector('tbody');
-		tbody.innerHTML = ''; // Clear the slot
-		
-		if (values.length === 0) {
-			const emptyRow = document.createElement('tr');
-			const emptyCell = document.createElement('td');
-			emptyCell.className = 'no-results';
-			emptyCell.textContent = 'No results';
-			emptyCell.colSpan = columns.length;
-			emptyRow.appendChild(emptyCell);
-			tbody.appendChild(emptyRow);
-		} else {
-			values.forEach(rowData => {
-				const row = document.createElement('tr');
-				rowData.forEach(cellData => {
-					const cell = document.createElement('td');
-					cell.textContent = cellData;
-					row.appendChild(cell);
-				});
-				tbody.appendChild(row);
-			});
-		}
-		
-		return wrapper;
+function determineTabForResults(tabId) {
+	const currentTabPanel = document.getElementById(state.currentTabId);
+	const isInitialUnusedTab = state.currentTabId === 'tab1' && 
+		currentTabPanel && 
+		currentTabPanel.querySelector('.results-content').innerHTML.includes('Results will be displayed here');
+	
+	return isInitialUnusedTab ? state.currentTabId : createNewTab();
+}
+
+function showLoadingIndicator(outputElement) {
+	outputElement.innerHTML = '';
+	const loadingTemplate = document.getElementById('loading-template');
+	const loadingClone = loadingTemplate.content.cloneNode(true);
+	outputElement.appendChild(loadingClone);
+}
+
+function handleQueryResults(event, outputElement) {
+	const results = event.data.results;
+	const executionTime = toc("Executing SQL");
+	
+	if (!results) {
+		handleError({message: event.data.error || "Unknown error occurred"});
+		return;
 	}
-}();
+
+	tic();
+	outputElement.innerHTML = "";
+	
+	if (results.length === 0) {
+		displayNoResults(outputElement);
+		return;
+	}
+	
+	displayResultSets(results, outputElement);
+	
+	const displayTime = toc("Displaying results");
+	updateQueryTime(executionTime + displayTime);
+	updateStatus('success', `Returned ${results.length} result set${results.length !== 1 ? 's' : ''}`);
+}
+
+function displayNoResults(outputElement) {
+	const noResultsDiv = document.createElement('div');
+	noResultsDiv.className = 'no-results';
+	noResultsDiv.textContent = 'Query executed successfully. No results to display.';
+	outputElement.appendChild(noResultsDiv);
+	updateStatus('success', 'Query executed with no results');
+}
+
+function displayResultSets(results, outputElement) {
+	results.forEach(result => {
+		outputElement.appendChild(createResultTable(result.columns, result.values));
+	});
+}
+
+// Create an HTML table for results
+function createResultTable(columns, values) {
+	const tableTemplate = document.getElementById('table-template');
+	const tableClone = tableTemplate.content.cloneNode(true);
+	const wrapper = tableClone.querySelector('.table-wrapper');
+	const table = tableClone.querySelector('table');
+	
+	updateTableMetadata(wrapper, columns.length, values.length);
+	createTableHeader(table, columns);
+	createTableBody(table, columns, values);
+	
+	return wrapper;
+}
+
+function updateTableMetadata(wrapper, columnCount, rowCount) {
+	wrapper.querySelector('.row-count').textContent = `${rowCount} row${rowCount !== 1 ? 's' : ''}`;
+	wrapper.querySelector('.column-count').textContent = `${columnCount} column${columnCount !== 1 ? 's' : ''}`;
+}
+
+function createTableHeader(table, columns) {
+	const thead = table.querySelector('thead tr');
+	thead.innerHTML = '';
+	
+	columns.forEach(column => {
+		const th = document.createElement('th');
+		th.textContent = column;
+		thead.appendChild(th);
+	});
+}
+
+function createTableBody(table, columns, values) {
+	const tbody = table.querySelector('tbody');
+	tbody.innerHTML = '';
+	
+	if (values.length === 0) {
+		createEmptyResultRow(tbody, columns.length);
+	} else {
+		values.forEach(rowData => {
+			createTableRow(tbody, rowData);
+		});
+	}
+}
+
+function createEmptyResultRow(tbody, columnCount) {
+	const emptyRow = document.createElement('tr');
+	const emptyCell = document.createElement('td');
+	emptyCell.className = 'no-results';
+	emptyCell.textContent = 'No results';
+	emptyCell.colSpan = columnCount;
+	emptyRow.appendChild(emptyCell);
+	tbody.appendChild(emptyRow);
+}
+
+function createTableRow(tbody, rowData) {
+	const row = document.createElement('tr');
+	rowData.forEach(cellData => {
+		const cell = document.createElement('td');
+		cell.textContent = cellData;
+		row.appendChild(cell);
+	});
+	tbody.appendChild(row);
+}
 
 // Execute the commands when the button is clicked
 function execEditorContents() {
-	noerror();
+	clearError();
 	
-	// Use the current tab if it exists, otherwise create a new one
 	try {
 		execute(editor.getValue() + ';');
 	} catch (e) {
-		error(e);
+		handleError(e);
 	}
 	
-	// Add visual feedback for button click
-	execBtn.classList.add('active');
-	setTimeout(() => {
-		execBtn.classList.remove('active');
-	}, 200);
+	addButtonClickFeedback(elements.execBtn);
 }
 
-execBtn.addEventListener("click", execEditorContents);
+function addButtonClickFeedback(button) {
+	button.classList.add('active');
+	setTimeout(() => {
+		button.classList.remove('active');
+	}, 200);
+}
 
 // Performance measurement functions
 var tictime;
@@ -269,7 +291,7 @@ function toc(msg) {
 }
 
 // Add syntax highlighting to the textarea
-var editor = CodeMirror.fromTextArea(commandsElm, {
+var editor = CodeMirror.fromTextArea(elements.commandsElm, {
 	mode: 'text/x-mysql',
 	viewportMargin: Infinity,
 	indentWithTabs: true,
@@ -288,19 +310,18 @@ var editor = CodeMirror.fromTextArea(commandsElm, {
 });
 
 // Load a db from a file
-dbFileElm.onchange = function () {
-	var f = dbFileElm.files[0];
+elements.dbFileElm.onchange = function () {
+	loadDatabaseFromFile();
+};
+
+function loadDatabaseFromFile() {
+	var f = elements.dbFileElm.files[0];
 	var r = new FileReader();
 	r.onload = function () {
 		worker.onmessage = function () {
 			toc("Loading database from file");
-			// Show the schema of the loaded database
 			editor.setValue("SELECT `name`, `sql`\n  FROM `sqlite_master`\n  WHERE type='table';");
-			
-			// Execute the query (this will create a new tab if needed)
 			execEditorContents();
-			
-			// Show success notification
 			showNotification('Database loaded successfully');
 			updateStatus('success', 'Database loaded successfully');
 		};
@@ -321,37 +342,33 @@ function savedb() {
 	
 	worker.onmessage = function (event) {
 		toc("Exporting the database");
-		var arraybuff = event.data.buffer;
-		var blob = new Blob([arraybuff]);
-		var a = document.createElement("a");
-		document.body.appendChild(a);
-		a.href = window.URL.createObjectURL(blob);
-		a.download = "sql.db";
-		a.onclick = function () {
-			setTimeout(function () {
-				window.URL.revokeObjectURL(a.href);
-			}, 1500);
-		};
-		a.click();
-		
-		// Show success notification
+		downloadDatabaseFile(event.data.buffer);
 		showNotification('Database saved successfully');
 		updateStatus('success', 'Database saved successfully');
-		
-		// Add visual feedback for button click
-		savedbElm.classList.add('active');
-		setTimeout(() => {
-			savedbElm.classList.remove('active');
-		}, 200);
+		addButtonClickFeedback(elements.savedbElm);
 	};
 	tic();
 	worker.postMessage({ action: 'export' });
 }
-savedbElm.addEventListener("click", savedb);
+
+function downloadDatabaseFile(arraybuff) {
+	var blob = new Blob([arraybuff]);
+	var a = document.createElement("a");
+	document.body.appendChild(a);
+	a.href = window.URL.createObjectURL(blob);
+	a.download = "sql.db";
+	a.onclick = function () {
+		setTimeout(function () {
+			window.URL.revokeObjectURL(a.href);
+		}, 1500);
+	};
+	a.click();
+}
+
+elements.savedbElm.addEventListener("click", savedb);
 
 // Create a notification system
 function showNotification(message) {
-	// Create notification element if it doesn't exist
 	let notification = document.querySelector('.notification');
 	if (!notification) {
 		notification = document.createElement('div');
@@ -359,14 +376,9 @@ function showNotification(message) {
 		document.body.appendChild(notification);
 	}
 	
-	// Clear existing content and set new message
-	notification.textContent = '';
 	notification.textContent = message;
-	
-	// Show notification
 	notification.classList.add('show');
 	
-	// Hide after 3 seconds
 	setTimeout(() => {
 		notification.classList.remove('show');
 	}, 3000);
@@ -377,69 +389,72 @@ function initResizer() {
 	const editorPanel = document.querySelector('.editor-panel');
 	const isMobileView = window.matchMedia('(max-width: 768px)').matches;
 	
-	panelResizerElm.addEventListener('mousedown', function(e) {
-		isResizing = true;
+	elements.panelResizerElm.addEventListener('mousedown', function(e) {
+		state.isResizing = true;
 		document.body.classList.add('resizing');
-		panelResizerElm.classList.add('active');
+		elements.panelResizerElm.classList.add('active');
 	});
 	
 	document.addEventListener('mousemove', function(e) {
-		if (!isResizing) return;
+		if (!state.isResizing) return;
 		
-		const containerWidth = document.querySelector('.app-container').offsetWidth;
-		let newWidth;
-		
-		// Check if we're in mobile view (flexbox column)
 		const isMobileView = window.matchMedia('(max-width: 768px)').matches;
 		
 		if (isMobileView) {
-			// In mobile view, resize height instead of width
-			const containerHeight = document.querySelector('.app-container').offsetHeight;
-			const newHeight = e.clientY - editorPanel.getBoundingClientRect().top;
-			const minHeight = 100;
-			const maxHeight = containerHeight - 100;
-			
-			editorPanel.style.height = `${Math.min(Math.max(newHeight, minHeight), maxHeight)}px`;
+			resizePanelHeight(e, editorPanel);
 		} else {
-			// Desktop view - resize width
-			newWidth = e.clientX - editorPanel.getBoundingClientRect().left;
-			const minWidth = 200;
-			const maxWidth = containerWidth - 200;
-			
-			editorPanel.style.width = `${Math.min(Math.max(newWidth, minWidth), maxWidth)}px`;
+			resizePanelWidth(e, editorPanel);
 		}
 		
 		e.preventDefault();
 	});
 	
 	document.addEventListener('mouseup', function() {
-		if (isResizing) {
-			isResizing = false;
+		if (state.isResizing) {
+			state.isResizing = false;
 			document.body.classList.remove('resizing');
-			panelResizerElm.classList.remove('active');
+			elements.panelResizerElm.classList.remove('active');
 		}
 	});
 	
-	// Set initial width/height based on view
+	setInitialPanelSize(editorPanel, isMobileView);
+}
+
+function resizePanelHeight(e, panel) {
+	const containerHeight = document.querySelector('.app-container').offsetHeight;
+	const newHeight = e.clientY - panel.getBoundingClientRect().top;
+	const minHeight = 100;
+	const maxHeight = containerHeight - 100;
+	
+	panel.style.height = `${Math.min(Math.max(newHeight, minHeight), maxHeight)}px`;
+}
+
+function resizePanelWidth(e, panel) {
+	const containerWidth = document.querySelector('.app-container').offsetWidth;
+	const newWidth = e.clientX - panel.getBoundingClientRect().left;
+	const minWidth = 200;
+	const maxWidth = containerWidth - 200;
+	
+	panel.style.width = `${Math.min(Math.max(newWidth, minWidth), maxWidth)}px`;
+}
+
+function setInitialPanelSize(panel, isMobileView) {
 	if (isMobileView) {
-		editorPanel.style.height = '50%';
-		editorPanel.style.width = '';
+		panel.style.height = '50%';
+		panel.style.width = '';
 	} else {
-		editorPanel.style.width = '50%';
-		editorPanel.style.height = '';
+		panel.style.width = '50%';
+		panel.style.height = '';
 	}
 }
 
 // Initialize tabs
 function initTabs() {
-	// New tab button
-	newTabBtn.addEventListener('click', createNewTab);
+	elements.newTabBtn.addEventListener('click', createNewTab);
 	
-	// Tab click handler
-	resultsTabs.addEventListener('click', function(e) {
+	elements.resultsTabs.addEventListener('click', function(e) {
 		const target = e.target;
 		
-		// Handle tab close button
 		if (target.classList.contains('tab-close')) {
 			const tabId = target.parentElement.dataset.tab;
 			closeTab(tabId);
@@ -447,7 +462,6 @@ function initTabs() {
 			return;
 		}
 		
-		// Handle tab selection
 		if (target.classList.contains('tab') && !target.id) {
 			const tabId = target.dataset.tab;
 			if (tabId) {
@@ -456,16 +470,15 @@ function initTabs() {
 		}
 	});
 	
-	// Initialize the first tab
+	initializeFirstTab();
+}
+
+function initializeFirstTab() {
 	const firstTab = document.querySelector('.tab[data-tab="tab1"]');
 	if (firstTab) {
-		// Clear the first tab's content
 		firstTab.innerHTML = '';
+		firstTab.textContent = `Result ${state.tabCounter}`;
 		
-		// Add the tab text directly
-		firstTab.textContent = `Result ${tabCounter}`;
-		
-		// Add close button
 		const closeBtn = document.createElement('span');
 		closeBtn.className = 'tab-close';
 		closeBtn.textContent = '×';
@@ -477,88 +490,74 @@ function initTabs() {
 
 // Create a new results tab
 function createNewTab() {
-	tabCounter++;
-	const tabId = `tab${tabCounter}`;
+	state.tabCounter++;
+	const tabId = `tab${state.tabCounter}`;
 	
-	// Create tab button using template
+	createTabButton(tabId);
+	createTabPanel(tabId);
+	
+	setActiveTab(tabId);
+	
+	return tabId;
+}
+
+function createTabButton(tabId) {
 	const tabTemplate = document.getElementById('tab-template');
 	const tabClone = tabTemplate.content.cloneNode(true);
 	const tab = tabClone.querySelector('.tab');
 	tab.dataset.tab = tabId;
 	
-	// Clear any existing content in the tab
 	tab.innerHTML = '';
+	tab.textContent = `Result ${state.tabCounter}`;
 	
-	// Add the tab text directly (no slots)
-	tab.textContent = `Result ${tabCounter}`;
-	
-	// Add close button
 	const closeBtn = document.createElement('span');
 	closeBtn.className = 'tab-close';
 	closeBtn.textContent = '×';
 	tab.appendChild(closeBtn);
 	
-	// Insert before the + button
-	resultsTabs.insertBefore(tab, newTabBtn);
-	
-	// Create tab panel using template
+	elements.resultsTabs.insertBefore(tab, elements.newTabBtn);
+}
+
+function createTabPanel(tabId) {
 	const panelTemplate = document.getElementById('tab-panel-template');
 	const panelClone = panelTemplate.content.cloneNode(true);
 	const tabPanel = panelClone.querySelector('.tab-panel');
 	tabPanel.id = tabId;
 	
 	document.querySelector('.results-panel .panel-content').appendChild(tabPanel);
-	
-	// Set as active
-	setActiveTab(tabId);
-	
-	return tabId;
 }
 
 // Set active tab
 function setActiveTab(tabId) {
-	// Update current tab id
-	currentTabId = tabId;
+	state.currentTabId = tabId;
 	
-	// Update tab buttons
 	document.querySelectorAll('.results-tabs .tab').forEach(tab => {
-		tab.classList.remove('active');
-		if (tab.dataset.tab === tabId) {
-			tab.classList.add('active');
-		}
+		tab.classList.toggle('active', tab.dataset.tab === tabId);
 	});
 	
-	// Update tab panels
 	document.querySelectorAll('.tab-panel').forEach(panel => {
-		panel.classList.remove('active');
-		if (panel.id === tabId) {
-			panel.classList.add('active');
-		}
+		panel.classList.toggle('active', panel.id === tabId);
 	});
 }
 
 // Close a tab
 function closeTab(tabId) {
-	// Don't close if it's the last content tab
 	const contentTabs = document.querySelectorAll('.results-tabs .tab:not(#newTabBtn)');
 	if (contentTabs.length <= 1) {
 		return;
 	}
 	
-	// Remove tab button
 	const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
 	if (tab) {
 		tab.remove();
 	}
 	
-	// Remove tab panel
 	const panel = document.getElementById(tabId);
 	if (panel) {
 		panel.remove();
 	}
 	
-	// If we closed the active tab, activate another one
-	if (currentTabId === tabId) {
+	if (state.currentTabId === tabId) {
 		const firstTab = document.querySelector('.results-tabs .tab:not(#newTabBtn)');
 		if (firstTab) {
 			setActiveTab(firstTab.dataset.tab);
@@ -568,76 +567,72 @@ function closeTab(tabId) {
 
 // Query history functions
 function addToHistory(query) {
-	// Limit history size
-	if (queryHistory.length >= 20) {
-		queryHistory.pop();
+	if (state.queryHistory.length >= 20) {
+		state.queryHistory.pop();
 	}
 	
-	// Add to beginning of array
-	queryHistory.unshift({
+	state.queryHistory.unshift({
 		query: query,
 		timestamp: new Date(),
-		executionTime: lastExecutionTime
+		executionTime: state.lastExecutionTime
 	});
 	
-	// Update history UI
 	updateHistoryUI();
 }
 
 function updateHistoryUI() {
-	queryHistoryElm.innerHTML = '';
+	elements.queryHistoryElm.innerHTML = '';
 	
-	queryHistory.forEach((item) => {
-		// Use history item template
-		const historyTemplate = document.getElementById('history-item-template');
-		const historyClone = historyTemplate.content.cloneNode(true);
-		const historyItem = historyClone.querySelector('.history-item');
-		
-		// Format timestamp
-		const timestamp = item.timestamp;
-		const timeString = timestamp.toLocaleTimeString();
-		
-		// Truncate query if too long
-		const queryPreview = item.query.length > 60 ? 
-			item.query.substring(0, 60) + '...' : 
-			item.query;
-		
-		// Set query preview
-		const queryPreviewEl = document.createElement('span');
-		queryPreviewEl.slot = 'query-preview';
-		queryPreviewEl.textContent = queryPreview;
-		historyItem.querySelector('.history-query').appendChild(queryPreviewEl);
-		historyItem.querySelector('.history-query').title = item.query;
-		
-		// Set query time
-		const queryTimeEl = document.createElement('span');
-		queryTimeEl.slot = 'query-time';
-		queryTimeEl.textContent = timeString;
-		historyItem.querySelector('.history-time').appendChild(queryTimeEl);
-		
-		// Add click handler to load query
-		historyItem.addEventListener('click', () => {
-			editor.setValue(item.query);
-			toggleQueryHistory();
-		});
-		
-		queryHistoryElm.appendChild(historyItem);
+	state.queryHistory.forEach((item) => {
+		const historyItem = createHistoryItem(item);
+		elements.queryHistoryElm.appendChild(historyItem);
 	});
 }
 
+function createHistoryItem(item) {
+	const historyTemplate = document.getElementById('history-item-template');
+	const historyClone = historyTemplate.content.cloneNode(true);
+	const historyItem = historyClone.querySelector('.history-item');
+	
+	const timeString = item.timestamp.toLocaleTimeString();
+	const queryPreview = truncateString(item.query, 60);
+	
+	const queryPreviewEl = document.createElement('span');
+	queryPreviewEl.slot = 'query-preview';
+	queryPreviewEl.textContent = queryPreview;
+	historyItem.querySelector('.history-query').appendChild(queryPreviewEl);
+	historyItem.querySelector('.history-query').title = item.query;
+	
+	const queryTimeEl = document.createElement('span');
+	queryTimeEl.slot = 'query-time';
+	queryTimeEl.textContent = timeString;
+	historyItem.querySelector('.history-time').appendChild(queryTimeEl);
+	
+	historyItem.addEventListener('click', () => {
+		editor.setValue(item.query);
+		toggleQueryHistory();
+	});
+	
+	return historyItem;
+}
+
+function truncateString(str, maxLength) {
+	return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+}
+
 function toggleQueryHistory() {
-	queryHistoryElm.classList.toggle('show');
+	elements.queryHistoryElm.classList.toggle('show');
 }
 
 // Toggle history button
-toggleHistoryBtn.addEventListener('click', toggleQueryHistory);
+elements.toggleHistoryBtn.addEventListener('click', toggleQueryHistory);
 
 // Close history when clicking outside
 document.addEventListener('click', function(e) {
-	if (queryHistoryElm.classList.contains('show') && 
-			!queryHistoryElm.contains(e.target) && 
-			e.target !== toggleHistoryBtn) {
-		queryHistoryElm.classList.remove('show');
+	if (elements.queryHistoryElm.classList.contains('show') && 
+			!elements.queryHistoryElm.contains(e.target) && 
+			e.target !== elements.toggleHistoryBtn) {
+		elements.queryHistoryElm.classList.remove('show');
 	}
 });
 
@@ -646,7 +641,6 @@ updateStatus('info', 'Ready');
 
 // Handle window resize
 window.addEventListener('resize', function() {
-	// Reset any explicit dimensions on mobile/desktop switch
 	const isMobileView = window.innerWidth <= 768;
 	const editorPanel = document.querySelector('.editor-panel');
 	
@@ -658,32 +652,32 @@ window.addEventListener('resize', function() {
 });
 
 // Add keyboard shortcuts info
-document.addEventListener('DOMContentLoaded', function() {
-	const editorHeader = document.querySelector('.editor-header');
-	if (editorHeader) {
-		const shortcuts = document.createElement('div');
-		shortcuts.className = 'shortcuts';
-		
-		// Create shortcut elements using template
-		const addShortcut = (title, keyText) => {
-			const shortcutTemplate = document.getElementById('shortcut-template');
-			const shortcutClone = shortcutTemplate.content.cloneNode(true);
-			const shortcut = shortcutClone.querySelector('span');
-			shortcut.title = title;
+function initKeyboardShortcuts() {
+	document.addEventListener('DOMContentLoaded', function() {
+		const editorHeader = document.querySelector('.editor-header');
+		if (editorHeader) {
+			const shortcuts = document.createElement('div');
+			shortcuts.className = 'shortcuts';
 			
-			const keySlot = document.createElement('span');
-			keySlot.slot = 'key';
-			keySlot.textContent = keyText;
-			shortcut.appendChild(keySlot);
+			addShortcutInfo(shortcuts, 'Execute: Ctrl/Cmd+Enter', 'Ctrl+Enter');
+			addShortcutInfo(shortcuts, 'Save DB: Ctrl/Cmd+S', 'Ctrl+S');
+			addShortcutInfo(shortcuts, 'Toggle History: Ctrl+Space', 'Ctrl+Space');
 			
-			shortcuts.appendChild(shortcut);
-		};
-		
-		// Add all shortcuts
-		addShortcut('Execute: Ctrl/Cmd+Enter', 'Ctrl+Enter');
-		addShortcut('Save DB: Ctrl/Cmd+S', 'Ctrl+S');
-		addShortcut('Toggle History: Ctrl+Space', 'Ctrl+Space');
-		
-		editorHeader.appendChild(shortcuts);
-	}
-});
+			editorHeader.appendChild(shortcuts);
+		}
+	});
+}
+
+function addShortcutInfo(container, title, keyText) {
+	const shortcutTemplate = document.getElementById('shortcut-template');
+	const shortcutClone = shortcutTemplate.content.cloneNode(true);
+	const shortcut = shortcutClone.querySelector('span');
+	shortcut.title = title;
+	
+	const keySlot = document.createElement('span');
+	keySlot.slot = 'key';
+	keySlot.textContent = keyText;
+	shortcut.appendChild(keySlot);
+	
+	container.appendChild(shortcut);
+}
