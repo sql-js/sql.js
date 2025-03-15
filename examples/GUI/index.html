@@ -54,13 +54,8 @@
   <div class="app-container">
     <!-- Editor Panel -->
     <div class="panel panel-resizable editor-panel">
-      <div class="panel-header">
+      <div class="panel-header editor-header">
         <span>SQL Editor</span>
-        <div class="shortcuts">
-          <span title="Execute query">
-            <span class="shortcut-key">Ctrl+Enter</span>
-          </span>
-        </div>
       </div>
       <div class="panel-content">
         <textarea id="commands">DROP TABLE IF EXISTS employees;
@@ -84,7 +79,7 @@ CREATE TABLE employees( id          integer,  name    text,
   INSERT INTO employees VALUES (13,'MONROE','ENGINEER',10,'2000-12-03',30000,NULL,2);
   INSERT INTO employees VALUES (14,'ROOSEVELT','CPA',9,'1995-10-12',35000,NULL,1);
 
-SELECT designation,COUNT(*) AS nbr, (AVG(salary)) AS avg_salary FROM employees GROUP BY designation ORDER BY avg_salary DESC;
+SELECT designation,COUNT(*) AS nbr, AVG(salary) AS avg_salary FROM employees GROUP BY designation ORDER BY avg_salary DESC;
 SELECT name,hired_on FROM employees ORDER BY hired_on;</textarea>
         <div class="query-history" id="queryHistory">
           <!-- History items will be added here dynamically -->
@@ -107,7 +102,7 @@ SELECT name,hired_on FROM employees ORDER BY hired_on;</textarea>
       <div class="panel-content">
         <div id="error" class="error"></div>
         <div class="tab-panel active" id="tab1">
-          <div id="output" class="results-content">Results will be displayed here</div>
+          <div class="results-content">Results will be displayed here</div>
         </div>
       </div>
       <div class="status-bar">

@@ -43,6 +43,12 @@ function error(e) {
 	
 	updateStatus('error', `Error: ${e.message}`);
 	
+	// Clear loading spinner in the current tab when an error occurs
+	const tabOutputElm = document.querySelector(`#${currentTabId} .results-content`);
+	if (tabOutputElm) {
+		tabOutputElm.innerHTML = `<div class="no-results error-result">Query failed: ${e.message}</div>`;
+	}
+	
 	setTimeout(() => {
 		errorElm.style.opacity = 0;
 		setTimeout(() => {
@@ -102,7 +108,7 @@ function execute(commands, tabId = currentTabId) {
 		const executionTime = toc("Executing SQL");
 		
 		if (!results) {
-			error({message: event.data.error});
+			error({message: event.data.error || "Unknown error occurred"});
 			return;
 		}
 
@@ -125,6 +131,11 @@ function execute(commands, tabId = currentTabId) {
 	}
 	
 	worker.postMessage({ action: 'exec', sql: commands });
+	
+	// Set up error handling for the worker
+	worker.onerror = function(e) {
+		error(e);
+	};
 }
 
 // Create an HTML table
@@ -172,7 +183,11 @@ function execEditorContents() {
 		createNewTab();
 	}
 	
-	execute(editor.getValue() + ';');
+	try {
+		execute(editor.getValue() + ';');
+	} catch (e) {
+		error(e);
+	}
 	
 	// Add visual feedback for button click
 	execBtn.classList.add('active');
@@ -298,6 +313,7 @@ function showNotification(message) {
 // Initialize resizable panels
 function initResizer() {
 	const editorPanel = document.querySelector('.editor-panel');
+	const isMobileView = window.matchMedia('(max-width: 768px)').matches;
 	
 	panelResizerElm.addEventListener('mousedown', function(e) {
 		isResizing = true;
@@ -312,7 +328,7 @@ function initResizer() {
 		let newWidth;
 		
 		// Check if we're in mobile view (flexbox column)
-		const isMobileView = window.getComputedStyle(document.querySelector('.app-container')).flexDirection === 'column';
+		const isMobileView = window.matchMedia('(max-width: 768px)').matches;
 		
 		if (isMobileView) {
 			// In mobile view, resize height instead of width
@@ -341,6 +357,15 @@ function initResizer() {
 			panelResizerElm.classList.remove('active');
 		}
 	});
+	
+	// Set initial width/height based on view
+	if (isMobileView) {
+		editorPanel.style.height = '50%';
+		editorPanel.style.width = '';
+	} else {
+		editorPanel.style.width = '50%';
+		editorPanel.style.height = '';
+	}
 }
 
 // Initialize tabs
@@ -368,6 +393,12 @@ function initTabs() {
 			}
 		}
 	});
+	
+	// Initialize the first tab
+	const firstTab = document.querySelector('.tab[data-tab="tab1"]');
+	if (firstTab) {
+		setActiveTab('tab1');
+	}
 }
 
 // Create a new results tab
@@ -535,116 +566,23 @@ window.addEventListener('resize', function() {
 	}
 });
 
-// Add CSS for new elements
-const style = document.createElement('style');
-style.textContent = `
-.loading {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-	height: 100px;
-	color: rgba(255, 255, 255, 0.7);
-}
-
-.spinner {
-	width: 30px;
-	height: 30px;
-	border: 3px solid rgba(79, 190, 255, 0.3);
-	border-radius: 50%;
-	border-top-color: #4fbeff;
-	animation: spin 1s ease-in-out infinite;
-	margin-bottom: 15px;
-}
-
-@keyframes spin {
-	to { transform: rotate(360deg); }
-}
-
-.table-wrapper {
-	margin-bottom: 20px;
-}
-
-.table-caption {
-	color: rgba(255, 255, 255, 0.6);
-	font-size: 0.85em;
-	margin-bottom: 8px;
-	text-align: right;
-}
-
-.no-results {
-	color: rgba(255, 255, 255, 0.5);
-	text-align: center;
-	padding: 30px;
-}
-
-.notification {
-	position: fixed;
-	bottom: -60px;
-	left: 50%;
-	transform: translateX(-50%);
-	background: rgba(40, 60, 80, 0.9);
-	color: #fff;
-	padding: 12px 20px;
-	border-radius: 8px;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-	transition: bottom 0.3s ease;
-	z-index: 1000;
-	border-left: 3px solid #4fbeff;
-}
-
-.notification.show {
-	bottom: 20px;
-}
-
-.button.active {
-	transform: translateY(1px);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) inset;
-}
-
-.results-header, .editor-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 8px;
-	color: rgba(255, 255, 255, 0.7);
-	font-weight: 500;
-}
-
-.actions {
-	display: flex;
-	flex-wrap: wrap;
-	margin: 15px 0;
-}
-
-.github-corner:hover .octo-arm {
-	animation: octocat-wave 560ms ease-in-out;
-}
-
-@keyframes octocat-wave {
-	0%, 100% { transform: rotate(0); }
-	20%, 60% { transform: rotate(-25deg); }
-	40%, 80% { transform: rotate(10deg); }
-}
-
-@media (max-width: 500px) {
-	.github-corner:hover .octo-arm {
-		animation: none;
-	}
-	.github-corner .octo-arm {
-		animation: octocat-wave 560ms ease-in-out;
-	}
-}
-`;
-document.head.appendChild(style);
-
 // Add keyboard shortcuts info
 document.addEventListener('DOMContentLoaded', function() {
 	const editorHeader = document.querySelector('.editor-header');
 	if (editorHeader) {
 		const shortcuts = document.createElement('div');
 		shortcuts.className = 'shortcuts';
-		shortcuts.innerHTML = '<span title="Execute: Ctrl/Cmd+Enter, Save: Ctrl/Cmd+S">Keyboard shortcuts</span>';
+		shortcuts.innerHTML = `
+			<span title="Execute: Ctrl/Cmd+Enter">
+				<span class="shortcut-key">Ctrl+Enter</span>
+			</span>
+			<span title="Save DB: Ctrl/Cmd+S">
+				<span class="shortcut-key">Ctrl+S</span>
+			</span>
+			<span title="Toggle History: Ctrl+Space">
+				<span class="shortcut-key">Ctrl+Space</span>
+			</span>
+		`;
 		editorHeader.appendChild(shortcuts);
 	}
 });
