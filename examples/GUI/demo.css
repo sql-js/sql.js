@@ -471,7 +471,7 @@ footer a:hover {
 }
 
 .query-history.show {
-	max-height: 300px;
+	max-height: 400px;
 	height: auto;
 	opacity: 1;
 	visibility: visible;
@@ -498,6 +498,15 @@ footer a:hover {
 
 .history-item:hover {
 	background: rgba(255, 255, 255, 0.05);
+}
+
+.history-item.snippet {
+	background: rgba(43, 106, 74, 0.1);
+	border-left: 3px solid var(--accent-green);
+}
+
+.history-item.snippet:hover {
+	background: rgba(43, 106, 74, 0.2);
 }
 
 .history-query {
