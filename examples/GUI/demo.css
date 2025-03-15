@@ -413,6 +413,14 @@ tr:nth-child(even) {
 	display: flex;
 	align-items: center;
 	gap: 10px;
+	margin-left: auto;
+}
+
+.shortcuts span {
+	display: flex;
+	align-items: center;
+	margin-left: 8px;
+	color: var(--text-muted);
 }
 
 .shortcut-key {
@@ -421,6 +429,8 @@ tr:nth-child(even) {
 	border-radius: 3px;
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 0.85em;
+	margin-left: 4px;
+	color: var(--text-secondary);
 }
 
 footer {
@@ -443,21 +453,37 @@ footer a:hover {
 
 .query-history {
 	position: absolute;
-	top: 100%;
+	top: 0;
 	left: 0;
 	right: 0;
 	background: rgba(30, 40, 50, 0.95);
-	border-top: 1px solid var(--border-subtle);
+	border: 1px solid var(--border-subtle);
 	max-height: 0;
+	height: 0;
+	opacity: 0;
+	visibility: hidden;
 	overflow: hidden;
-	transition: max-height 0.3s ease;
+	transition: all 0.3s ease;
 	z-index: 100;
-	box-shadow: var(--shadow-strong);
+	box-shadow: none;
+	border-radius: var(--radius-md);
+	margin: 10px;
 }
 
 .query-history.show {
 	max-height: 300px;
+	height: auto;
+	opacity: 1;
+	visibility: visible;
 	overflow-y: auto;
+	box-shadow: 0 0 20px rgba(79, 190, 255, 0.2), var(--shadow-strong);
+}
+
+.query-history-empty {
+	padding: 20px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
 }
 
 .history-item {
@@ -514,6 +540,7 @@ footer a:hover {
 	
 	.panel-resizable {
 		max-width: 100%;
+		width: 100% !important;
 		height: 50%;
 		min-height: 200px;
 		max-height: calc(100% - 200px);
@@ -532,4 +559,121 @@ footer a:hover {
 		bottom: -3px;
 		top: auto;
 	}
+	
+	.shortcuts {
+		display: none;
+	}
+}
+
+body.resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+@media (max-width: 768px) {
+	body.resizing {
+		cursor: row-resize;
+	}
+}
+
+.error-result {
+	color: #ff6b6b;
+	border-left: 3px solid #ff6b6b;
+	background: rgba(255, 0, 0, 0.05);
+}
+
+.github-corner:hover .octo-arm {
+	animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+	0%, 100% { transform: rotate(0); }
+	20%, 60% { transform: rotate(-25deg); }
+	40%, 80% { transform: rotate(10deg); }
+}
+
+@media (max-width: 500px) {
+	.github-corner:hover .octo-arm {
+		animation: none;
+	}
+	.github-corner .octo-arm {
+		animation: octocat-wave 560ms ease-in-out;
+	}
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 15px 0;
+}
+
+.results-header, .editor-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+	color: rgba(255, 255, 255, 0.7);
+	font-weight: 500;
+}
+
+/* SQL Snippets Menu */
+.snippets-menu {
+	position: absolute;
+	background: rgba(30, 40, 50, 0.95);
+	border: 1px solid var(--border-subtle);
+	max-height: 0;
+	width: 220px;
+	opacity: 0;
+	visibility: hidden;
+	overflow: hidden;
+	transition: all 0.3s ease;
+	z-index: 100;
+	box-shadow: none;
+	border-radius: var(--radius-md);
+	right: 15px;
+	top: 45px;
+}
+
+.snippets-menu.show {
+	max-height: 400px;
+	opacity: 1;
+	visibility: visible;
+	overflow-y: auto;
+	box-shadow: var(--shadow-strong);
+}
+
+.snippet-item {
+	padding: 10px 14px;
+	border-bottom: 1px solid var(--border-subtle);
+	cursor: pointer;
+	transition: var(--transition-normal);
+	font-size: 0.9em;
+}
+
+.snippet-item:hover {
+	background: rgba(79, 190, 255, 0.1);
+	color: var(--accent-blue);
+}
+
+.snippet-item:last-child {
+	border-bottom: none;
+}
+
+.button-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: 4px;
+}
+
+.button-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.button-icon.active {
+	background: rgba(79, 190, 255, 0.2);
 }
