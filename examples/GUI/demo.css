@@ -48,6 +48,7 @@ header {
 	background: rgba(15, 25, 35, 0.4);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 	z-index: 10;
+	position: relative;
 }
 
 h1 {
@@ -69,6 +70,7 @@ h1 {
 	display: flex;
 	align-items: center;
 	gap: 10px;
+	margin-right: 60px;
 }
 
 .button {
@@ -572,6 +574,19 @@ footer a:hover {
 	.shortcuts {
 		display: none;
 	}
+	
+	.toolbar {
+		margin-right: 50px;
+	}
+	
+	.button {
+		padding: 6px 10px;
+		font-size: 0.8em;
+	}
+	
+	h1 {
+		font-size: 1.2rem;
+	}
 }
 
 body.resizing {
@@ -595,6 +610,22 @@ body.resizing {
 	animation: octocat-wave 560ms ease-in-out;
 }
 
+.github-corner {
+	z-index: 20;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+.github-corner svg {
+	opacity: 0.7;
+	transition: opacity 0.3s ease;
+}
+
+.github-corner:hover svg {
+	opacity: 1;
+}
+
 @keyframes octocat-wave {
 	0%, 100% { transform: rotate(0); }
 	20%, 60% { transform: rotate(-25deg); }
@@ -607,6 +638,10 @@ body.resizing {
 	}
 	.github-corner .octo-arm {
 		animation: octocat-wave 560ms ease-in-out;
+	}
+	.github-corner svg {
+		width: 50px;
+		height: 50px;
 	}
 }
 
