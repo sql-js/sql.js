@@ -615,3 +615,65 @@ body.resizing {
 	color: rgba(255, 255, 255, 0.7);
 	font-weight: 500;
 }
+
+/* SQL Snippets Menu */
+.snippets-menu {
+	position: absolute;
+	background: rgba(30, 40, 50, 0.95);
+	border: 1px solid var(--border-subtle);
+	max-height: 0;
+	width: 220px;
+	opacity: 0;
+	visibility: hidden;
+	overflow: hidden;
+	transition: all 0.3s ease;
+	z-index: 100;
+	box-shadow: none;
+	border-radius: var(--radius-md);
+	right: 15px;
+	top: 45px;
+}
+
+.snippets-menu.show {
+	max-height: 400px;
+	opacity: 1;
+	visibility: visible;
+	overflow-y: auto;
+	box-shadow: var(--shadow-strong);
+}
+
+.snippet-item {
+	padding: 10px 14px;
+	border-bottom: 1px solid var(--border-subtle);
+	cursor: pointer;
+	transition: var(--transition-normal);
+	font-size: 0.9em;
+}
+
+.snippet-item:hover {
+	background: rgba(79, 190, 255, 0.1);
+	color: var(--accent-blue);
+}
+
+.snippet-item:last-child {
+	border-bottom: none;
+}
+
+.button-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: 4px;
+}
+
+.button-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.button-icon.active {
+	background: rgba(79, 190, 255, 0.2);
+}
