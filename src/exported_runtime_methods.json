@@ -4,9 +4,8 @@
 "stackSave",
 "stackRestore",
 "UTF8ToString",
-
-"allocate",
-"ALLOC_NORMAL",
+"stringToNewUTF8",
+"writeArrayToMemory",
 "allocateUTF8OnStack",
 "removeFunction",
 "addFunction"
