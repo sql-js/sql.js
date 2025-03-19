@@ -1,3 +1,11 @@
+> [!IMPORTANT]
+> This is fork of the original sql.js library with extra bits and bobs from the fork of @jlongster/sql.js to enable absurd-sql support
+> It is being used in Obsidian SQLSeal to enable latest SQLite version
+
+
+
+
+
 <img src="https://user-images.githubusercontent.com/552629/76405509-87025300-6388-11ea-86c9-af882abb00bd.png" width="40" height="40" />
 
 # SQLite compiled to JavaScript
