@@ -550,7 +550,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.stmt,
             pos,
             strptr,
-            bytes.length - 1,
+            length - 1,
             0
         ));
         return true;
