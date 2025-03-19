@@ -1462,7 +1462,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      *   the name of the database, the name of the table, and the row id of the
      *   changed row.
      * - Set to `null` to unregister.
-     * @returns {void}
+     * @returns {Database} The database object. Useful for method chaining
      */
     Database.prototype["updateHook"] = function updateHook(callback) {
         if (this.updateHookFunctionPtr) {
@@ -1474,7 +1474,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
         if (!callback) {
             // no new callback to register
-            return;
+            return this;
         }
 
         // void(*)(void *,int ,char const *,char const *,sqlite3_int64)
@@ -1521,6 +1521,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.updateHookFunctionPtr,
             0 // passed as the first arg to wrappedCallback
         );
+        return this;
     };
 
     /**
