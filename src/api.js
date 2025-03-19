@@ -1457,17 +1457,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * // This won't trigger any callback
      * db.run("INSERT INTO users VALUES (2, 'Bob', 1)");
      *
-     * @param {function|null} callback -
-     * Callback to be executed whenever a row changes.
-     * Set to `null` to unregister the callback.
-     * @param {string} callback.operation -
-     * 'insert', 'update', or 'delete'
-     * @param {string} callback.database -
-     * database where the change occurred
-     * @param {string} callback.table -
-     * table where the change occurred
-     * @param {number} callback.rowId -
-     * rowid of the changed row
+     * @param {Database~UpdateHookCallback|null} callback
+     * - Callback to be executed when a row changes. Takes the type of change,
+     *   the name of the database, the name of the table, and the row id of the
+     *   changed row.
+     * - Set to `null` to unregister.
+     * @returns {void}
      */
     Database.prototype["updateHook"] = function updateHook(callback) {
         if (this.updateHookFunctionPtr) {
@@ -1527,6 +1522,18 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             0 // passed as the first arg to wrappedCallback
         );
     };
+
+    /**
+     * @callback Database~UpdateHookCallback
+     * @param {'insert'|'update'|'delete'} operation
+     * - The type of change that occurred
+     * @param {string} database
+     * - The name of the database where the change occurred
+     * @param {string} table
+     * - The name of the database's table where the change occurred
+     * @param {number} rowId
+     * - The [rowid](https://www.sqlite.org/rowidtable.html) of the changed row
+     */
 
     // export Database to Module
     Module.Database = Database;
