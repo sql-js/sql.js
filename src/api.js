@@ -329,11 +329,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     * @param {Statement.BindParams} values The values to bind
     * @return {boolean} true if it worked
-    * @throws {String} SQLite Error
+    * @throws {Error} SQLite Error
     */
     Statement.prototype["bind"] = function bind(values) {
         if (!this.stmt) {
-            throw "Statement closed";
+            throw new Error("Statement closed");
         }
         this["reset"]();
         if (Array.isArray(values)) return this.bindFromArray(values);
@@ -347,11 +347,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     that can be retrieved with {@link Statement.get}.
 
     @return {boolean} true if a row of result available
-    @throws {String} SQLite Error
+    @throws {Error} SQLite Error
      */
     Statement.prototype["step"] = function step() {
         if (!this.stmt) {
-            throw "Statement closed";
+            throw new Error("Statement closed");
         }
         this.pos = 1;
         var ret = sqlite3_step(this.stmt);
@@ -624,7 +624,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             default:
                 break;
         }
-        throw (
+        throw new Error(
             "Wrong API use : tried to bind a value of an unknown type ("
             + val + ")."
         );
@@ -756,7 +756,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Prepare the next available SQL statement
      @return {StatementIterator.StatementIteratorResult}
-     @throws {String} SQLite error or invalid iterator error
+     @throws {Error} SQLite error or invalid iterator error
      */
     StatementIterator.prototype["next"] = function next() {
         if (this.sqlPtr === null) {
@@ -865,7 +865,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     Database.prototype["run"] = function run(sql, params) {
         if (!this.db) {
-            throw "Database closed";
+            throw new Error("Database closed");
         }
         if (params) {
             var stmt = this["prepare"](sql, params);
@@ -950,7 +950,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     */
     Database.prototype["exec"] = function exec(sql, params, config) {
         if (!this.db) {
-            throw "Database closed";
+            throw new Error("Database closed");
         }
         var stack = stackSave();
         var stmt = null;
@@ -1047,7 +1047,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     (`?`, `:VVV`, `:AAA`, `@AAA`)
     @param {Statement.BindParams} [params] values to bind to placeholders
     @return {Statement} the resulting statement
-    @throws {String} SQLite error
+    @throws {Error} SQLite error
      */
     Database.prototype["prepare"] = function prepare(sql, params) {
         setValue(apiTemp, 0, "i32");
@@ -1055,7 +1055,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // pointer to a statement, or null
         var pStmt = getValue(apiTemp, "i32");
         if (pStmt === NULL) {
-            throw "Nothing to prepare";
+            throw new Error("Nothing to prepare");
         }
         var stmt = new Statement(pStmt, this);
         if (params != null) {
