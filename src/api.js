@@ -560,7 +560,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.pos += 1;
         }
         var blobptr = _malloc(array.length);
-        writeArrayToMemory(array, blobptr)
+        writeArrayToMemory(array, blobptr);
         this.allocatedmem.push(blobptr);
         this.db.handleError(sqlite3_bind_blob(
             this.stmt,
@@ -1200,7 +1200,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                     sqlite3_result_null(cx);
                 } else if (result.length != null) {
                     var blobptr = _malloc(result.length);
-                    writeArrayToMemory(result, blobptr)
+                    writeArrayToMemory(result, blobptr);
                     sqlite3_result_blob(cx, blobptr, result.length, -1);
                     _free(blobptr);
                 } else {
