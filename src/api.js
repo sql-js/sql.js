@@ -5,19 +5,15 @@
     _malloc
     _free
     getValue
-    intArrayFromString
     setValue
     stackAlloc
     stackRestore
     stackSave
     UTF8ToString
-    stringToUTF8
-    lengthBytesUTF8
-    allocate
-    ALLOC_NORMAL
-    allocateUTF8OnStack
+    stringToNewUTF8
     removeFunction
     addFunction
+    writeArrayToMemory
 */
 
 "use strict";
@@ -545,14 +541,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
-        var bytes = intArrayFromString(string);
-        var strptr = allocate(bytes, ALLOC_NORMAL);
+        var strptr = stringToNewUTF8(string);
         this.allocatedmem.push(strptr);
         this.db.handleError(sqlite3_bind_text(
             this.stmt,
             pos,
             strptr,
-            bytes.length - 1,
+            -1,
             0
         ));
         return true;
@@ -563,7 +558,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
-        var blobptr = allocate(array, ALLOC_NORMAL);
+        var blobptr = _malloc(array.length);
+        writeArrayToMemory(array, blobptr);
         this.allocatedmem.push(blobptr);
         this.db.handleError(sqlite3_bind_blob(
             this.stmt,
@@ -734,12 +730,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     function StatementIterator(sql, db) {
         this.db = db;
-        var sz = lengthBytesUTF8(sql) + 1;
-        this.sqlPtr = _malloc(sz);
+        this.sqlPtr = stringToNewUTF8(sql);
         if (this.sqlPtr === null) {
             throw new Error("Unable to allocate memory for the SQL string");
         }
-        stringToUTF8(sql, this.sqlPtr, sz);
         this.nextSqlPtr = this.sqlPtr;
         this.nextSqlString = null;
         this.activeStatement = null;
@@ -952,25 +946,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (!this.db) {
             throw "Database closed";
         }
-        var stack = stackSave();
         var stmt = null;
+        var originalSqlPtr = null;
+        var currentSqlPtr = null;
         try {
-            var nextSqlPtr = allocateUTF8OnStack(sql);
+            originalSqlPtr = stringToNewUTF8(sql);
+            currentSqlPtr = originalSqlPtr;
             var pzTail = stackAlloc(4);
             var results = [];
-            while (getValue(nextSqlPtr, "i8") !== NULL) {
+            while (getValue(currentSqlPtr, "i8") !== NULL) {
                 setValue(apiTemp, 0, "i32");
                 setValue(pzTail, 0, "i32");
                 this.handleError(sqlite3_prepare_v2_sqlptr(
                     this.db,
-                    nextSqlPtr,
+                    currentSqlPtr,
                     -1,
                     apiTemp,
                     pzTail
                 ));
                 // pointer to a statement, or null
                 var pStmt = getValue(apiTemp, "i32");
-                nextSqlPtr = getValue(pzTail, "i32");
+                currentSqlPtr = getValue(pzTail, "i32");
                 // Empty statement
                 if (pStmt !== NULL) {
                     var curresult = null;
@@ -996,7 +992,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             if (stmt) stmt["free"]();
             throw errCaught;
         } finally {
-            stackRestore(stack);
+            if (originalSqlPtr) _free(originalSqlPtr);
         }
     };
 
@@ -1204,7 +1200,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 if (result === null) {
                     sqlite3_result_null(cx);
                 } else if (result.length != null) {
-                    var blobptr = allocate(result, ALLOC_NORMAL);
+                    var blobptr = _malloc(result.length);
+                    writeArrayToMemory(result, blobptr);
                     sqlite3_result_blob(cx, blobptr, result.length, -1);
                     _free(blobptr);
                 } else {
