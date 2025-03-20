@@ -11,7 +11,6 @@
     stackSave
     UTF8ToString
     stringToNewUTF8
-    allocateUTF8OnStack
     removeFunction
     addFunction
     writeArrayToMemory
@@ -947,25 +946,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (!this.db) {
             throw "Database closed";
         }
-        var stack = stackSave();
         var stmt = null;
+        var originalSqlPtr = null;
+        var currentSqlPtr = null;
         try {
-            var nextSqlPtr = allocateUTF8OnStack(sql);
+            originalSqlPtr = stringToNewUTF8(sql);
+            currentSqlPtr = originalSqlPtr;
             var pzTail = stackAlloc(4);
             var results = [];
-            while (getValue(nextSqlPtr, "i8") !== NULL) {
+            while (getValue(currentSqlPtr, "i8") !== NULL) {
                 setValue(apiTemp, 0, "i32");
                 setValue(pzTail, 0, "i32");
                 this.handleError(sqlite3_prepare_v2_sqlptr(
                     this.db,
-                    nextSqlPtr,
+                    currentSqlPtr,
                     -1,
                     apiTemp,
                     pzTail
                 ));
                 // pointer to a statement, or null
                 var pStmt = getValue(apiTemp, "i32");
-                nextSqlPtr = getValue(pzTail, "i32");
+                currentSqlPtr = getValue(pzTail, "i32");
                 // Empty statement
                 if (pStmt !== NULL) {
                     var curresult = null;
@@ -991,7 +992,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             if (stmt) stmt["free"]();
             throw errCaught;
         } finally {
-            stackRestore(stack);
+            if (originalSqlPtr) _free(originalSqlPtr);
         }
     };
 

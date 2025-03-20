@@ -6,7 +6,6 @@
 "UTF8ToString",
 "stringToNewUTF8",
 "writeArrayToMemory",
-"allocateUTF8OnStack",
 "removeFunction",
 "addFunction"
 ]
