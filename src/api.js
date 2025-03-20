@@ -5,17 +5,16 @@
     _malloc
     _free
     getValue
-    intArrayFromString
     setValue
     stackAlloc
     stackRestore
     stackSave
     UTF8ToString
-    stringToUTF8
-    lengthBytesUTF8
+    stringToNewUTF8
     allocateUTF8OnStack
     removeFunction
     addFunction
+    writeArrayToMemory
 */
 
 "use strict";
@@ -543,14 +542,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
-        var length = lengthBytesUTF8(string);
         var strptr = stringToNewUTF8(string);
         this.allocatedmem.push(strptr);
         this.db.handleError(sqlite3_bind_text(
             this.stmt,
             pos,
             strptr,
-            length - 1,
+            -1,
             0
         ));
         return true;
@@ -733,12 +731,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     function StatementIterator(sql, db) {
         this.db = db;
-        var sz = lengthBytesUTF8(sql) + 1;
-        this.sqlPtr = _malloc(sz);
+        this.sqlPtr = stringToNewUTF8(sql);
         if (this.sqlPtr === null) {
             throw new Error("Unable to allocate memory for the SQL string");
         }
-        stringToUTF8(sql, this.sqlPtr, sz);
         this.nextSqlPtr = this.sqlPtr;
         this.nextSqlString = null;
         this.activeStatement = null;
