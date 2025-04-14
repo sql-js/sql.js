@@ -31,7 +31,7 @@ You're now ready to test the dev environment:
 4. Click on Terminal->New Terminal to be dropped into a terminal inside the dev environment.
 5. Run `$ npm install` to install the required modules
 6. Run `$ npm test` to ensure all tests pass
-7. Run `$ npm rebuild` to re-compile the project from scratch (using the version of EMSDK installed in the container).
+7. Run `$ npm run rebuild` to re-compile the project from scratch (using the version of EMSDK installed in the container).
 8. Run `$ npm test` to ensure all tests pass after said rebuild
 
 You're now ready for development!
@@ -47,7 +47,7 @@ Instructions:
 2. Clone this repository
 3. Run `$ npm install` to install the required modules
 4. Run `$ npm test` to ensure all tests pass
-5. Run `$ npm rebuild` to re-compile the project from scratch (using the version of EMSDK installed in the container).
+5. Run `$ npm run rebuild` to re-compile the project from scratch (using the version of EMSDK installed in the container).
 6. Run `$ npm test` to ensure all tests pass after said rebuild
 
 ## Compiling SQLite with different options
