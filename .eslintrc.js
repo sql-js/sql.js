@@ -21,6 +21,8 @@ module.exports = {
         "/out/",
         "/src/shell-post.js",
         "/src/shell-pre.js",
+        "/src/shell-post-esm.js",
+        "/src/shell-pre-esm.js",
         "/test/",
         "!/.eslintrc.js"
     ],
