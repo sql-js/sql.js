@@ -5,9 +5,10 @@
 # BEGIN Standard MS Devcontainer for Typescript-Node 
 
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/typescript-node/.devcontainer/base.Dockerfile
-# [Choice] Node.js version: 14, 12, 10
-ARG VARIANT="22-bullseye"
-FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:1-${VARIANT}
+# Tags: https://mcr.microsoft.com/en-us/artifact/mar/devcontainers/typescript-node/tags
+# [Choice] Node.js version: 18, 20, 22
+ARG VARIANT="22-bookworm"
+FROM mcr.microsoft.com/devcontainers/typescript-node:2-${VARIANT}
 
 # [Optional] Uncomment if you want to install an additional version of node using nvm
 # ARG EXTRA_NODE_VERSION=10
@@ -22,11 +23,11 @@ FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:1-${VARIANT}
 # --------------------------------------------------------------------
 # BEGIN EMSDK 
 # Install EMSDK to /emsdk just like the EMSDK Dockerfile: https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
-ENV EMSDK /emsdk
+ENV EMSDK=/emsdk
 # We pin the EMSDK version rather than 'latest' so that everyone is using the same compiler version
-ENV EMSCRIPTEN_VERSION 4.0.5
+ENV EMSCRIPTEN_VERSION=4.0.13
 
-RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK
+RUN git clone --depth=1 https://github.com/emscripten-core/emsdk.git $EMSDK
 
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
@@ -44,7 +45,7 @@ RUN cd ${EMSDK} \
     && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
     && echo "## Done"
 
-ENV PATH $EMSDK:$EMSDK/upstream/emscripten/:$PATH
+ENV PATH=$EMSDK:$EMSDK/upstream/emscripten/:$PATH
 
 # Cleanup Emscripten installation and strip some symbols
 # Copied directly from https://github.com/emscripten-core/emsdk/blob/master/docker/Dockerfile
