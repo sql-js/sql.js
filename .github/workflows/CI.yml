@@ -6,11 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: make
       uses: ./.github/actions/build-sqljs
     - uses: actions/upload-artifact@v4
       with: {name: dist, path: dist}
+    - run: cat out/versions.txt
     - name: test
       run: npm ci && npm test
     - name: generate documentation
