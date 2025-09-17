@@ -10,11 +10,6 @@ SQLITE_AMALGAMATION = sqlite-amalgamation-3490100
 SQLITE_AMALGAMATION_ZIP_URL = https://sqlite.org/2025/sqlite-amalgamation-3490100.zip
 SQLITE_AMALGAMATION_ZIP_SHA3 = e7eb4cfb2d95626e782cfa748f534c74482f2c3c93f13ee828b9187ce05b2da7
 
-# Note that extension-functions.c hasn't been updated since 2010-02-06, so likely doesn't need to be updated
-EXTENSION_FUNCTIONS = extension-functions.c
-EXTENSION_FUNCTIONS_URL = https://www.sqlite.org/contrib/download/extension-functions.c?get=25
-EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
-
 EMCC=emcc
 
 SQLITE_COMPILATION_FLAGS = \
@@ -23,6 +18,7 @@ SQLITE_COMPILATION_FLAGS = \
 	-DSQLITE_DISABLE_LFS \
 	-DSQLITE_ENABLE_FTS3 \
 	-DSQLITE_ENABLE_FTS3_PARENTHESIS \
+	-DSQLITE_ENABLE_MATH_FUNCTIONS \
 	-DSQLITE_THREADSAFE=0 \
 	-DSQLITE_ENABLE_NORMALIZE
 
@@ -162,15 +158,11 @@ cache/$(SQLITE_AMALGAMATION).zip:
 	mkdir -p cache
 	curl -LsSf '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
 
-cache/$(EXTENSION_FUNCTIONS):
-	mkdir -p cache
-	curl -LsSf '$(EXTENSION_FUNCTIONS_URL)' -o $@
-
 ## sqlite-src
 .PHONY: sqlite-src
-sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION) sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+sqlite-src: sqlite-src/$(SQLITE_AMALGAMATION)
 
-sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS)
+sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip
 	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
 	echo '$(SQLITE_AMALGAMATION_ZIP_SHA3)  ./cache/$(SQLITE_AMALGAMATION).zip' > cache/check.txt
 	sha3sum -a 256 -c cache/check.txt
@@ -179,12 +171,6 @@ sqlite-src/$(SQLITE_AMALGAMATION): cache/$(SQLITE_AMALGAMATION).zip sqlite-src/$
 	# this step could remove the extension functions, and that's not what we want
 	unzip -u 'cache/$(SQLITE_AMALGAMATION).zip' -d sqlite-src/
 	touch $@
-
-sqlite-src/$(SQLITE_AMALGAMATION)/$(EXTENSION_FUNCTIONS): cache/$(EXTENSION_FUNCTIONS)
-	mkdir -p sqlite-src/$(SQLITE_AMALGAMATION)
-	echo '$(EXTENSION_FUNCTIONS_SHA1)  ./cache/$(EXTENSION_FUNCTIONS)' > cache/check.txt
-	sha1sum -c cache/check.txt
-	cp 'cache/$(EXTENSION_FUNCTIONS)' $@
 
 
 .PHONY: clean
