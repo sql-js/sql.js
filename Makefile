@@ -50,6 +50,11 @@ EMFLAGS_WASM = \
 	-s WASM=1 \
 	-s ALLOW_MEMORY_GROWTH=1
 
+EMFLAGS_WASM_BROWSER = \
+	-s WASM=1 \
+	-s ALLOW_MEMORY_GROWTH=1 \
+	-s ENVIRONMENT=web,worker
+
 EMFLAGS_OPTIMIZED= \
 	-Oz \
 	-flto \
@@ -73,7 +78,7 @@ EXPORTED_METHODS_JSON_FILES = src/exported_functions.json src/exported_runtime_m
 all: optimized debug worker
 
 .PHONY: debug
-debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js
+debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js dist/sql-wasm-browser-debug.js
 
 dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
@@ -87,8 +92,14 @@ dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FI
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
+dist/sql-wasm-browser-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM_BROWSER) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	mv $@ out/tmp-raw.js
+	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	rm out/tmp-raw.js
+
 .PHONY: optimized
-optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-asm-memory-growth.js
+optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-wasm-browser.js dist/sql-asm-memory-growth.js
 
 dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
@@ -98,6 +109,12 @@ dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(
 
 dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	mv $@ out/tmp-raw.js
+	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	rm out/tmp-raw.js
+
+dist/sql-wasm-browser.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM_BROWSER) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js

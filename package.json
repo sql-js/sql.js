@@ -18,6 +18,13 @@
 	],
 	"license": "MIT",
 	"main": "./dist/sql-wasm.js",
+	"exports": {
+		".": {
+			"browser": "./dist/sql-wasm-browser.js",
+			"default": "./dist/sql-wasm.js"
+		},
+		"./dist/*": "./dist/*"
+	},
 	"scripts": {
 		"build": "make",
 		"rebuild": "npm run clean && npm run build",
