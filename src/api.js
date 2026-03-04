@@ -50,11 +50,11 @@
  * @module SqlJs
  */
 // Wait for preRun to run, and then finish our initialization
-Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
+Module.onRuntimeInitialized = function onRuntimeInitialized() {
     // Declare toplevel variables
     // register, used for temporary stack values
     var apiTemp = stackAlloc(4);
-    var cwrap = Module["cwrap"];
+    var cwrap = Module.cwrap;
     // Null pointer
     var NULL = 0;
     // SQLite enum
@@ -327,11 +327,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * @return {boolean} true if it worked
     * @throws {String} SQLite Error
     */
-    Statement.prototype["bind"] = function bind(values) {
+    Statement.prototype.bind = function bind(values) {
         if (!this.stmt) {
             throw "Statement closed";
         }
-        this["reset"]();
+        this.reset();
         if (Array.isArray(values)) return this.bindFromArray(values);
         if (values != null && typeof values === "object") {
             return this.bindFromObject(values);
@@ -345,7 +345,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @return {boolean} true if a row of result available
     @throws {String} SQLite Error
      */
-    Statement.prototype["step"] = function step() {
+    Statement.prototype.step = function step() {
         if (!this.stmt) {
             throw "Statement closed";
         }
@@ -357,7 +357,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             case SQLITE_DONE:
                 return false;
             default:
-                throw this.db["handleError"](ret);
+                throw this.db.handleError(ret);
         }
     };
 
@@ -423,17 +423,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var stmt = db.prepare("SELECT * FROM test");
     while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
      */
-    Statement.prototype["get"] = function get(params, config) {
+    Statement.prototype.get = function get(params, config) {
         config = config || {};
-        if (params != null && this["bind"](params)) {
-            this["step"]();
+        if (params != null && this.bind(params)) {
+            this.step();
         }
         var results1 = [];
         var ref = sqlite3_data_count(this.stmt);
         for (var field = 0; field < ref; field += 1) {
             switch (sqlite3_column_type(this.stmt, field)) {
                 case SQLITE_INTEGER:
-                    var getfunc = config["useBigInt"]
+                    var getfunc = config.useBigInt
                         ? this.getBigInt(field)
                         : this.getNumber(field);
                     results1.push(getfunc);
@@ -464,7 +464,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     console.log(stmt.getColumnNames());
     // Will print ['nbr','data','null_value']
      */
-    Statement.prototype["getColumnNames"] = function getColumnNames() {
+    Statement.prototype.getColumnNames = function getColumnNames() {
         var results1 = [];
         var ref = sqlite3_column_count(this.stmt);
         for (var i = 0; i < ref; i += 1) {
@@ -489,9 +489,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
      */
-    Statement.prototype["getAsObject"] = function getAsObject(params, config) {
-        var values = this["get"](params, config);
-        var names = this["getColumnNames"]();
+    Statement.prototype.getAsObject = function getAsObject(params, config) {
+        var values = this.get(params, config);
+        var names = this.getColumnNames();
         var rowObject = {};
         for (var i = 0; i < names.length; i += 1) {
             var name = names[i];
@@ -503,7 +503,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     /** Get the SQL string used in preparing this statement.
      @return {string} The SQL string
      */
-    Statement.prototype["getSQL"] = function getSQL() {
+    Statement.prototype.getSQL = function getSQL() {
         return sqlite3_sql(this.stmt);
     };
 
@@ -519,7 +519,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
      @return {string} The normalized SQL string
      */
-    Statement.prototype["getNormalizedSQL"] = function getNormalizedSQL() {
+    Statement.prototype.getNormalizedSQL = function getNormalizedSQL() {
         return sqlite3_normalized_sql(this.stmt);
     };
 
@@ -528,12 +528,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     and resets it
     @param {Statement.BindParams} [values] Value to bind to the statement
      */
-    Statement.prototype["run"] = function run(values) {
+    Statement.prototype.run = function run(values) {
         if (values != null) {
-            this["bind"](values);
+            this.bind(values);
         }
-        this["step"]();
-        return this["reset"]();
+        this.step();
+        return this.reset();
     };
 
     Statement.prototype.bindString = function bindString(string, pos) {
@@ -543,7 +543,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         var strptr = stringToNewUTF8(string);
         this.allocatedmem.push(strptr);
-        this.db["handleError"](sqlite3_bind_text(
+        this.db.handleError(sqlite3_bind_text(
             this.stmt,
             pos,
             strptr,
@@ -561,7 +561,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var blobptr = _malloc(array.length);
         writeArrayToMemory(array, blobptr);
         this.allocatedmem.push(blobptr);
-        this.db["handleError"](sqlite3_bind_blob(
+        this.db.handleError(sqlite3_bind_blob(
             this.stmt,
             pos,
             blobptr,
@@ -581,7 +581,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 ? sqlite3_bind_int
                 : sqlite3_bind_double
         );
-        this.db["handleError"](bindfunc(this.stmt, pos, num));
+        this.db.handleError(bindfunc(this.stmt, pos, num));
         return true;
     };
 
@@ -659,8 +659,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     It also clears all previous bindings, freeing the memory used
     by bound parameters.
      */
-    Statement.prototype["reset"] = function reset() {
-        this["freemem"]();
+    Statement.prototype.reset = function reset() {
+        this.freemem();
         return (
             sqlite3_clear_bindings(this.stmt) === SQLITE_OK
             && sqlite3_reset(this.stmt) === SQLITE_OK
@@ -668,7 +668,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Free the memory allocated during parameter binding */
-    Statement.prototype["freemem"] = function freemem() {
+    Statement.prototype.freemem = function freemem() {
         var mem;
         while ((mem = this.allocatedmem.pop()) !== undefined) {
             _free(mem);
@@ -678,9 +678,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     /** Free the memory used by the statement
     @return {boolean} true in case of success
      */
-    Statement.prototype["free"] = function free() {
+    Statement.prototype.free = function free() {
         var res;
-        this["freemem"]();
+        this.freemem();
         res = sqlite3_finalize(this.stmt) === SQLITE_OK;
         delete this.db.statements[this.stmt];
         this.stmt = NULL;
@@ -752,12 +752,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      @return {StatementIterator.StatementIteratorResult}
      @throws {String} SQLite error or invalid iterator error
      */
-    StatementIterator.prototype["next"] = function next() {
+    StatementIterator.prototype.next = function next() {
         if (this.sqlPtr === null) {
             return { done: true };
         }
         if (this.activeStatement !== null) {
-            this.activeStatement["free"]();
+            this.activeStatement.free();
             this.activeStatement = null;
         }
         if (!this.db.db) {
@@ -769,7 +769,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         setValue(apiTemp, 0, "i32");
         setValue(pzTail, 0, "i32");
         try {
-            this.db["handleError"](sqlite3_prepare_v2_sqlptr(
+            this.db.handleError(sqlite3_prepare_v2_sqlptr(
                 this.db.db,
                 this.nextSqlPtr,
                 -1,
@@ -802,7 +802,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     /** Get any un-executed portions remaining of the original SQL string
      @return {String}
      */
-    StatementIterator.prototype["getRemainingSQL"] = function getRemainder() {
+    StatementIterator.prototype.getRemainingSQL = function getRemainder() {
         // iff an exception occurred, we set the nextSqlString
         if (this.nextSqlString !== null) return this.nextSqlString;
         // otherwise, convert from nextSqlPtr
@@ -831,7 +831,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (data != null) {
             FS.createDataFile("/", this.filename, data, true, true);
         }
-        this["handleError"](sqlite3_open(this.filename, apiTemp));
+        this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
         // A list of all prepared statements of the database
@@ -857,19 +857,19 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     @return {Database} The database object (useful for method chaining)
      */
-    Database.prototype["run"] = function run(sql, params) {
+    Database.prototype.run = function run(sql, params) {
         if (!this.db) {
             throw "Database closed";
         }
         if (params) {
-            var stmt = this["prepare"](sql, params);
+            var stmt = this.prepare(sql, params);
             try {
-                stmt["step"]();
+                stmt.step();
             } finally {
-                stmt["free"]();
+                stmt.free();
             }
         } else {
-            this["handleError"](sqlite3_exec(this.db, sql, 0, 0, apiTemp));
+            this.handleError(sqlite3_exec(this.db, sql, 0, 0, apiTemp));
         }
         return this;
     };
@@ -942,7 +942,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     (separated by `;`). This limitation does not apply to params as an object.
     * @return {Array<Database.QueryExecResult>} The results of each statement
     */
-    Database.prototype["exec"] = function exec(sql, params, config) {
+    Database.prototype.exec = function exec(sql, params, config) {
         if (!this.db) {
             throw "Database closed";
         }
@@ -957,7 +957,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             while (getValue(currentSqlPtr, "i8") !== NULL) {
                 setValue(apiTemp, 0, "i32");
                 setValue(pzTail, 0, "i32");
-                this["handleError"](sqlite3_prepare_v2_sqlptr(
+                this.handleError(sqlite3_prepare_v2_sqlptr(
                     this.db,
                     currentSqlPtr,
                     -1,
@@ -972,24 +972,24 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                     var curresult = null;
                     stmt = new Statement(pStmt, this);
                     if (params != null) {
-                        stmt["bind"](params);
+                        stmt.bind(params);
                     }
-                    while (stmt["step"]()) {
+                    while (stmt.step()) {
                         if (curresult === null) {
                             curresult = {
-                                columns: stmt["getColumnNames"](),
-                                values: [],
+                                "columns": stmt.getColumnNames(),
+                                "values": [],
                             };
                             results.push(curresult);
                         }
-                        curresult["values"].push(stmt["get"](null, config));
+                        curresult.values.push(stmt.get(null, config));
                     }
-                    stmt["free"]();
+                    stmt.free();
                 }
             }
             return results;
         } catch (errCaught) {
-            if (stmt) stmt["free"]();
+            if (stmt) stmt.free();
             throw errCaught;
         } finally {
             if (originalSqlPtr) _free(originalSqlPtr);
@@ -1017,20 +1017,20 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
      */
     // eslint-disable-next-line max-len
-    Database.prototype["each"] = function each(sql, params, callback, done, config) {
+    Database.prototype.each = function each(sql, params, callback, done, config) {
         var stmt;
         if (typeof params === "function") {
             done = callback;
             callback = params;
             params = undefined;
         }
-        stmt = this["prepare"](sql, params);
+        stmt = this.prepare(sql, params);
         try {
-            while (stmt["step"]()) {
-                callback(stmt["getAsObject"](null, config));
+            while (stmt.step()) {
+                callback(stmt.getAsObject(null, config));
             }
         } finally {
-            stmt["free"]();
+            stmt.free();
         }
         if (typeof done === "function") {
             return done();
@@ -1045,9 +1045,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @return {Statement} the resulting statement
     @throws {String} SQLite error
      */
-    Database.prototype["prepare"] = function prepare(sql, params) {
+    Database.prototype.prepare = function prepare(sql, params) {
         setValue(apiTemp, 0, "i32");
-        this["handleError"](
+        this.handleError(
             sqlite3_prepare_v2(this.db, sql, -1, apiTemp, NULL)
         );
         // pointer to a statement, or null
@@ -1057,7 +1057,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         var stmt = new Statement(pStmt, this);
         if (params != null) {
-            stmt["bind"](params);
+            stmt.bind(params);
         }
         this.statements[pStmt] = stmt;
         return stmt;
@@ -1079,7 +1079,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * // 'SELECT 1 AS x;' { x: 1 }
      * // " SELECT '2' as y" { y: '2' }
      */
-    Database.prototype["iterateStatements"] = function iterateStatements(sql) {
+    Database.prototype.iterateStatements = function iterateStatements(sql) {
         return new StatementIterator(sql, this);
     };
 
@@ -1088,15 +1088,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * any pragmas to be set back to their default values.
     @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
-    Database.prototype["export"] = function exportDatabase() {
+    Database.prototype.export = function exportDatabase() {
         Object.values(this.statements).forEach(function each(stmt) {
-            stmt["free"]();
+            stmt.free();
         });
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
-        this["handleError"](sqlite3_close_v2(this.db));
+        this.handleError(sqlite3_close_v2(this.db));
         var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this["handleError"](sqlite3_open(this.filename, apiTemp));
+        this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
         return binaryDb;
@@ -1112,13 +1112,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * Databases **must** be closed when you're finished with them, or the
     * memory consumption will grow forever
      */
-    Database.prototype["close"] = function close() {
+    Database.prototype.close = function close() {
         // do nothing if db is null or already closed
         if (this.db === null) {
             return;
         }
         Object.values(this.statements).forEach(function each(stmt) {
-            stmt["free"]();
+            stmt.free();
         });
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
@@ -1128,7 +1128,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.updateHookFunctionPtr = undefined;
         }
 
-        this["handleError"](sqlite3_close_v2(this.db));
+        this.handleError(sqlite3_close_v2(this.db));
         FS.unlink("/" + this.filename);
         this.db = null;
     };
@@ -1137,7 +1137,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     an error with a descriptive message otherwise
     @nodoc
      */
-    Database.prototype["handleError"] = function handleError(returnCode) {
+    Database.prototype.handleError = function handleError(returnCode) {
         var errmsg;
         if (returnCode === SQLITE_OK) {
             return null;
@@ -1153,7 +1153,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     @return {number} the number of rows modified
     */
-    Database.prototype["getRowsModified"] = function getRowsModified() {
+    Database.prototype.getRowsModified = function getRowsModified() {
         return sqlite3_changes(this.db);
     };
 
@@ -1230,7 +1230,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
       @param {function(any)} func the actual function to be executed.
       @return {Database} The database object. Useful for method chaining
        */
-    Database.prototype["create_function"] = function create_function(
+    Database.prototype.create_function = function create_function(
         name,
         func
     ) {
@@ -1253,7 +1253,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
         var func_ptr = addFunction(wrapped_func, "viii");
         this.functions[name] = func_ptr;
-        this["handleError"](sqlite3_create_function_v2(
+        this.handleError(sqlite3_create_function_v2(
             this.db,
             name,
             func.length,
@@ -1296,16 +1296,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
       @return {Database} The database object. Useful for method chaining
       @template T
        */
-    Database.prototype["create_aggregate"] = function create_aggregate(
+    Database.prototype.create_aggregate = function create_aggregate(
         name,
         aggregateFunctions
     ) {
         // Default initializer and finalizer
-        var init = aggregateFunctions["init"]
+        var init = aggregateFunctions.init
             || function init() { return null; };
-        var finalize = aggregateFunctions["finalize"]
+        var finalize = aggregateFunctions.finalize
             || function finalize(state) { return state; };
-        var step = aggregateFunctions["step"];
+        var step = aggregateFunctions.step;
 
         if (!step) {
             throw "An aggregate function must have a step function in " + name;
@@ -1384,7 +1384,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // > An aggregate SQL function requires an implementation of xStep and
         // > xFinal and NULL pointer must be passed for xFunc.
         // - http://www.sqlite.org/c3ref/create_function.html
-        this["handleError"](sqlite3_create_function_v2(
+        this.handleError(sqlite3_create_function_v2(
             this.db,
             name,
             step.length - 1,
@@ -1463,7 +1463,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * - Set to `null` to unregister.
      * @returns {Database} The database object. Useful for method chaining
      */
-    Database.prototype["updateHook"] = function updateHook(callback) {
+    Database.prototype.updateHook = function updateHook(callback) {
         if (this.updateHookFunctionPtr) {
             // unregister and cleanup a previously registered update hook
             sqlite3_update_hook(this.db, 0, 0);
@@ -1534,6 +1534,35 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      * @param {number} rowId
      * - The [rowid](https://www.sqlite.org/rowidtable.html) of the changed row
      */
+
+    // Preserve public API names across minification.
+    Statement.prototype["bind"] = Statement.prototype.bind;
+    Statement.prototype["step"] = Statement.prototype.step;
+    Statement.prototype["get"] = Statement.prototype.get;
+    Statement.prototype["getColumnNames"] = Statement.prototype.getColumnNames;
+    Statement.prototype["getAsObject"] = Statement.prototype.getAsObject;
+    Statement.prototype["getSQL"] = Statement.prototype.getSQL;
+    Statement.prototype["getNormalizedSQL"] = Statement.prototype.getNormalizedSQL;
+    Statement.prototype["run"] = Statement.prototype.run;
+    Statement.prototype["reset"] = Statement.prototype.reset;
+    Statement.prototype["freemem"] = Statement.prototype.freemem;
+    Statement.prototype["free"] = Statement.prototype.free;
+
+    StatementIterator.prototype["next"] = StatementIterator.prototype.next;
+    StatementIterator.prototype["getRemainingSQL"] = StatementIterator.prototype.getRemainingSQL;
+
+    Database.prototype["run"] = Database.prototype.run;
+    Database.prototype["exec"] = Database.prototype.exec;
+    Database.prototype["each"] = Database.prototype.each;
+    Database.prototype["prepare"] = Database.prototype.prepare;
+    Database.prototype["iterateStatements"] = Database.prototype.iterateStatements;
+    Database.prototype["export"] = Database.prototype.export;
+    Database.prototype["close"] = Database.prototype.close;
+    Database.prototype["handleError"] = Database.prototype.handleError;
+    Database.prototype["getRowsModified"] = Database.prototype.getRowsModified;
+    Database.prototype["create_function"] = Database.prototype.create_function;
+    Database.prototype["create_aggregate"] = Database.prototype.create_aggregate;
+    Database.prototype["updateHook"] = Database.prototype.updateHook;
 
     // export Database to Module
     Module.Database = Database;
