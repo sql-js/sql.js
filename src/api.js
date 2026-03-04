@@ -357,7 +357,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             case SQLITE_DONE:
                 return false;
             default:
-                throw this.db.handleError(ret);
+                throw this.db["handleError"](ret);
         }
     };
 
@@ -417,11 +417,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @example
     <caption>Print all the rows of the table test to the console</caption>
     var stmt = db.prepare("SELECT * FROM test");
-    while (stmt.step()) console.log(stmt.get());
+    while (stmt["step"]()) console.log(stmt.get());
 
     <caption>Enable BigInt support</caption>
     var stmt = db.prepare("SELECT * FROM test");
-    while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
+    while (stmt["step"]()) console.log(stmt.get(null, {useBigInt: true}));
      */
     Statement.prototype["get"] = function get(params, config) {
         config = config || {};
@@ -460,7 +460,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var stmt = db.prepare(
         "SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;"
     );
-    stmt.step(); // Execute the statement
+    stmt["step"](); // Execute the statement
     console.log(stmt.getColumnNames());
     // Will print ['nbr','data','null_value']
      */
@@ -485,7 +485,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var stmt = db.prepare(
             "SELECT 5 AS nbr, x'010203' AS data, NULL AS null_value;"
         );
-        stmt.step(); // Execute the statement
+        stmt["step"](); // Execute the statement
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
      */
@@ -543,7 +543,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         var strptr = stringToNewUTF8(string);
         this.allocatedmem.push(strptr);
-        this.db.handleError(sqlite3_bind_text(
+        this.db["handleError"](sqlite3_bind_text(
             this.stmt,
             pos,
             strptr,
@@ -561,7 +561,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var blobptr = _malloc(array.length);
         writeArrayToMemory(array, blobptr);
         this.allocatedmem.push(blobptr);
-        this.db.handleError(sqlite3_bind_blob(
+        this.db["handleError"](sqlite3_bind_blob(
             this.stmt,
             pos,
             blobptr,
@@ -581,7 +581,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 ? sqlite3_bind_int
                 : sqlite3_bind_double
         );
-        this.db.handleError(bindfunc(this.stmt, pos, num));
+        this.db["handleError"](bindfunc(this.stmt, pos, num));
         return true;
     };
 
@@ -769,7 +769,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         setValue(apiTemp, 0, "i32");
         setValue(pzTail, 0, "i32");
         try {
-            this.db.handleError(sqlite3_prepare_v2_sqlptr(
+            this.db["handleError"](sqlite3_prepare_v2_sqlptr(
                 this.db.db,
                 this.nextSqlPtr,
                 -1,
@@ -831,7 +831,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (data != null) {
             FS.createDataFile("/", this.filename, data, true, true);
         }
-        this.handleError(sqlite3_open(this.filename, apiTemp));
+        this["handleError"](sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
         // A list of all prepared statements of the database
@@ -869,7 +869,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 stmt["free"]();
             }
         } else {
-            this.handleError(sqlite3_exec(this.db, sql, 0, 0, apiTemp));
+            this["handleError"](sqlite3_exec(this.db, sql, 0, 0, apiTemp));
         }
         return this;
     };
@@ -957,7 +957,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             while (getValue(currentSqlPtr, "i8") !== NULL) {
                 setValue(apiTemp, 0, "i32");
                 setValue(pzTail, 0, "i32");
-                this.handleError(sqlite3_prepare_v2_sqlptr(
+                this["handleError"](sqlite3_prepare_v2_sqlptr(
                     this.db,
                     currentSqlPtr,
                     -1,
@@ -972,7 +972,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                     var curresult = null;
                     stmt = new Statement(pStmt, this);
                     if (params != null) {
-                        stmt.bind(params);
+                        stmt["bind"](params);
                     }
                     while (stmt["step"]()) {
                         if (curresult === null) {
@@ -1047,7 +1047,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      */
     Database.prototype["prepare"] = function prepare(sql, params) {
         setValue(apiTemp, 0, "i32");
-        this.handleError(sqlite3_prepare_v2(this.db, sql, -1, apiTemp, NULL));
+        this["handleError"](
+            sqlite3_prepare_v2(this.db, sql, -1, apiTemp, NULL)
+        );
         // pointer to a statement, or null
         var pStmt = getValue(apiTemp, "i32");
         if (pStmt === NULL) {
@@ -1055,7 +1057,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         var stmt = new Statement(pStmt, this);
         if (params != null) {
-            stmt.bind(params);
+            stmt["bind"](params);
         }
         this.statements[pStmt] = stmt;
         return stmt;
@@ -1092,9 +1094,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         });
         Object.values(this.functions).forEach(removeFunction);
         this.functions = {};
-        this.handleError(sqlite3_close_v2(this.db));
+        this["handleError"](sqlite3_close_v2(this.db));
         var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this.handleError(sqlite3_open(this.filename, apiTemp));
+        this["handleError"](sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
         return binaryDb;
@@ -1126,7 +1128,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.updateHookFunctionPtr = undefined;
         }
 
-        this.handleError(sqlite3_close_v2(this.db));
+        this["handleError"](sqlite3_close_v2(this.db));
         FS.unlink("/" + this.filename);
         this.db = null;
     };
@@ -1251,7 +1253,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
         var func_ptr = addFunction(wrapped_func, "viii");
         this.functions[name] = func_ptr;
-        this.handleError(sqlite3_create_function_v2(
+        this["handleError"](sqlite3_create_function_v2(
             this.db,
             name,
             func.length,
@@ -1382,7 +1384,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // > An aggregate SQL function requires an implementation of xStep and
         // > xFinal and NULL pointer must be passed for xFunc.
         // - http://www.sqlite.org/c3ref/create_function.html
-        this.handleError(sqlite3_create_function_v2(
+        this["handleError"](sqlite3_create_function_v2(
             this.db,
             name,
             step.length - 1,

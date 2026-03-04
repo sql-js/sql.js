@@ -29,7 +29,7 @@
 		"build": "make",
 		"rebuild": "npm run clean && npm run build",
 		"clean": "make clean",
-		"test": "npm run lint && npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-asm-memory-growth",
+		"test": "npm run lint && npm run test-asm && npm run test-asm-debug && npm run test-wasm && npm run test-wasm-debug && npm run test-wasm-browser && npm run test-wasm-browser-debug && npm run test-asm-memory-growth",
 		"lint": "eslint .",
 		"prettify": "eslint . --fix",
 		"test-asm": "node --unhandled-rejections=strict test/all.js asm",
@@ -37,6 +37,8 @@
 		"test-asm-memory-growth": "node --unhandled-rejections=strict test/all.js asm-memory-growth",
 		"test-wasm": "node --unhandled-rejections=strict test/all.js wasm",
 		"test-wasm-debug": "node --unhandled-rejections=strict test/all.js wasm-debug",
+		"test-wasm-browser": "node --unhandled-rejections=strict test/all.js wasm-browser",
+		"test-wasm-browser-debug": "node --unhandled-rejections=strict test/all.js wasm-browser-debug",
 		"doc": "jsdoc -c .jsdoc.config.json"
 	},
 	"homepage": "http://github.com/sql-js/sql.js",

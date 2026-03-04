@@ -71,6 +71,11 @@ class SQLWorker {
 exports.test = async function test(SQL, assert) {
   var target = process.argv[2];
   var file = target ? "sql-" + target : "sql-wasm";
+  if (file.indexOf("wasm-browser") > -1) {
+    // Browser worker bundle expects web-style wasm loading; node worker_threads
+    // should exercise the node-compatible worker bundle instead.
+    file = "sql-wasm";
+  }
   if (file.indexOf('memory-growth') > -1) {
     console.error("Skipping worker test for " + file + ". Not implemented yet");
     return;
