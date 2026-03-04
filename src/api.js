@@ -50,11 +50,11 @@
  * @module SqlJs
  */
 // Wait for preRun to run, and then finish our initialization
-Module.onRuntimeInitialized = function onRuntimeInitialized() {
+Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     // Declare toplevel variables
     // register, used for temporary stack values
     var apiTemp = stackAlloc(4);
-    var cwrap = Module.cwrap;
+    var cwrap = Module["cwrap"];
     // Null pointer
     var NULL = 0;
     // SQLite enum
@@ -433,7 +433,7 @@ Module.onRuntimeInitialized = function onRuntimeInitialized() {
         for (var field = 0; field < ref; field += 1) {
             switch (sqlite3_column_type(this.stmt, field)) {
                 case SQLITE_INTEGER:
-                    var getfunc = config.useBigInt
+                    var getfunc = config["useBigInt"]
                         ? this.getBigInt(field)
                         : this.getNumber(field);
                     results1.push(getfunc);
@@ -1301,11 +1301,11 @@ Module.onRuntimeInitialized = function onRuntimeInitialized() {
         aggregateFunctions
     ) {
         // Default initializer and finalizer
-        var init = aggregateFunctions.init
+        var init = aggregateFunctions["init"]
             || function init() { return null; };
-        var finalize = aggregateFunctions.finalize
+        var finalize = aggregateFunctions["finalize"]
             || function finalize(state) { return state; };
-        var step = aggregateFunctions.step;
+        var step = aggregateFunctions["step"];
 
         if (!step) {
             throw "An aggregate function must have a step function in " + name;
@@ -1572,5 +1572,5 @@ Module.onRuntimeInitialized = function onRuntimeInitialized() {
     /* eslint-enable no-self-assign */
 
     // export Database to Module
-    Module.Database = Database;
+    Module["Database"] = Database;
 };
