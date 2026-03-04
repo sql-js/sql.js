@@ -1536,33 +1536,40 @@ Module.onRuntimeInitialized = function onRuntimeInitialized() {
      */
 
     // Preserve public API names across minification.
+    /* eslint-disable no-self-assign */
     Statement.prototype["bind"] = Statement.prototype.bind;
     Statement.prototype["step"] = Statement.prototype.step;
     Statement.prototype["get"] = Statement.prototype.get;
-    Statement.prototype["getColumnNames"] = Statement.prototype.getColumnNames;
+    Statement.prototype["getColumnNames"]
+        = Statement.prototype.getColumnNames;
     Statement.prototype["getAsObject"] = Statement.prototype.getAsObject;
     Statement.prototype["getSQL"] = Statement.prototype.getSQL;
-    Statement.prototype["getNormalizedSQL"] = Statement.prototype.getNormalizedSQL;
+    Statement.prototype["getNormalizedSQL"]
+        = Statement.prototype.getNormalizedSQL;
     Statement.prototype["run"] = Statement.prototype.run;
     Statement.prototype["reset"] = Statement.prototype.reset;
     Statement.prototype["freemem"] = Statement.prototype.freemem;
     Statement.prototype["free"] = Statement.prototype.free;
 
     StatementIterator.prototype["next"] = StatementIterator.prototype.next;
-    StatementIterator.prototype["getRemainingSQL"] = StatementIterator.prototype.getRemainingSQL;
+    StatementIterator.prototype["getRemainingSQL"]
+        = StatementIterator.prototype.getRemainingSQL;
 
     Database.prototype["run"] = Database.prototype.run;
     Database.prototype["exec"] = Database.prototype.exec;
     Database.prototype["each"] = Database.prototype.each;
     Database.prototype["prepare"] = Database.prototype.prepare;
-    Database.prototype["iterateStatements"] = Database.prototype.iterateStatements;
+    Database.prototype["iterateStatements"]
+        = Database.prototype.iterateStatements;
     Database.prototype["export"] = Database.prototype.export;
     Database.prototype["close"] = Database.prototype.close;
     Database.prototype["handleError"] = Database.prototype.handleError;
     Database.prototype["getRowsModified"] = Database.prototype.getRowsModified;
     Database.prototype["create_function"] = Database.prototype.create_function;
-    Database.prototype["create_aggregate"] = Database.prototype.create_aggregate;
+    Database.prototype["create_aggregate"]
+        = Database.prototype.create_aggregate;
     Database.prototype["updateHook"] = Database.prototype.updateHook;
+    /* eslint-enable no-self-assign */
 
     // export Database to Module
     Module.Database = Database;
