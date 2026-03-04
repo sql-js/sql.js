@@ -41,4 +41,4 @@ jobs:
       - name: publish the package to NPM
         run: |
           npm install -g npm@12.2.0
-          npm publish --provenance
+          npm publish --provenance --access public
