@@ -417,11 +417,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @example
     <caption>Print all the rows of the table test to the console</caption>
     var stmt = db.prepare("SELECT * FROM test");
-    while (stmt["step"]()) console.log(stmt.get());
+    while (stmt.step()) console.log(stmt.get());
 
     <caption>Enable BigInt support</caption>
     var stmt = db.prepare("SELECT * FROM test");
-    while (stmt["step"]()) console.log(stmt.get(null, {useBigInt: true}));
+    while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
      */
     Statement.prototype["get"] = function get(params, config) {
         config = config || {};
@@ -460,7 +460,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var stmt = db.prepare(
         "SELECT 5 AS nbr, x'616200' AS data, NULL AS null_value;"
     );
-    stmt["step"](); // Execute the statement
+    stmt.step(); // Execute the statement
     console.log(stmt.getColumnNames());
     // Will print ['nbr','data','null_value']
      */
@@ -485,7 +485,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var stmt = db.prepare(
             "SELECT 5 AS nbr, x'010203' AS data, NULL AS null_value;"
         );
-        stmt["step"](); // Execute the statement
+        stmt.step(); // Execute the statement
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
      */
