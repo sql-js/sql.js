@@ -174,7 +174,7 @@ const sqlPromise = initSqlJs({
   locateFile: file => `https://path/to/your/dist/folder/dist/${file}`
 });
 const dataPromise = fetch("/path/to/database.sqlite").then(res => res.arrayBuffer());
-const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
+const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]); // needed to be run in a async context
 const db = new SQL.Database(new Uint8Array(buf));
 ```
 
