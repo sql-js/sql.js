@@ -11,4 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: env | grep -iE "GITHUB_ACTIONS|ACTIONS_ID|NPM_ID|NPM_CONFIG|npm_config" ; echo "---"; npm config list; echo "---"; node -e "const ci=require('ci-info'); console.log('GITHUB_ACTIONS detected:', ci.GITHUB_ACTIONS)"
       - run: npm publish --dry-run --ignore-scripts --loglevel=verbose
