@@ -6,6 +6,10 @@ on:
 
 name: Create a release
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   build:
     name: Create a release
@@ -78,8 +82,4 @@ jobs:
           asset_label: all versions, including non-minified javascript 
           asset_content_type: application/zip
       - name: publish the package to NPM
-        run: |
-          npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-          npm publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance
