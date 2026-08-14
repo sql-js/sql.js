@@ -1,0 +1,14 @@
+name: oidc-debug
+on:
+  push:
+    branches:
+    - master
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm publish --dry-run --ignore-scripts --loglevel=verbose
