@@ -84,4 +84,4 @@ jobs:
       - name: publish the package to NPM
         run: |
           npm install -g npm@latest
-          npm publish --provenance --loglevel=http
+          npm publish --provenance
