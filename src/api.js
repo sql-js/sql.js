@@ -946,6 +946,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         if (!this.db) {
             throw "Database closed";
         }
+        var stack = stackSave();
         var stmt = null;
         var originalSqlPtr = null;
         var currentSqlPtr = null;
@@ -993,6 +994,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             throw errCaught;
         } finally {
             if (originalSqlPtr) _free(originalSqlPtr);
+            stackRestore(stack);
         }
     };
 
