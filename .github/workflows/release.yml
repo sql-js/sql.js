@@ -82,4 +82,6 @@ jobs:
           asset_label: all versions, including non-minified javascript 
           asset_content_type: application/zip
       - name: publish the package to NPM
-        run: npm publish --provenance
+        run: |
+          npm install -g npm@latest
+          npm publish --provenance
