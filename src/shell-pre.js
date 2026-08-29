@@ -65,7 +65,7 @@ var initSqlJs = function (moduleConfig) {
         // Since those are the only lines of code that care about module, we will undefine it. It's the most straightforward
         // of the options, and has the side effect of reducing emcc's efforts to modify the module if its output were to change in the future.
         // That's a nice side effect since we're handling the modularization efforts ourselves
-        module = undefined;
+        var module = undefined;
 
         // The emcc-generated code and shell-post.js code goes below,
         // meaning that all of it runs inside of this promise. If anything throws an exception, our promise will abort
