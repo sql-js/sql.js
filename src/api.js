@@ -799,6 +799,21 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.sqlPtr = null;
     };
 
+    /** Free the resources held by this iterator, in case it will not be run
+     * to completion. This is called automatically when a for..of loop exits
+     * early (e.g. via break, return, or an exception), and can also be called
+     * manually.
+     @return {StatementIterator.StatementIteratorResult}
+     */
+    StatementIterator.prototype["return"] = function () {
+        if (this.activeStatement !== null) {
+            this.activeStatement.free();
+            this.activeStatement = null;
+        }
+        this.finalize();
+        return { done: true };
+    };
+
     /** Get any un-executed portions remaining of the original SQL string
      @return {String}
      */
