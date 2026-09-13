@@ -43,6 +43,8 @@ exports.test = function(SQL, assert, done) {
   // Testing db.each
   db.run("CREATE TABLE test (a,b); INSERT INTO test VALUES (1,'a'),(2,'b')");
   var count = 0, finished = false;
+  var chained = db.each("SELECT * FROM test", function () {}, function () {});
+  assert.strictEqual(chained, db, "db.each returns the database object");
   db.each("SELECT * FROM test ORDER BY a", function callback (row){
     count++;
     if (count === 1) assert.deepEqual(row, {a:1,b:'a'}, 'db.each returns the correct 1st row');

@@ -1035,9 +1035,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             stmt.free();
         }
         if (typeof done === "function") {
-            return done();
+            done();
         }
-        return undefined;
+        return this;
     };
 
     /** Prepare an SQL statement
