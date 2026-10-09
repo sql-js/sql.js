@@ -8,7 +8,7 @@
 
 *sql.js* is a javascript SQL database. It allows you to create a relational database and query it entirely in the browser. You can try it in [this online demo](https://sql.js.org/examples/GUI/). It uses a [virtual database file stored in memory](https://emscripten.org/docs/porting/files/file_systems_overview.html), and thus **doesn't persist the changes** made to the database. However, it allows you to **import** any existing sqlite file, and to **export** the created database as a [JavaScript typed array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
-*sql.js* uses [emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html) to compile [SQLite](http://sqlite.org/about.html) to webassembly (or to javascript code for compatibility with older browsers). It includes [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date).
+*sql.js* uses [emscripten](https://emscripten.org/docs/introducing_emscripten/about_emscripten.html) to compile [SQLite](http://sqlite.org/about.html) to WebAssembly. It includes [contributed math and string extension functions](https://www.sqlite.org/contrib?orderby=date).
 
 sql.js can be used like any traditional JavaScript library. If you are building a native application in JavaScript (using Electron for instance), or are working in node.js, you will likely prefer to use [a native binding of SQLite to JavaScript](https://www.npmjs.com/package/sqlite3). A native binding will not only be faster because it will run native code, but it will also be able to work on database files directly instead of having to load the entire database in memory, avoiding out of memory errors and further improving performances.
 
@@ -19,6 +19,16 @@ A [full API documentation](https://sql.js.org/documentation/) for all the availa
 It is generated from comments inside the source code, and is thus always up to date.
 
 ## Usage
+
+For a single-file setup, use **`sql-wasm-inline.js`**. It embeds the WebAssembly binary in the JavaScript file, so there is no separate `.wasm` asset to serve and no `locateFile` configuration:
+
+```javascript
+const initSqlJs = require('sql.js/dist/sql-wasm-inline.js');
+const SQL = await initSqlJs();
+const db = new SQL.Database();
+```
+
+In a browser, load `<script src="/dist/sql-wasm-inline.js"></script>` and call `initSqlJs()` in the same way. This build requires WebAssembly support and uses the same asynchronous API as the default build. Embedding the binary makes the JavaScript file larger; the default build keeps it separate for independent caching and streaming compilation.
 
 By default, *sql.js* uses [wasm](https://developer.mozilla.org/en-US/docs/WebAssembly), and thus needs to load a `.wasm` file in addition to the javascript library. You can find this file in `./node_modules/sql.js/dist/sql-wasm.wasm` after installing sql.js from npm, and instruct your bundler to add it to your static assets or load it from [a CDN](https://cdnjs.com/libraries/sql.js). Then use the [`locateFile`](https://emscripten.org/docs/api_reference/module.html#Module.locateFile) property of the configuration object passed to `initSqlJs` to indicate where the file is. If you use an asset builder such as webpack, you can automate this. See [this demo of how to integrate sql.js with webpack (and react)](https://github.com/sql-js/react-sqljs-demo).
 
@@ -205,7 +215,7 @@ Alternatively, you can simply download `sql-wasm.js` and `sql-wasm.wasm`, from t
 #### read a database from the disk:
 ```javascript
 const fs = require('fs');
-const initSqlJs = require('sql-wasm.js');
+const initSqlJs = require('sql.js');
 const filebuffer = fs.readFileSync('test.sqlite');
 
 initSqlJs().then(function(SQL){
@@ -231,7 +241,9 @@ See : https://github.com/sql-js/sql.js/blob/master/test/test_node_file.js
 If you don't want to run CPU-intensive SQL queries in your main application thread,
 you can use the *more limited* WebWorker API.
 
-You will need to download `worker.sql-wasm.js` and `worker.sql-wasm.wasm` from the [release page](https://github.com/sql-js/sql.js/releases).
+You will need to download `worker.sql-wasm.js` and `sql-wasm.wasm` from the [release page](https://github.com/sql-js/sql.js/releases).
+
+For a single-file worker, use `worker.sql-wasm-inline.js`; it includes the WebAssembly binary and needs no companion file.
 
 Example:
 ```html
@@ -291,11 +303,11 @@ See [examples/GUI/gui.js](examples/GUI/gui.js) for a full working example.
 
 ## Flavors/versions Targets/Downloads
 
-This library includes both WebAssembly and asm.js versions of Sqlite. (WebAssembly is the newer, preferred way to compile to JavaScript, and has superceded asm.js. It produces smaller, faster code.) Asm.js versions are included for compatibility.
+Choose between the default WebAssembly build, which loads a separate binary, and the inline build, which embeds it in one JavaScript file.
 
 ## Upgrading from 0.x to 1.x
 
-Version 1.0 of sql.js must be loaded asynchronously, whereas asm.js was able to be loaded synchronously.
+Version 1.0 and later load asynchronously, whereas version 0.x loaded synchronously.
 
 So in the past, you would:
 ```html
@@ -324,7 +336,7 @@ Version 1.x:
 ```
 or:
 ```javascript
-const initSqlJs = require('sql-wasm.js');
+const initSqlJs = require('sql.js');
 initSqlJs().then(function(SQL){
   const db = new SQL.Database();
   //...
@@ -333,22 +345,26 @@ initSqlJs().then(function(SQL){
 
 `NOTHING` is now a reserved word in SQLite, whereas previously it was not. This could cause errors like `Error: near "nothing": syntax error`
 
-### Downloading/Using: ###
-Although asm.js files were distributed as a single Javascript file, WebAssembly libraries are most efficiently distributed as a pair of files, the `.js`  loader and the `.wasm` file, like `sql-wasm.js` and `sql-wasm.wasm`. The `.js` file is responsible for loading the `.wasm` file. You can find these files on our [release page](https://github.com/sql-js/sql.js/releases)
+### Downloading and using builds
 
+The [release page](https://github.com/sql-js/sql.js/releases/latest) provides `sql-wasm-inline.js` and `worker.sql-wasm-inline.js` as standalone downloads. The `sqljs-wasm.zip` archive contains the default JavaScript loader and WebAssembly binary; `sqljs-worker-wasm.zip` contains the worker loader and its binary.
 
+The `sqljs-all.zip` archive and npm package include the following WebAssembly builds:
 
+| Build | Companion file | Use |
+| --- | --- | --- |
+| `sql-wasm.js` | `sql-wasm.wasm` | Default production build for browsers and Node.js. |
+| `sql-wasm-debug.js` | `sql-wasm-debug.wasm` | Development build with assertions. |
+| `sql-wasm-browser.js` | `sql-wasm-browser.wasm` | Browser-only production build, selected by the npm browser export. |
+| `sql-wasm-browser-debug.js` | `sql-wasm-browser-debug.wasm` | Browser-only development build. |
+| `sql-wasm-inline.js` | None | Production build with the WebAssembly binary embedded. |
+| `sql-wasm-inline-debug.js` | None | Inline development build with assertions. |
+| `worker.sql-wasm.js` | `sql-wasm.wasm` | Production Web Worker build. |
+| `worker.sql-wasm-debug.js` | `sql-wasm-debug.wasm` | Development Web Worker build. |
+| `worker.sql-wasm-inline.js` | None | Single-file production Web Worker build. |
+| `worker.sql-wasm-inline-debug.js` | None | Single-file development Web Worker build. |
 
-## Versions of sql.js included in the distributed artifacts
-You can always find the latest published artifacts on https://github.com/sql-js/sql.js/releases/latest.
-
-For each [release](https://github.com/sql-js/sql.js/releases/), you will find a file called `sqljs.zip` in the *release assets*. It will contain:
- - `sql-wasm.js` : The Web Assembly version of Sql.js. Minified and suitable for production. Use this. If you use this, you will need to include/ship `sql-wasm.wasm` as well.
- - `sql-wasm-debug.js` : The Web Assembly, Debug version of Sql.js. Larger, with assertions turned on. Useful for local development. You will need to include/ship `sql-wasm-debug.wasm` if you use this.
- - `sql-asm.js` : The older asm.js version of Sql.js. Slower and larger. Provided for compatibility reasons.
- - `sql-asm-memory-growth.js` : Asm.js doesn't allow for memory to grow by default, because it is slower and de-optimizes. If you are using sql-asm.js and you see this error (`Cannot enlarge memory arrays`), use this file.
- - `sql-asm-debug.js` : The _Debug_ asm.js version of Sql.js. Use this for local development.
- - `worker.*` - Web Worker versions of the above libraries. More limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for a good example of this.
+Workers offer a more limited API. See [examples/GUI/gui.js](examples/GUI/gui.js) for an example.
 
 ## Compiling/Contributing
 

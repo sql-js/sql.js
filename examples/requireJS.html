@@ -8,8 +8,8 @@
     baseUrl: baseUrl
   });
 
-  // Options: 'sql-wasm', 'sql-asm', 'sql-asm-memory-growth.js', 'sql-wasm-debug', 'sql-asm-debug'
-  require(['sql-wasm'],
+  // The inline build includes WebAssembly in the JavaScript file.
+  require(['sql-wasm-inline'],
     function success(initSqlJs) {
       console.log(typeof initSqlJs);
       if (typeof initSqlJs !== 'function') {
@@ -18,13 +18,7 @@
         alert("Failed to require sql.js through AMD");
         return;
       }
-      // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
-      // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
-
-      var config = {
-        locateFile: filename => `${baseUrl}/${filename}`
-      }
-      initSqlJs(config).then(function (SQL) {
+      initSqlJs().then(function (SQL) {
         //Create the database
         var db = new SQL.Database();
         // Run a query without reading the results

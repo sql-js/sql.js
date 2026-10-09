@@ -5,8 +5,8 @@
 </p>
 <script>
     for (const dbg of ["-debug", ""]) {
-        for (const asm of ["-asm", "-wasm"]) {
-            const url = `../dist/worker.sql${asm}${dbg}.js`;
+        for (const build of ["wasm", "wasm-inline"]) {
+            const url = `../dist/worker.sql-${build}${dbg}.js`;
             const start_time = performance.now();
             const worker = new Worker(url);
             worker.onmessage = (e) => {

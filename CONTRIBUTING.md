@@ -64,3 +64,15 @@ CFLAGS = \
 +       -DSQLITE_ENABLE_FTS5 \
         -DSQLITE_THREADSAFE=0
 ```
+
+## Building and testing distribution variants
+
+`npm run build` produces the default, browser-only, and inline WebAssembly builds, their debug variants, and worker bundles. The inline variants use Emscripten's [`-sSINGLE_FILE=1`](https://emscripten.org/docs/tools_reference/settings_reference.html#single-file) to embed the binary in JavaScript.
+
+To build only the inline variants:
+
+```sh
+make dist/sql-wasm-inline.js dist/sql-wasm-inline-debug.js dist/worker.sql-wasm-inline.js dist/worker.sql-wasm-inline-debug.js
+```
+
+`npm test` runs the API suite against the WebAssembly variants and checks the distribution behavior, including single-file initialization without fetching a companion asset. `npm run doc` generates the API documentation.
