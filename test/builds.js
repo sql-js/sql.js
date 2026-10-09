@@ -9,7 +9,7 @@ function noAssetLoading() {
     throw new Error("The inline build must not load a companion asset");
 }
 
-async function testBrowserBuild(file, deprecated) {
+async function testBrowserBuild(file) {
     const warnings = [];
     const messages = [];
     const worker = file.startsWith("worker.");
@@ -51,14 +51,7 @@ async function testBrowserBuild(file, deprecated) {
         await context.self.onmessage({ data: { id: 3, action: "close" } });
     }
 
-    if (deprecated) {
-        assert.equal(warnings.length, 1, "Warn once when initializing a deprecated build");
-        assert.match(warnings[0], /asm\.js build is deprecated/);
-        assert.match(warnings[0], /sql-wasm-inline\.js/);
-        assert.match(warnings[0], /https:\/\/github\.com\/sql-js\/sql\.js\/issues\/635/);
-    } else {
-        assert.equal(warnings.length, 0, "WebAssembly builds do not warn");
-    }
+    assert.equal(warnings.length, 0, "WebAssembly builds do not warn");
     console.log("OK   browser distribution " + file);
 }
 
@@ -91,14 +84,8 @@ async function main() {
         const file = "sql-wasm-inline" + suffix + ".js";
         assert.equal(fs.existsSync(path.join(__dirname, "../dist", "sql-wasm-inline" + suffix + ".wasm")), false);
         testIsolatedNodeBuild(file);
-        await testBrowserBuild(file, false);
-        await testBrowserBuild("worker." + file, false);
-    }
-    for (const file of [
-        "sql-asm.js", "sql-asm-debug.js", "sql-asm-memory-growth.js",
-        "worker.sql-asm.js", "worker.sql-asm-debug.js"
-    ]) {
-        await testBrowserBuild(file, true);
+        await testBrowserBuild(file);
+        await testBrowserBuild("worker." + file);
     }
 }
 
