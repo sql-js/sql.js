@@ -34,7 +34,6 @@ EMFLAGS = \
 	-s ALLOW_TABLE_GROWTH=1 \
 	-s EXPORTED_FUNCTIONS=@src/exported_functions.json \
 	-s EXPORTED_RUNTIME_METHODS=@src/exported_runtime_methods.json \
-	-s SINGLE_FILE=0 \
 	-s NODEJS_CATCH_EXIT=0 \
 	-s NODEJS_CATCH_REJECTION=0 \
 	-s STACK_SIZE=5MB
@@ -49,6 +48,9 @@ EMFLAGS_ASM_MEMORY_GROWTH = \
 EMFLAGS_WASM = \
 	-s WASM=1 \
 	-s ALLOW_MEMORY_GROWTH=1
+
+# Base64 embedding works even when a page does not declare UTF-8 encoding.
+EMFLAGS_WASM_INLINE = $(EMFLAGS_WASM) -s SINGLE_FILE=1 -s SINGLE_FILE_BINARY_ENCODE=0
 
 EMFLAGS_WASM_BROWSER = \
 	-s WASM=1 \
@@ -78,12 +80,12 @@ EXPORTED_METHODS_JSON_FILES = src/exported_functions.json src/exported_runtime_m
 all: optimized debug worker
 
 .PHONY: debug
-debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js dist/sql-wasm-browser-debug.js
+debug: dist/sql-asm-debug.js dist/sql-wasm-debug.js dist/sql-wasm-browser-debug.js dist/sql-wasm-inline-debug.js
 
-dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
+dist/sql-asm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES) src/asm-deprecation.js
 	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
-	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	cat src/shell-pre.js src/asm-deprecation.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-wasm-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
@@ -98,13 +100,19 @@ dist/sql-wasm-browser-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURC
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-.PHONY: optimized
-optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-wasm-browser.js dist/sql-asm-memory-growth.js
-
-dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+dist/sql-wasm-inline-debug.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES) Makefile
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_DEBUG) $(EMFLAGS_WASM_INLINE) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
+	rm out/tmp-raw.js
+
+.PHONY: optimized
+optimized: dist/sql-asm.js dist/sql-wasm.js dist/sql-wasm-browser.js dist/sql-wasm-inline.js dist/sql-asm-memory-growth.js
+
+dist/sql-asm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES) src/asm-deprecation.js
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	mv $@ out/tmp-raw.js
+	cat src/shell-pre.js src/asm-deprecation.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
 dist/sql-wasm.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
@@ -119,15 +127,21 @@ dist/sql-wasm-browser.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
-dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES)
-	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM_MEMORY_GROWTH) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+dist/sql-wasm-inline.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES) Makefile
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_WASM_INLINE) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
 	mv $@ out/tmp-raw.js
 	cat src/shell-pre.js out/tmp-raw.js src/shell-post.js > $@
 	rm out/tmp-raw.js
 
+dist/sql-asm-memory-growth.js: $(BITCODE_FILES) $(OUTPUT_WRAPPER_FILES) $(SOURCE_API_FILES) $(EXPORTED_METHODS_JSON_FILES) src/asm-deprecation.js
+	$(EMCC) $(EMFLAGS) $(EMFLAGS_OPTIMIZED) $(EMFLAGS_ASM_MEMORY_GROWTH) $(BITCODE_FILES) $(EMFLAGS_PRE_JS_FILES) -o $@
+	mv $@ out/tmp-raw.js
+	cat src/shell-pre.js src/asm-deprecation.js out/tmp-raw.js src/shell-post.js > $@
+	rm out/tmp-raw.js
+
 # Web worker API
 .PHONY: worker
-worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js
+worker: dist/worker.sql-asm.js dist/worker.sql-asm-debug.js dist/worker.sql-wasm.js dist/worker.sql-wasm-debug.js dist/worker.sql-wasm-inline.js dist/worker.sql-wasm-inline-debug.js
 
 dist/worker.sql-asm.js: dist/sql-asm.js src/worker.js
 	cat $^ > $@
@@ -139,6 +153,12 @@ dist/worker.sql-wasm.js: dist/sql-wasm.js src/worker.js
 	cat $^ > $@
 
 dist/worker.sql-wasm-debug.js: dist/sql-wasm-debug.js src/worker.js
+	cat $^ > $@
+
+dist/worker.sql-wasm-inline.js: dist/sql-wasm-inline.js src/worker.js
+	cat $^ > $@
+
+dist/worker.sql-wasm-inline-debug.js: dist/sql-wasm-inline-debug.js src/worker.js
 	cat $^ > $@
 
 # Building it this way gets us a wrapper that _knows_ it's in worker mode, which is nice.

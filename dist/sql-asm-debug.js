@@ -69,6 +69,15 @@ var initSqlJs = function (moduleConfig) {
 
         // The emcc-generated code and shell-post.js code goes below,
         // meaning that all of it runs inside of this promise. If anything throws an exception, our promise will abort
+if (typeof console !== "undefined" && typeof console.warn === "function") {
+    console.warn(
+        "sql.js: the asm.js build is deprecated. "
+        + "Use sql-wasm-inline.js (worker.sql-wasm-inline.js for workers) "
+        + "for a single JavaScript file with embedded WebAssembly. "
+        + "WebAssembly support is required. If you cannot migrate, please "
+        + "tell us at https://github.com/sql-js/sql.js/issues/635."
+    );
+}
 // include: shell.js
 // include: minimum_runtime_check.js
 (function() {

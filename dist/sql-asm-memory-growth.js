@@ -69,6 +69,15 @@ var initSqlJs = function (moduleConfig) {
 
         // The emcc-generated code and shell-post.js code goes below,
         // meaning that all of it runs inside of this promise. If anything throws an exception, our promise will abort
+if (typeof console !== "undefined" && typeof console.warn === "function") {
+    console.warn(
+        "sql.js: the asm.js build is deprecated. "
+        + "Use sql-wasm-inline.js (worker.sql-wasm-inline.js for workers) "
+        + "for a single JavaScript file with embedded WebAssembly. "
+        + "WebAssembly support is required. If you cannot migrate, please "
+        + "tell us at https://github.com/sql-js/sql.js/issues/635."
+    );
+}
 var k;k||=typeof Module != 'undefined' ? Module : {};var aa=!!globalThis.window,ba=!!globalThis.WorkerGlobalScope,ca=globalThis.process?.versions?.node&&"renderer"!=globalThis.process?.type;
 k.onRuntimeInitialized=function(){function a(f,l){switch(typeof l){case "boolean":$b(f,l?1:0);break;case "number":ac(f,l);break;case "string":bc(f,l,-1,-1);break;case "object":if(null===l)ib(f);else if(null!=l.length){var n=da(l.length);m.set(l,n);cc(f,n,l.length,-1);ea(n)}else wa(f,"Wrong API use : tried to return a value of an unknown type ("+l+").",-1);break;default:ib(f)}}function b(f,l){for(var n=[],p=0;p<f;p+=1){var t=q(l+4*p,"i32"),y=dc(t);if(1===y||2===y)t=ec(t);else if(3===y)t=fc(t);else if(4===
 y){y=t;t=gc(y);y=hc(y);for(var L=new Uint8Array(t),K=0;K<t;K+=1)L[K]=m[y+K];t=L}else t=null;n.push(t)}return n}function c(f,l){this.Qa=f;this.db=l;this.Oa=1;this.ob=[]}function d(f,l){this.db=l;this.fb=fa(f);if(null===this.fb)throw Error("Unable to allocate memory for the SQL string");this.kb=this.fb;this.$a=this.ub=null}function e(f){this.filename="dbfile_"+(4294967295*Math.random()>>>0);if(null!=f){var l=this.filename,n="/",p=l;n&&(n="string"==typeof n?n:ha(n),p=l?ia(n+"/"+l):n);l=ja(!0,!0);p=ka(p,
