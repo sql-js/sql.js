@@ -11,7 +11,7 @@ jobs:
       uses: ./.github/actions/build-sqljs
     - uses: actions/upload-artifact@v4
       with: {name: dist, path: dist}
-    - name: test
+    - name: test WebAssembly builds and distribution behavior
       run: npm ci && npm test
     - name: generate documentation
       run: npm run doc
