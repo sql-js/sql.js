@@ -6,7 +6,6 @@ const globals = require("globals");
 module.exports = [
     {
         ignores: [
-            ".eslintrc.js",
             "dist/**",
             "examples/**",
             "documentation/**",

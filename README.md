@@ -209,6 +209,9 @@ See: https://github.com/sql-js/sql.js/wiki/Load-a-database-from-the-server
 
 ### Use from node.js
 
+The Emscripten 6 builds require **Node.js 18.3 or newer** when run in Node.js.
+Contributor tooling and CI use Node.js 24 LTS.
+
 `sql.js` is [hosted on npm](https://www.npmjs.org/package/sql.js). To install it, you can simply run `npm install sql.js`.
 Alternatively, you can simply download `sql-wasm.js` and `sql-wasm.wasm`, from the download link below.
 

@@ -11,28 +11,32 @@
         "encoding": "utf8",
         "destination": "./documentation/",
         "readme": "documentation_index.md",
-        "template": "./node_modules/clean-jsdoc-theme",
-        "theme_opts": {
-            "title": "sql.js",
-            "meta": [
-                "<title>sql.js API documentation</title>",
-                "<meta name=\"author\" content=\"Ophir Lojkine\">",
-                "<meta name=\"description\" content=\"Documentation for sql.js: an in-memory SQL database for the browser based on SQLite.\">"
-            ],
-            "menu": [
-                {
-                    "title": "Website",
-                    "link": "https://sql.js.org/"
-                },
-                {
-                    "title": "Github",
-                    "link": "https://github.com/sql-js/sql.js"
-                },
-                {
-                    "title": "Demo",
-                    "link": "https://sql.js.org/examples/GUI/"
-                }
-            ]
-        }
+        "template": "./node_modules/clean-jsdoc-theme/dist",
+        "siteName": "sql.js",
+        "meta": [
+            {
+                "name": "author",
+                "content": "Ophir Lojkine"
+            },
+            {
+                "name": "description",
+                "content": "Documentation for sql.js: an in-memory SQL database for the browser based on SQLite."
+            }
+        ],
+        "menu": [
+            {
+                "title": "Website",
+                "link": "https://sql.js.org/"
+            },
+            {
+                "title": "Github",
+                "link": "https://github.com/sql-js/sql.js"
+            },
+            {
+                "title": "Demo",
+                "link": "https://sql.js.org/examples/GUI/"
+            }
+        ],
+        "basePath": "/documentation/"
     }
 }

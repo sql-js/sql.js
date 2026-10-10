@@ -10,3 +10,6 @@ tmp/
 c/
 emsdk/
 sqljs.zip
+
+# Generated API documentation:
+documentation/

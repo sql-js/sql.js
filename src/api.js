@@ -265,7 +265,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * Statements can't be created by the API user directly, only by
     * Database::prepare
     *
-    * @see Database.html#prepare-dynamic
+    * @see {@link Database#prepare}
     * @see https://en.wikipedia.org/wiki/Prepared_statement
     *
     * @constructs Statement

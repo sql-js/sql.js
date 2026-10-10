@@ -1,12 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/typescript-node
+// https://github.com/devcontainers/images/tree/main/src/typescript-node
 {
 	"name": "Node.js & TypeScript",
 	"build": {
 		"dockerfile": "Dockerfile",
 		// Update 'VARIANT' to pick a Node version
 		"args": {
-			"VARIANT": "24-bookworm"
+			"VARIANT": "24-trixie"
 		}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

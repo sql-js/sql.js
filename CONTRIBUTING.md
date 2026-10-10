@@ -50,6 +50,14 @@ Instructions:
 5. Run `$ npm run rebuild` to re-compile the project from scratch (using the version of EMSDK installed in the container).
 6. Run `$ npm test` to ensure all tests pass after said rebuild
 
+## Updating dependencies
+
+The build depends on more than npm packages. See [DEPENDENCIES.md](DEPENDENCIES.md)
+for the compiler, SQLite source, container, CI actions, release tools, CDN assets,
+and transitive dependencies that need to be reviewed together. CI uses the Node
+24 LTS version pinned in `.node-version`; the devcontainer supplies the same
+Node major and the pinned Emscripten SDK.
+
 ## Compiling SQLite with different options
 
 In order to enable extensions like FTS5, change the CFLAGS in the [Makefile](Makefile) and run `npm run rebuild`:
