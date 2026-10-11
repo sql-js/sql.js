@@ -284,6 +284,7 @@ function onModuleReady(SQL) {
         case "close":
             if (db) {
                 db.close();
+                db = null;
             }
             return postMessage({
                 id: data["id"]

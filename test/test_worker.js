@@ -134,6 +134,20 @@ exports.test = async function test(SQL, assert) {
   for (let i = 0; i < header.length; i++) actual += String.fromCharCode(data.buffer[i]);
   assert.equal(actual, header, 'Data returned is an SQLite database file');
 
+  // Closing returns the worker to its initial, lazily initialized state.
+  await worker.postMessage({ action: "close" });
+  await worker.postMessage({ action: "close" });
+  data = await worker.postMessage({
+    action: "exec",
+    sql: "SELECT count(*) AS count FROM sqlite_master WHERE name = 'test'"
+  });
+  assert.deepEqual(data.results, [{ columns: ['count'], values: [[0]] }],
+    'exec after close creates a fresh database');
+  await worker.postMessage({ action: "close" });
+  data = await worker.postMessage({ action: "each", sql: "SELECT 7 AS value" });
+  assert.deepEqual(data.row, { value: 7 },
+    'each after close creates a fresh database');
+
   // test worker properly opens db after closing
   await worker.postMessage({ action: "close" });
   await worker.postMessage({ action: "open" });
