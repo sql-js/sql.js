@@ -52,6 +52,45 @@ exports.test = function (SQL, assert) {
   }
   assert.equal(count, 3, "For loop iterates correctly");
 
+  // Exiting a for...of loop early frees the statement it yielded (issue #457).
+  // The statement is what leaks: finalizing only the iterator leaves it
+  // registered on the database until close(), so each case below asserts the
+  // statement is gone and not merely that the iterator stopped.
+  var earlyExit = db.iterateStatements("SELECT 1 AS x; SELECT 2 AS y");
+  var brokeOn = null;
+  for (let statement of earlyExit) {
+    brokeOn = statement;
+    statement.step();
+    break;
+  }
+  assert.throws(function () { brokeOn.step(); }, /Statement closed/,
+    "Statement yielded before a break is freed");
+  assert.deepEqual(earlyExit.next(), { done: true },
+    "Iterator done after for...of loop is exited via break");
+
+  var throwing = db.iterateStatements("SELECT 1 AS x; SELECT 2 AS y");
+  var threwOn = null;
+  try {
+    for (let statement of throwing) {
+      threwOn = statement;
+      throw new Error("early exit");
+    }
+  } catch (e) { /* expected */ }
+  assert.throws(function () { threwOn.step(); }, /Statement closed/,
+    "Statement yielded before a throw is freed");
+  assert.deepEqual(throwing.next(), { done: true },
+    "Iterator done after for...of loop body throws");
+
+  // return() can also be called manually to free the iterator early
+  var manual = db.iterateStatements("SELECT 1 AS x; SELECT 2 AS y");
+  var manualStatement = manual.next().value;
+  assert.deepEqual(manual["return"](), { done: true },
+    "return() reports done when called manually");
+  assert.throws(function () { manualStatement.step(); }, /Statement closed/,
+    "Statement is freed when return() is called manually");
+  assert.deepEqual(manual.next(), { done: true },
+    "Iterator done after calling return()");
+
   var badsql = "SELECT 1 as x;garbage in, garbage out";
 
   // bad sql will stop iteration
