@@ -231,14 +231,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var sqlite3_exec = cwrap(
         "sqlite3_exec",
         "number",
-        ["number", "string", "number", "number", "number"]
+        ["number", "number", "number", "number", "number"]
     );
     var sqlite3_changes = cwrap("sqlite3_changes", "number", ["number"]);
-    var sqlite3_prepare_v2 = cwrap(
-        "sqlite3_prepare_v2",
-        "number",
-        ["number", "string", "number", "number", "number"]
-    );
     var sqlite3_sql = cwrap("sqlite3_sql", "string", ["number"]);
     var sqlite3_normalized_sql = cwrap(
         "sqlite3_normalized_sql",
@@ -1023,7 +1018,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 stmt.free();
             }
         } else {
-            this.handleError(sqlite3_exec(this.db, sql, 0, 0, apiTemp));
+            var sqlPtr = stringToNewUTF8(sql);
+            try {
+                this.handleError(sqlite3_exec(this.db, sqlPtr, 0, 0, apiTemp));
+            } finally {
+                _free(sqlPtr);
+            }
         }
         return this;
     };
@@ -1202,10 +1202,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     @throws {String} SQLite error
      */
     Database.prototype.prepare = function prepare(sql, params) {
-        setValue(apiTemp, 0, "i32");
-        this.handleError(
-            sqlite3_prepare_v2(this.db, sql, -1, apiTemp, NULL)
-        );
+        var sqlPtr = stringToNewUTF8(sql);
+        try {
+            setValue(apiTemp, 0, "i32");
+            this.handleError(
+                sqlite3_prepare_v2_sqlptr(this.db, sqlPtr, -1, apiTemp, NULL)
+            );
+        } finally {
+            _free(sqlPtr);
+        }
         // pointer to a statement, or null
         var pStmt = getValue(apiTemp, "i32");
         if (pStmt === NULL) {
