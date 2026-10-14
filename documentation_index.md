@@ -23,18 +23,18 @@ In a browser, load `sql-wasm-inline.js` with a script tag and call `initSqlJs()`
 
 ### The initSqlJs function
 
-The root object in the API is the [`initSqlJs`](./global.html#initSqlJs) function,
-that takes an [`SqlJsConfig`](./global.html#SqlJsConfig) parameter,
-and returns a Promise that resolves to an [SqlJs](./global.html#SqlJs) object
+The root object in the API is the [`initSqlJs`](./global/#initsqljs) function,
+that takes an [`SqlJsConfig`](./sqljsconfig/) parameter,
+and returns a Promise that resolves to an [SqlJs](./sqljs/) object
 
 ### The SqlJs object
 
-`initSqlJs` resolves to the main sql.js object, the [**`SqlJs`**](./module-SqlJs.html) module, which contains :
+`initSqlJs` resolves to the main sql.js object, the [**`SqlJs`**](./module/sqljs/) module, which contains :
 
 #### Database
 
-[**Database**](./Database.html) is the main class, that represents an SQLite database.
+[**Database**](./database/) is the main class, that represents an SQLite database.
 
 #### Statement
 
-The [**Statement**](./Statement.html) class is used for prepared statements.
+The [**Statement**](./statement/) class is used for prepared statements.

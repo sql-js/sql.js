@@ -9,7 +9,7 @@ module.exports = function(sqlLibraryType){
         moduleConfig.locateFile = function(filename){
             return pathToFileURL(path.resolve(__dirname, "../dist", filename)).href;
         };
-        moduleConfig.wasmBinary = fs.readFileSync(path.resolve(__dirname, "../dist/sql-wasm-browser.wasm"));
+        moduleConfig.wasmBinary = fs.readFileSync(path.resolve(__dirname, "../dist/sql-" + sqlLibraryType + ".wasm"));
     }
     begin = new Date();
     var initSqlJs = require(sqlJsLib);
