@@ -201,11 +201,11 @@ out/extension-functions.o: sqlite-src/$(SQLITE_AMALGAMATION)
 ## cache
 cache/$(SQLITE_AMALGAMATION).zip:
 	mkdir -p cache
-	curl -LsSf '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
+	curl -LsSf --retry 5 --retry-delay 2 '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
 
 cache/$(EXTENSION_FUNCTIONS):
 	mkdir -p cache
-	curl -LsSf '$(EXTENSION_FUNCTIONS_URL)' -o $@
+	curl -LsSf --retry 5 --retry-delay 2 '$(EXTENSION_FUNCTIONS_URL)' -o $@
 
 ## sqlite-src
 .PHONY: sqlite-src
