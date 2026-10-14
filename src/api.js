@@ -10,6 +10,7 @@
     stackRestore
     stackSave
     UTF8ToString
+    lengthBytesUTF8
     stringToNewUTF8
     removeFunction
     addFunction
@@ -132,7 +133,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
     var sqlite3_column_text = cwrap(
         "sqlite3_column_text",
-        "string",
+        "number",
         ["number", "number"]
     );
     var sqlite3_column_blob = cwrap(
@@ -183,7 +184,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "number",
         ["number"]
     );
-    var sqlite3_value_text = cwrap("sqlite3_value_text", "string", ["number"]);
+    var sqlite3_value_text = cwrap("sqlite3_value_text", "number", ["number"]);
     var sqlite3_value_blob = cwrap("sqlite3_value_blob", "number", ["number"]);
     var sqlite3_value_double = cwrap(
         "sqlite3_value_double",
@@ -373,12 +374,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
-        var text = sqlite3_column_text(this.stmt, pos);
         if (typeof BigInt !== "function") {
             throw new Error("BigInt is not supported");
         }
         /* global BigInt */
-        return BigInt(text);
+        return BigInt(this.getString(pos));
     };
 
     Statement.prototype.getString = function getString(pos) {
@@ -386,7 +386,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             pos = this.pos;
             this.pos += 1;
         }
-        return sqlite3_column_text(this.stmt, pos);
+        var ptr = sqlite3_column_text(this.stmt, pos);
+        var size = sqlite3_column_bytes(this.stmt, pos);
+        return UTF8ToString(ptr, size, true);
     };
 
     Statement.prototype.getBlob = function getBlob(pos) {
@@ -542,7 +544,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             this.stmt,
             pos,
             strptr,
-            -1,
+            lengthBytesUTF8(string),
             0
         ));
         return true;
@@ -1186,7 +1188,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             ) {
                 arg = sqlite3_value_double(value_ptr);
             } else if (value_type === SQLITE_TEXT) {
-                arg = sqlite3_value_text(value_ptr);
+                var text_size = sqlite3_value_bytes(value_ptr);
+                var text_ptr = sqlite3_value_text(value_ptr);
+                arg = UTF8ToString(text_ptr, text_size, true);
             } else if (value_type === SQLITE_BLOB) {
                 arg = extract_blob(value_ptr);
             } else arg = null;
@@ -1203,7 +1207,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 sqlite3_result_double(cx, result);
                 break;
             case "string":
-                sqlite3_result_text(cx, result, -1, -1);
+                sqlite3_result_text(cx, result, lengthBytesUTF8(result), -1);
                 break;
             case "object":
                 if (result === null) {

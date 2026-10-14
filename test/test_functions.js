@@ -53,6 +53,27 @@ exports.test = function(SQL, assert){
  
   // Test api support of different sqlite types and special values
   db.create_function("identityFunction", function (x) { return x;} );
+
+  var capturedText;
+  db.create_function("CaptureEmbeddedNul", function (x) {
+    capturedText = x;
+    return 1;
+  });
+  db.exec("SELECT CaptureEmbeddedNul(CAST(x'410042' AS TEXT));");
+  assert.equal(
+    capturedText,
+    "A\0B",
+    "TEXT arguments to JavaScript functions preserve embedded NUL"
+  );
+
+  db.create_function("ReturnEmbeddedNul", function () { return "A\0B"; });
+  result = db.exec("SELECT ReturnEmbeddedNul()");
+  assert.equal(
+    result[0]["values"][0][0],
+    "A\0B",
+    "TEXT results from JavaScript functions preserve embedded NUL"
+  );
+
   var verbose=false;
   function canHandle(testData)
   {

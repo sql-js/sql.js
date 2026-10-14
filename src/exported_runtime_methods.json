@@ -4,6 +4,7 @@
 "stackSave",
 "stackRestore",
 "UTF8ToString",
+"lengthBytesUTF8",
 "stringToNewUTF8",
 "writeArrayToMemory",
 "removeFunction",

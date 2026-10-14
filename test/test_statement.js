@@ -44,6 +44,25 @@ exports.test = function(sql, assert){
 
     stmt = db.prepare("SELECT str FROM data WHERE str=?");
     assert.deepEqual(stmt.getAsObject(['粵語😄']), {'str':'粵語😄'}, "UTF8 support in prepared statements");
+    stmt.free();
+
+    var nulText = "A\0漢😄";
+    stmt = db.prepare("SELECT ?");
+    assert.deepEqual(
+        stmt.get([nulText]),
+        [nulText],
+        "Binding TEXT preserves embedded NUL and multibyte UTF-8"
+    );
+    stmt.free();
+
+    stmt = db.prepare("SELECT CAST(x'410042' AS TEXT)");
+    stmt.step();
+    assert.strictEqual(
+        stmt.get()[0],
+        "A\0B",
+        "Reading TEXT preserves embedded NUL"
+    );
+    stmt.free();
 
     // Prepare an sql statement
     stmt = db.prepare("SELECT * FROM alphabet WHERE code BETWEEN :start AND :end ORDER BY code");
