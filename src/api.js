@@ -1381,6 +1381,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             var result;
             var p = sqlite3_aggregate_context(cx, 1);
             try {
+                // wrapped_step is never called when there are no rows to
+                // aggregate, so the state may not have been initialized yet
+                if (!Object.hasOwnProperty.call(state, p)) state[p] = init();
                 result = finalize(state[p]);
             } catch (error) {
                 delete state[p];
