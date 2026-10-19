@@ -1343,10 +1343,13 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             throw "An aggregate function must have a step function in " + name;
         }
 
-        // state is a state object; we'll use the pointer p to serve as the
-        // key for where we hold our state so that multiple invocations of
-        // this function never step on each other
-        var state = {};
+        // Keep each aggregate invocation's state under its context pointer.
+        var state = new Map();
+
+        function getState(p) {
+            if (!state.has(p)) state.set(p, init());
+            return state.get(p);
+        }
 
         function wrapped_step(cx, argc, argv) {
             // > The first time the sqlite3_aggregate_context(C,N) routine is
@@ -1354,7 +1357,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             // > bytes of memory, zeroes out that memory, and returns a pointer
             // > to the new memory.
             //
-            // We're going to use that pointer as a key to our state array,
+            // We're going to use that pointer as a key to our state map,
             // since using sqlite3_aggregate_context as it's meant to be used
             // through webassembly seems to be very difficult. Just allocate
             // one byte.
@@ -1363,16 +1366,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             // If this is the first invocation of wrapped_step, call `init`
             //
             // Make sure that every path through the step and finalize
-            // functions deletes the value state[p] when it's done so we don't
+            // functions delete the state entry when done so we don't
             // leak memory and possibly stomp the init value of future calls
-            if (!Object.hasOwnProperty.call(state, p)) state[p] = init();
+            var currentState = getState(p);
 
             var args = parseFunctionArguments(argc, argv);
-            var mergedArgs = [state[p]].concat(args);
+            var mergedArgs = [currentState].concat(args);
             try {
-                state[p] = step.apply(null, mergedArgs);
+                state.set(p, step.apply(null, mergedArgs));
             } catch (error) {
-                delete state[p];
+                state.delete(p);
                 setFunctionError(cx, error);
             }
         }
@@ -1383,15 +1386,14 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             try {
                 // wrapped_step is never called when there are no rows to
                 // aggregate, so the state may not have been initialized yet
-                if (!Object.hasOwnProperty.call(state, p)) state[p] = init();
-                result = finalize(state[p]);
+                result = finalize(getState(p));
             } catch (error) {
-                delete state[p];
+                state.delete(p);
                 setFunctionError(cx, error);
                 return;
             }
             setFunctionResult(cx, result);
-            delete state[p];
+            state.delete(p);
         }
 
         if (Object.hasOwnProperty.call(this.functions, name)) {
