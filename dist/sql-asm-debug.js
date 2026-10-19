@@ -1404,6 +1404,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 sqlite3_result_null(cx);
         }
     };
+    var setFunctionError = function setFunctionError(cx, error) {
+        // sqlite3_result_error takes a string: passing an Error object
+        // directly would report an empty message
+        var message = error instanceof Error ? error.message : String(error);
+        sqlite3_result_error(cx, message, -1);
+    };
 
     /** Register a custom function with SQLite
       @example <caption>Register a simple function</caption>
@@ -1425,7 +1431,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             try {
                 result = func.apply(null, args);
             } catch (error) {
-                sqlite3_result_error(cx, error, -1);
+                setFunctionError(cx, error);
                 return;
             }
             setFunctionResult(cx, result);
@@ -1526,7 +1532,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 state[p] = step.apply(null, mergedArgs);
             } catch (error) {
                 delete state[p];
-                sqlite3_result_error(cx, error, -1);
+                setFunctionError(cx, error);
             }
         }
 
@@ -1537,7 +1543,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 result = finalize(state[p]);
             } catch (error) {
                 delete state[p];
-                sqlite3_result_error(cx, error, -1);
+                setFunctionError(cx, error);
                 return;
             }
             setFunctionResult(cx, result);
