@@ -99,6 +99,25 @@ exports.test = function (SQL, assert) {
         3,
         "Aggregate functions work after an exception has been thrown in finalize"
     );
+
+    db.create_aggregate("throws_error_step", {
+        step: (state, value) => { throw new Error("step error object"); },
+    });
+    assert.throws(
+        () => db.exec("SELECT throws_error_step(column1) FROM (VALUES (1));"),
+        /step error object/,
+        "Reports the message of an Error thrown in a step function"
+    );
+
+    db.create_aggregate("throws_error_finalize", {
+        step: (state, value) => value,
+        finalize: (state) => { throw new Error("finalize error object"); },
+    });
+    assert.throws(
+        () => db.exec("SELECT throws_error_finalize(column1) FROM (VALUES (1));"),
+        /finalize error object/,
+        "Reports the message of an Error thrown in a finalize function"
+    );
 }
 
 // helper function to calculate a percentile from an array. Will modify the

@@ -149,7 +149,11 @@ exports.test = function(SQL, assert){
    
   db.create_function("throwFunction", function () { throw "internal exception"; return 5;} );    
   assert.throws(function(){db.exec("SELECT throwFunction()");},/internal exception/, "Can handle internal exceptions");
-  
+
+  db.create_function("throwErrorFunction", function () { throw new Error("internal error object"); });
+  assert.throws(function(){db.exec("SELECT throwErrorFunction()");},/internal error object/, "Reports the message of a thrown Error");
+  assert.equal(db.exec("SELECT addOne(1);")[0]["values"][0][0], 2, "Functions work after an Error has been thrown");
+
   db.create_function("customeObjectFunction", function () { return {test:123};} );    
   assert.throws(function(){db.exec("SELECT customeObjectFunction()");},/Wrong API use/, "Reports wrong API use");
 
