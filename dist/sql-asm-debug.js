@@ -648,12 +648,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     Statement.prototype.getAsObject = function getAsObject(params, config) {
         var values = this.get(params, config);
         var names = this.getColumnNames();
-        var rowObject = {};
-        for (var i = 0; i < names.length; i += 1) {
-            var name = names[i];
-            rowObject[name] = values[i];
-        }
-        return rowObject;
+        return Object.fromEntries(names.map(function columnEntry(name, i) {
+            return [name, values[i]];
+        }));
     };
 
     /** Get the SQL string used in preparing this statement.
@@ -1007,9 +1004,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         registerExtensionFunctions(this.db);
         // A list of all prepared statements of the database
         this.statements = {};
-        // A list of all user function of the database
-        // (created by create_function call)
-        this.functions = {};
+        // Callback pointers for each user function, keyed by name and arity.
+        this.functions = new Map();
     }
 
     /** Execute an SQL query, ignoring the rows it returns.
@@ -1275,8 +1271,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.statements).forEach(function each(stmt) {
             stmt.free();
         });
-        Object.values(this.functions).forEach(removeFunction);
-        this.functions = {};
+        this.functions.forEach(removeFunctionPointers);
+        this.functions.clear();
         this.handleError(sqlite3_close_v2(this.db));
         var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
         this.handleError(sqlite3_open(this.filename, apiTemp));
@@ -1303,8 +1299,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         Object.values(this.statements).forEach(function each(stmt) {
             stmt.free();
         });
-        Object.values(this.functions).forEach(removeFunction);
-        this.functions = {};
+        this.functions.forEach(removeFunctionPointers);
+        this.functions.clear();
 
         if (this.updateHookFunctionPtr) {
             removeFunction(this.updateHookFunctionPtr);
@@ -1411,6 +1407,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         sqlite3_result_error(cx, message, -1);
     };
 
+    function getFunctionKey(name, arity) {
+        // SQLite identifies functions by ASCII case-insensitive name and arity.
+        return name.replace(/[A-Z]/g, function lowerCase(letter) {
+            return letter.toLowerCase();
+        }) + ":" + arity;
+    }
+
+    function removeFunctionPointers(pointers) {
+        pointers.forEach(removeFunction);
+    }
+
     /** Register a custom function with SQLite
       @example <caption>Register a simple function</caption>
           db.create_function("addOne", function (x) {return x+1;})
@@ -1436,14 +1443,15 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             }
             setFunctionResult(cx, result);
         }
-        if (Object.prototype.hasOwnProperty.call(this.functions, name)) {
-            removeFunction(this.functions[name]);
-            delete this.functions[name];
+        var key = getFunctionKey(name, func.length);
+        if (this.functions.has(key)) {
+            removeFunctionPointers(this.functions.get(key));
+            this.functions.delete(key);
         }
         // The signature of the wrapped function is :
         // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
         var func_ptr = addFunction(wrapped_func, "viii");
-        this.functions[name] = func_ptr;
+        this.functions.set(key, [func_ptr]);
         this.handleError(sqlite3_create_function_v2(
             this.db,
             name,
@@ -1555,14 +1563,10 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             state.delete(p);
         }
 
-        if (Object.hasOwnProperty.call(this.functions, name)) {
-            removeFunction(this.functions[name]);
-            delete this.functions[name];
-        }
-        var finalize_name = name + "__finalize";
-        if (Object.hasOwnProperty.call(this.functions, finalize_name)) {
-            removeFunction(this.functions[finalize_name]);
-            delete this.functions[finalize_name];
+        var key = getFunctionKey(name, step.length - 1);
+        if (this.functions.has(key)) {
+            removeFunctionPointers(this.functions.get(key));
+            this.functions.delete(key);
         }
         // The signature of the wrapped function is :
         // void wrapped(sqlite3_context *db, int argc, sqlite3_value **argv)
@@ -1571,8 +1575,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         // The signature of the wrapped function is :
         // void wrapped(sqlite3_context *db)
         var finalize_ptr = addFunction(wrapped_finalize, "vi");
-        this.functions[name] = step_ptr;
-        this.functions[finalize_name] = finalize_ptr;
+        this.functions.set(key, [step_ptr, finalize_ptr]);
 
         // passing null to the sixth parameter defines this as an aggregate
         // function
