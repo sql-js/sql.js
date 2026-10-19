@@ -53,6 +53,36 @@ exports.test = function (SQL, assert) {
         "Multiple aggregations at once"
     );
 
+    result = db.exec("SELECT json_agg(col) FROM test2 WHERE 0;");
+    assert.strictEqual(
+        result[0].values[0][0],
+        "[]",
+        "Aggregate over no rows finalizes the value returned by init"
+    );
+
+    db.create_aggregate("count_rows", {
+        init: () => 0,
+        step: (state, value) => state + 1,
+    });
+    result = db.exec("SELECT count_rows(col) FROM test2 WHERE 0;");
+    assert.strictEqual(
+        result[0].values[0][0],
+        0,
+        "Aggregate over no rows without finalize returns the init value"
+    );
+    result = db.exec("SELECT count_rows(col) FROM test2;");
+    assert.strictEqual(result[0].values[0][0], 3, "Aggregate counts rows");
+
+    db.create_aggregate("no_init", {
+        step: (state, value) => value,
+    });
+    result = db.exec("SELECT no_init(col) FROM test2 WHERE 0;");
+    assert.strictEqual(
+        result[0].values[0][0],
+        null,
+        "Aggregate over no rows without init returns null"
+    );
+
     db.create_aggregate("is_even", {
        init: () => true,
        step: state => !state
