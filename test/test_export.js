@@ -115,16 +115,17 @@ exports.test = function(SQL, assert) {
     let largeBytes;
     try {
         large.run('CREATE TABLE t(data); INSERT INTO t VALUES (zeroblob(3145728))');
-        const set = Uint8Array.prototype.set;
+        const prototype = Object.getPrototypeOf(Uint8Array.prototype);
+        const set = prototype.set;
         let largestCopy = 0;
-        Uint8Array.prototype.set = function(source, offset) {
+        prototype.set = function(source, offset) {
             largestCopy = Math.max(largestCopy, source.length);
             return set.call(this, source, offset);
         };
         try {
             largeBytes = large.export();
         } finally {
-            Uint8Array.prototype.set = set;
+            prototype.set = set;
         }
         assert.ok(largestCopy <= 65536,
             'Export never copies a growing file or a full-size result array');
