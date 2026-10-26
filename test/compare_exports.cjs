@@ -1,4 +1,5 @@
-// CI-only comparison: node test/compare_exports.cjs SERIALIZE_DIST BACKUP_DIST
+// CI-only comparison:
+// node test/compare_exports.cjs SERIALIZE_DIST BACKUP_DIST [PREVIOUS_BACKUP_DIST]
 // Each measurement uses a fresh child process; both implementations run on
 // the same machine. Timing is informational, never a pass/fail threshold.
 const assert = require('node:assert/strict');
@@ -95,7 +96,7 @@ async function worker(strategy, directory, mode, rows) {
                 let bytes;
                 let error;
                 try { bytes = db.export(); } catch (e) { error = e; }
-                if (strategy === 'backup' && name !== 'read_transaction') {
+                if (strategy !== 'serialize' && name !== 'read_transaction') {
                     assert.match(error && error.message, /busy or locked/);
                     outcomes[name] = 'rejected; source transaction intact';
                 } else {
@@ -217,6 +218,10 @@ function compare() {
         serialize: path.resolve(process.argv[2]),
         backup: path.resolve(process.argv[3])
     };
+    if (process.argv[4]) {
+        directories.backup_before = path.resolve(process.argv[4]);
+    }
+    const strategies = Object.keys(directories);
     const behavior = {};
     const constrainedMemory = {};
     const bundle = {};
@@ -231,9 +236,9 @@ function compare() {
     }
     const measurements = [];
     for (const rows of [256, 4096, 16384, 32768, 131072]) {
-        const trials = { serialize: [], backup: [] };
+        const trials = Object.fromEntries(strategies.map(strategy => [strategy, []]));
         for (let repeat = 0; repeat < 3; repeat++) {
-            const order = repeat % 2 ? ['backup', 'serialize'] : ['serialize', 'backup'];
+            const order = repeat % 2 ? strategies.slice().reverse() : strategies;
             for (const strategy of order) {
                 trials[strategy].push(child(strategy, directories[strategy], 'timing', rows));
             }

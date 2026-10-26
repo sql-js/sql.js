@@ -110,6 +110,56 @@ exports.test = function(SQL, assert) {
     }
     assert.throws(() => db.export(), /Database closed/);
 
+    // Export fills one result buffer page by page, without recopying the file.
+    const large = new SQL.Database();
+    let largeBytes;
+    try {
+        large.run('CREATE TABLE t(data); INSERT INTO t VALUES (zeroblob(3145728))');
+        const set = Uint8Array.prototype.set;
+        let largestCopy = 0;
+        Uint8Array.prototype.set = function(source, offset) {
+            largestCopy = Math.max(largestCopy, source.length);
+            return set.call(this, source, offset);
+        };
+        try {
+            largeBytes = large.export();
+        } finally {
+            Uint8Array.prototype.set = set;
+        }
+        assert.ok(largestCopy <= 65536,
+            'Export never copies a growing file or a full-size result array');
+        assert.strictEqual(largeBytes.buffer.byteLength, largeBytes.byteLength,
+            'The result owns an exactly sized buffer, not spare MEMFS capacity');
+    } finally {
+        large.close();
+    }
+    const largeCopy = new SQL.Database(largeBytes);
+    try {
+        assert.deepStrictEqual(values(largeCopy, 'PRAGMA integrity_check'), [['ok']]);
+        assert.deepStrictEqual(values(largeCopy, 'SELECT length(data) FROM t'),
+            [[3145728]], 'The result remains valid after closing the source');
+    } finally {
+        largeCopy.close();
+    }
+
+    for (const pageSize of [512, 4096, 65536]) {
+        const paged = new SQL.Database();
+        let pagedCopy;
+        try {
+            paged.run('PRAGMA page_size = ' + pageSize + ';'
+                + 'CREATE TABLE t(x); INSERT INTO t VALUES (42);');
+            const bytes = paged.export();
+            assert.strictEqual(bytes.length,
+                values(paged, 'PRAGMA page_count')[0][0] * pageSize);
+            assert.strictEqual(bytes.buffer.byteLength, bytes.length);
+            pagedCopy = new SQL.Database(bytes);
+            assert.deepStrictEqual(values(pagedCopy, 'SELECT x FROM t'), [[42]]);
+        } finally {
+            if (pagedCopy) pagedCopy.close();
+            paged.close();
+        }
+    }
+
     // Write transactions fail promptly without losing writes or savepoints.
     const transactional = new SQL.Database();
     let committed;

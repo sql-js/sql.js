@@ -1144,6 +1144,23 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         var destination = NULL;
         var backup = NULL;
         try {
+            var file = FS.lookupPath(filename).node;
+            var binaryDb = null;
+            var write = file.stream_ops.write;
+            file.stream_ops = Object.create(file.stream_ops);
+            file.stream_ops.write = function writeExport(
+                stream, buffer, offset, length, position
+            ) {
+                if (binaryDb === null) {
+                    return write(stream, buffer, offset, length, position);
+                }
+                // Write directly into the final JS-owned result buffer.
+                // MEMFS would otherwise replace it on the first write.
+                file.contents.set(buffer.subarray(offset, offset + length),
+                    position);
+                file.usedBytes = Math.max(file.usedBytes, position + length);
+                return length;
+            };
             var rc = sqlite3_open(filename, apiTemp);
             destination = getValue(apiTemp, "i32");
             if (rc !== SQLITE_OK) {
@@ -1153,7 +1170,18 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             if (backup === NULL) {
                 throw new Error(sqlite3_errmsg(destination));
             }
-            rc = sqlite3_backup_step(backup, -1);
+            // Initialize the backup and reject writers before allocating.
+            rc = sqlite3_backup_step(backup, 0);
+            if (rc === SQLITE_OK) {
+                var sizes = this.exec(
+                    "PRAGMA main.page_count; PRAGMA main.page_size"
+                );
+                binaryDb = new Uint8Array(
+                    sizes[0].values[0][0] * sizes[1].values[0][0]
+                );
+                file.contents = binaryDb;
+                rc = sqlite3_backup_step(backup, -1);
+            }
             // Do not retry: this synchronous call cannot let a writer progress.
             if (rc === SQLITE_BUSY || rc === SQLITE_LOCKED) {
                 throw new Error("Unable to export: SQLite is busy or locked. "
@@ -1172,7 +1200,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
                 throw new Error(sqlite3_errmsg(destination));
             }
             destination = NULL;
-            var binaryDb = FS.readFile(filename, { encoding: "binary" });
+            // The private file is closed and unlinked below; hand its buffer
+            // to the caller rather than making a full-size FS.readFile copy.
+            binaryDb = file.contents.subarray(0, file.usedBytes);
             if (binaryDb.length > 0) {
                 // All pages, including WAL pages, are in the backup.
                 // Make the exported copy independent of WAL support.
