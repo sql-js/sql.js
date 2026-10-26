@@ -1202,7 +1202,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             destination = NULL;
             // The private file is closed and unlinked below; hand its buffer
             // to the caller rather than making a full-size FS.readFile copy.
-            binaryDb = file.contents.subarray(0, file.usedBytes);
+            binaryDb = new Uint8Array(file.contents.buffer,
+                file.contents.byteOffset, file.usedBytes);
             if (binaryDb.length > 0) {
                 // All pages, including WAL pages, are in the backup.
                 // Make the exported copy independent of WAL support.
