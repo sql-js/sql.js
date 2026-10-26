@@ -6,7 +6,7 @@ longname: Database.SqlValue
 
 # SqlValue
 
-<SourceLink href="/source/api-js/#L283" label="api.js:283" />
+<SourceLink href="/source/api-js/#L296" label="api.js:296" />
 
 **Type**
 

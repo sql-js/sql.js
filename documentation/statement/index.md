@@ -7,7 +7,7 @@ description: "Represents a prepared statement. Prepared statements allow you to 
 
 # Statement
 
-<SourceLink href="/source/api-js/#L272" label="api.js:272" />
+<SourceLink href="/source/api-js/#L285" label="api.js:285" />
 
 Represents a prepared statement. Prepared statements allow you to have a template sql string, that you can execute multiple times with different parameters.
 
@@ -43,7 +43,7 @@ Statements can't be created by the API user directly, only by Database::prepare
 
 <MemberHeading id="bind" depth="3" name="bind" sig="bind(values: Statement.BindParams): boolean" />
 
-<MemberMeta sourceHref="/source/api-js/#L326" sourceLabel="api.js:326" />
+<MemberMeta sourceHref="/source/api-js/#L339" sourceLabel="api.js:339" />
 
 Bind values to the parameters, after having reseted the statement. If values is null, do nothing and return true.
 
@@ -99,7 +99,7 @@ stmt.bind([5, 10, 20]);
 
 <MemberHeading id="step" depth="3" name="step" sig="step(): boolean" />
 
-<MemberMeta sourceHref="/source/api-js/#L344" sourceLabel="api.js:344" />
+<MemberMeta sourceHref="/source/api-js/#L357" sourceLabel="api.js:357" />
 
 Execute the statement, fetching the the next line of result, that can be retrieved with `Statement.get`.
 
@@ -113,7 +113,7 @@ Execute the statement, fetching the the next line of result, that can be retriev
 
 <MemberHeading id="get" depth="3" name="get" sig="get(params?: Statement.BindParams): Array.<Database.SqlValue>" />
 
-<MemberMeta sourceHref="/source/api-js/#L423" sourceLabel="api.js:423" />
+<MemberMeta sourceHref="/source/api-js/#L436" sourceLabel="api.js:436" />
 
 Get one row of results of a statement. If the first parameter is not provided, step must have been called before.
 
@@ -140,7 +140,7 @@ var stmt = db.prepare("SELECT * FROM test");
 
 <MemberHeading id="getcolumnnames" depth="3" name="getColumnNames" sig="getColumnNames(): Array.<string>" />
 
-<MemberMeta sourceHref="/source/api-js/#L464" sourceLabel="api.js:464" />
+<MemberMeta sourceHref="/source/api-js/#L477" sourceLabel="api.js:477" />
 
 Get the list of column names of a row of result of a statement.
 
@@ -168,7 +168,7 @@ var stmt = db.prepare(
 ): Object.<string, Database.SqlValue>"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L489" sourceLabel="api.js:489" />
+<MemberMeta sourceHref="/source/api-js/#L502" sourceLabel="api.js:502" />
 
 Get one row of result as a javascript object, associating column names with their value in the current row.
 
@@ -196,7 +196,7 @@ var stmt = db.prepare(
 
 <MemberHeading id="getsql" depth="3" name="getSQL" sig="getSQL(): string" />
 
-<MemberMeta sourceHref="/source/api-js/#L500" sourceLabel="api.js:500" />
+<MemberMeta sourceHref="/source/api-js/#L513" sourceLabel="api.js:513" />
 
 Get the SQL string used in preparing this statement.
 
@@ -206,7 +206,7 @@ Get the SQL string used in preparing this statement.
 
 <MemberHeading id="getnormalizedsql" depth="3" name="getNormalizedSQL" sig="getNormalizedSQL(): string" />
 
-<MemberMeta sourceHref="/source/api-js/#L516" sourceLabel="api.js:516" />
+<MemberMeta sourceHref="/source/api-js/#L529" sourceLabel="api.js:529" />
 
 Get the SQLite's normalized version of the SQL string used in preparing this statement. The meaning of "normalized" is not well-defined: see [the SQLite documentation](https://sqlite.org/c3ref/expanded_sql.html).
 
@@ -224,7 +224,7 @@ db.run("create table test (x integer);");
 
 <MemberHeading id="run" depth="3" name="run" sig="run(values?: Statement.BindParams)" />
 
-<MemberMeta sourceHref="/source/api-js/#L525" sourceLabel="api.js:525" />
+<MemberMeta sourceHref="/source/api-js/#L538" sourceLabel="api.js:538" />
 
 Shorthand for bind + step + reset Bind the values, execute the statement, ignoring the rows it returns, and resets it
 
@@ -234,19 +234,19 @@ Shorthand for bind + step + reset Bind the values, execute the statement, ignori
 
 <MemberHeading id="reset" depth="3" name="reset" sig="reset()" />
 
-<MemberMeta sourceHref="/source/api-js/#L656" sourceLabel="api.js:656" />
+<MemberMeta sourceHref="/source/api-js/#L669" sourceLabel="api.js:669" />
 
 Reset a statement, so that its parameters can be bound to new values It also clears all previous bindings, freeing the memory used by bound parameters.
 
 <MemberHeading id="freemem" depth="3" name="freemem" sig="freemem()" />
 
-<MemberMeta sourceHref="/source/api-js/#L665" sourceLabel="api.js:665" />
+<MemberMeta sourceHref="/source/api-js/#L678" sourceLabel="api.js:678" />
 
 Free the memory allocated during parameter binding
 
 <MemberHeading id="free" depth="3" name="free" sig="free(): boolean" />
 
-<MemberMeta sourceHref="/source/api-js/#L675" sourceLabel="api.js:675" />
+<MemberMeta sourceHref="/source/api-js/#L688" sourceLabel="api.js:688" />
 
 Free the memory used by the statement
 
@@ -258,4 +258,4 @@ Free the memory used by the statement
 
 <MemberHeading id="bindparams" depth="3" name="BindParams" sig="BindParams: Array.<Database.SqlValue> | Object.<string, Database.SqlValue> | null" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L288" sourceLabel="api.js:288" />
+<MemberMeta badges="static" sourceHref="/source/api-js/#L301" sourceLabel="api.js:301" />

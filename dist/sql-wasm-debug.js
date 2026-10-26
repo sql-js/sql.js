@@ -210,6 +210,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var NULL = 0;
     // SQLite enum
     var SQLITE_OK = 0;
+    var SQLITE_BUSY = 5;
+    var SQLITE_LOCKED = 6;
     var SQLITE_ROW = 100;
     var SQLITE_DONE = 101;
     var SQLITE_INTEGER = 1;
@@ -225,6 +227,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     // var - cwrap function
     var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
     var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
+    var sqlite3_backup_init = cwrap(
+        "sqlite3_backup_init",
+        "number",
+        ["number", "string", "number", "string"]
+    );
+    var sqlite3_backup_step = cwrap(
+        "sqlite3_backup_step", "number", ["number", "number"]
+    );
+    var sqlite3_backup_finish = cwrap(
+        "sqlite3_backup_finish", "number", ["number"]
+    );
     var sqlite3_exec = cwrap(
         "sqlite3_exec",
         "number",
@@ -1253,23 +1266,106 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return new StatementIterator(sql, this);
     };
 
-    /** Exports the contents of the database to a binary array. This
-     * operation will close and re-open the database which will cause
-     * any pragmas to be set back to their default values.
+    /** Exports a snapshot of the main database to a binary array without
+     * closing the connection. Prepared statements, registered functions,
+     * update hooks and connection settings (including pragmas) are preserved.
+     * TEMP objects and attached databases remain available on this connection,
+     * but are not included in the exported file.
+     *
+     * Exporting during an active write transaction throws an error. Commit or
+     * roll back the transaction before exporting. Read transactions are
+     * allowed. Exporting never commits or rolls back a transaction or changes
+     * savepoints, even when the export fails.
+     *
+     * The exported file uses rollback-journal format, even if this connection
+     * uses WAL mode.
+     *
+     * The returned array is an independent copy. It can be used to create a
+     * new Database, but JavaScript functions, hooks and connection settings
+     * are not stored in the file and must be configured on the new connection.
     @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
     Database.prototype.export = function exportDatabase() {
-        Object.values(this.statements).forEach(function each(stmt) {
-            stmt.free();
-        });
-        this.functions.forEach(removeFunctionPointers);
-        this.functions.clear();
-        this.handleError(sqlite3_close_v2(this.db));
-        var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this.handleError(sqlite3_open(this.filename, apiTemp));
-        this.db = getValue(apiTemp, "i32");
-        registerExtensionFunctions(this.db);
-        return binaryDb;
+        if (!this.db) {
+            throw new Error("Database closed");
+        }
+        var filename = this.filename + "_export";
+        FS.createDataFile("/", filename, [], true, true);
+        var destination = NULL;
+        var backup = NULL;
+        try {
+            var file = FS.lookupPath(filename).node;
+            var binaryDb = null;
+            var write = file.stream_ops.write;
+            file.stream_ops = Object.create(file.stream_ops);
+            file.stream_ops.write = function writeExport(
+                stream, buffer, offset, length, position
+            ) {
+                if (binaryDb === null) {
+                    return write(stream, buffer, offset, length, position);
+                }
+                // Write directly into the final JS-owned result buffer.
+                // MEMFS would otherwise replace it on the first write.
+                file.contents.set(buffer.subarray(offset, offset + length),
+                    position);
+                file.usedBytes = Math.max(file.usedBytes, position + length);
+                return length;
+            };
+            var rc = sqlite3_open(filename, apiTemp);
+            destination = getValue(apiTemp, "i32");
+            if (rc !== SQLITE_OK) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            backup = sqlite3_backup_init(destination, "main", this.db, "main");
+            if (backup === NULL) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            // Initialize the backup and reject writers before allocating.
+            rc = sqlite3_backup_step(backup, 0);
+            if (rc === SQLITE_OK) {
+                var sizes = this.exec(
+                    "PRAGMA main.page_count; PRAGMA main.page_size"
+                );
+                binaryDb = new Uint8Array(
+                    sizes[0].values[0][0] * sizes[1].values[0][0]
+                );
+                file.contents = binaryDb;
+                rc = sqlite3_backup_step(backup, -1);
+            }
+            // Do not retry: this synchronous call cannot let a writer progress.
+            if (rc === SQLITE_BUSY || rc === SQLITE_LOCKED) {
+                throw new Error("Unable to export: SQLite is busy or locked. "
+                    + "Finish active write transactions before exporting.");
+            }
+            if (rc !== SQLITE_DONE) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            rc = sqlite3_backup_finish(backup);
+            backup = NULL;
+            if (rc !== SQLITE_OK) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            rc = sqlite3_close_v2(destination);
+            if (rc !== SQLITE_OK) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            destination = NULL;
+            // The private file is closed and unlinked below; hand its buffer
+            // to the caller rather than making a full-size FS.readFile copy.
+            binaryDb = new Uint8Array(file.contents.buffer,
+                file.contents.byteOffset, file.usedBytes);
+            if (binaryDb.length > 0) {
+                // All pages, including WAL pages, are in the backup.
+                // Make the exported copy independent of WAL support.
+                binaryDb[18] = 1;
+                binaryDb[19] = 1;
+            }
+            return binaryDb;
+        } finally {
+            if (backup !== NULL) sqlite3_backup_finish(backup);
+            if (destination !== NULL) sqlite3_close_v2(destination);
+            FS.unlink("/" + filename);
+        }
     };
 
     /** Close the database, and all associated prepared statements.
@@ -7078,6 +7174,9 @@ var _sqlite3_column_name = Module['_sqlite3_column_name'] = makeInvalidEarlyAcce
 var _sqlite3_column_text = Module['_sqlite3_column_text'] = makeInvalidEarlyAccess('_sqlite3_column_text');
 var _sqlite3_column_type = Module['_sqlite3_column_type'] = makeInvalidEarlyAccess('_sqlite3_column_type');
 var _sqlite3_errmsg = Module['_sqlite3_errmsg'] = makeInvalidEarlyAccess('_sqlite3_errmsg');
+var _sqlite3_backup_init = Module['_sqlite3_backup_init'] = makeInvalidEarlyAccess('_sqlite3_backup_init');
+var _sqlite3_backup_step = Module['_sqlite3_backup_step'] = makeInvalidEarlyAccess('_sqlite3_backup_step');
+var _sqlite3_backup_finish = Module['_sqlite3_backup_finish'] = makeInvalidEarlyAccess('_sqlite3_backup_finish');
 var _sqlite3_clear_bindings = Module['_sqlite3_clear_bindings'] = makeInvalidEarlyAccess('_sqlite3_clear_bindings');
 var _sqlite3_value_blob = Module['_sqlite3_value_blob'] = makeInvalidEarlyAccess('_sqlite3_value_blob');
 var _sqlite3_value_bytes = Module['_sqlite3_value_bytes'] = makeInvalidEarlyAccess('_sqlite3_value_bytes');
@@ -7141,6 +7240,9 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['sqlite3_column_text'] != 'undefined', 'missing Wasm export: sqlite3_column_text');
   assert(typeof wasmExports['sqlite3_column_type'] != 'undefined', 'missing Wasm export: sqlite3_column_type');
   assert(typeof wasmExports['sqlite3_errmsg'] != 'undefined', 'missing Wasm export: sqlite3_errmsg');
+  assert(typeof wasmExports['sqlite3_backup_init'] != 'undefined', 'missing Wasm export: sqlite3_backup_init');
+  assert(typeof wasmExports['sqlite3_backup_step'] != 'undefined', 'missing Wasm export: sqlite3_backup_step');
+  assert(typeof wasmExports['sqlite3_backup_finish'] != 'undefined', 'missing Wasm export: sqlite3_backup_finish');
   assert(typeof wasmExports['sqlite3_clear_bindings'] != 'undefined', 'missing Wasm export: sqlite3_clear_bindings');
   assert(typeof wasmExports['sqlite3_value_blob'] != 'undefined', 'missing Wasm export: sqlite3_value_blob');
   assert(typeof wasmExports['sqlite3_value_bytes'] != 'undefined', 'missing Wasm export: sqlite3_value_bytes');
@@ -7200,6 +7302,9 @@ function assignWasmExports(wasmExports) {
   _sqlite3_column_text = Module['_sqlite3_column_text'] = createExportWrapper('sqlite3_column_text', wasmExports['sqlite3_column_text'], 2);
   _sqlite3_column_type = Module['_sqlite3_column_type'] = createExportWrapper('sqlite3_column_type', wasmExports['sqlite3_column_type'], 2);
   _sqlite3_errmsg = Module['_sqlite3_errmsg'] = createExportWrapper('sqlite3_errmsg', wasmExports['sqlite3_errmsg'], 1);
+  _sqlite3_backup_init = Module['_sqlite3_backup_init'] = createExportWrapper('sqlite3_backup_init', wasmExports['sqlite3_backup_init'], 4);
+  _sqlite3_backup_step = Module['_sqlite3_backup_step'] = createExportWrapper('sqlite3_backup_step', wasmExports['sqlite3_backup_step'], 2);
+  _sqlite3_backup_finish = Module['_sqlite3_backup_finish'] = createExportWrapper('sqlite3_backup_finish', wasmExports['sqlite3_backup_finish'], 1);
   _sqlite3_clear_bindings = Module['_sqlite3_clear_bindings'] = createExportWrapper('sqlite3_clear_bindings', wasmExports['sqlite3_clear_bindings'], 1);
   _sqlite3_value_blob = Module['_sqlite3_value_blob'] = createExportWrapper('sqlite3_value_blob', wasmExports['sqlite3_value_blob'], 1);
   _sqlite3_value_bytes = Module['_sqlite3_value_bytes'] = createExportWrapper('sqlite3_value_bytes', wasmExports['sqlite3_value_bytes'], 1);

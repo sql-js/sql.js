@@ -7,7 +7,7 @@ description: Represents an SQLite database
 
 # Database
 
-<SourceLink href="/source/api-js/#L838" label="api.js:838" />
+<SourceLink href="/source/api-js/#L851" label="api.js:851" />
 
 Represents an SQLite database
 
@@ -29,7 +29,7 @@ Represents an SQLite database
 
 <MemberHeading id="run" depth="3" name="run" sig="run(sql: string, params?: Statement.BindParams): Database" />
 
-<MemberMeta sourceHref="/source/api-js/#L868" sourceLabel="api.js:868" />
+<MemberMeta sourceHref="/source/api-js/#L881" sourceLabel="api.js:881" />
 
 Execute an SQL query, ignoring the rows it returns.
 
@@ -62,7 +62,7 @@ Execute an SQL query, ignoring the rows it returns.
 ): Array.<Database.QueryExecResult>"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L958" sourceLabel="api.js:958" />
+<MemberMeta sourceHref="/source/api-js/#L971" sourceLabel="api.js:971" />
 
 Execute an SQL query, and returns the result.
 
@@ -127,7 +127,7 @@ var res = db.exec(
 ): Database"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1035" sourceLabel="api.js:1035" />
+<MemberMeta sourceHref="/source/api-js/#L1048" sourceLabel="api.js:1048" />
 
 Execute an sql statement, and call a callback for each row of result.
 
@@ -159,7 +159,7 @@ db.each("SELECT name,age FROM users WHERE age >= $majority", {$majority:18},
 
 <MemberHeading id="prepare" depth="3" name="prepare" sig="prepare(sql: string, params?: Statement.BindParams): Statement" />
 
-<MemberMeta sourceHref="/source/api-js/#L1063" sourceLabel="api.js:1063" />
+<MemberMeta sourceHref="/source/api-js/#L1076" sourceLabel="api.js:1076" />
 
 Prepare an SQL statement
 
@@ -178,7 +178,7 @@ Prepare an SQL statement
 
 <MemberHeading id="iteratestatements" depth="3" name="iterateStatements" sig="iterateStatements(sql: string): StatementIterator" />
 
-<MemberMeta sourceHref="/source/api-js/#L1102" sourceLabel="api.js:1102" />
+<MemberMeta sourceHref="/source/api-js/#L1115" sourceLabel="api.js:1115" />
 
 Iterate over multiple SQL statements in a SQL string. This function returns an iterator over [Statement](/module/sqljs#statement) objects. You can use a for..of loop to execute the returned statements one by one.
 
@@ -208,9 +208,15 @@ for (const statement of db.iterateStatements(sql_queries)) {
 
 <MemberHeading id="export" depth="3" name="export" sig="export(): Uint8Array" />
 
-<MemberMeta sourceHref="/source/api-js/#L1111" sourceLabel="api.js:1111" />
+<MemberMeta sourceHref="/source/api-js/#L1138" sourceLabel="api.js:1138" />
 
-Exports the contents of the database to a binary array. This operation will close and re-open the database which will cause any pragmas to be set back to their default values.
+Exports a snapshot of the main database to a binary array without closing the connection. Prepared statements, registered functions, update hooks and connection settings (including pragmas) are preserved. TEMP objects and attached databases remain available on this connection, but are not included in the exported file.
+
+Exporting during an active write transaction throws an error. Commit or roll back the transaction before exporting. Read transactions are allowed. Exporting never commits or rolls back a transaction or changes savepoints, even when the export fails.
+
+The exported file uses rollback-journal format, even if this connection uses WAL mode.
+
+The returned array is an independent copy. It can be used to create a new Database, but JavaScript functions, hooks and connection settings are not stored in the file and must be configured on the new connection.
 
 **Returns**
 
@@ -218,7 +224,7 @@ Exports the contents of the database to a binary array. This operation will clos
 
 <MemberHeading id="close" depth="3" name="close" sig="close()" />
 
-<MemberMeta sourceHref="/source/api-js/#L1135" sourceLabel="api.js:1135" />
+<MemberMeta sourceHref="/source/api-js/#L1231" sourceLabel="api.js:1231" />
 
 Close the database, and all associated prepared statements. The memory associated to the database and all associated statements will be freed.
 
@@ -228,13 +234,13 @@ Databases **must** be closed when you're finished with them, or the memory consu
 
 <MemberHeading id="handleerror" depth="3" name="handleError" sig="handleError()" />
 
-<MemberMeta sourceHref="/source/api-js/#L1160" sourceLabel="api.js:1160" />
+<MemberMeta sourceHref="/source/api-js/#L1256" sourceLabel="api.js:1256" />
 
 Analyze a result code, return null if no error occured, and throw an error with a descriptive message otherwise
 
 <MemberHeading id="getrowsmodified" depth="3" name="getRowsModified" sig="getRowsModified(): number" />
 
-<MemberMeta sourceHref="/source/api-js/#L1176" sourceLabel="api.js:1176" />
+<MemberMeta sourceHref="/source/api-js/#L1272" sourceLabel="api.js:1272" />
 
 Returns the number of changed rows (modified, inserted or deleted) by the latest completed INSERT, UPDATE or DELETE statement on the database. Executing any other type of SQL statement does not modify the value returned by this function.
 
@@ -244,7 +250,7 @@ Returns the number of changed rows (modified, inserted or deleted) by the latest
 
 <MemberHeading id="createfunction" depth="3" name="create_function" sig="create_function(name: string, func: function): Database" />
 
-<MemberMeta sourceHref="/source/api-js/#L1272" sourceLabel="api.js:1272" />
+<MemberMeta sourceHref="/source/api-js/#L1368" sourceLabel="api.js:1368" />
 
 Register a custom function with SQLite
 
@@ -276,7 +282,7 @@ db.create_function("addOne", function (x) {return x+1;})
 ): Database"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1339" sourceLabel="api.js:1339" />
+<MemberMeta sourceHref="/source/api-js/#L1435" sourceLabel="api.js:1435" />
 
 Register a custom aggregate with SQLite
 
@@ -314,7 +320,7 @@ db.create_aggregate("js_sum", {
 ): Database"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1506" sourceLabel="api.js:1506" />
+<MemberMeta sourceHref="/source/api-js/#L1602" sourceLabel="api.js:1602" />
 
 Registers an update hook with SQLite.
 
@@ -382,11 +388,11 @@ db.run("INSERT INTO users VALUES (2, 'Bob', 1)");
 
 <MemberHeading id="sqlvalue" depth="3" name="SqlValue" sig="SqlValue: string | number | null | Uint8Array" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L283" sourceLabel="api.js:283" />
+<MemberMeta badges="static" sourceHref="/source/api-js/#L296" sourceLabel="api.js:296" />
 
 <MemberHeading id="queryexecresult" depth="3" name="QueryExecResult" sig="QueryExecResult: Object" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L903" sourceLabel="api.js:903" />
+<MemberMeta badges="static" sourceHref="/source/api-js/#L916" sourceLabel="api.js:916" />
 
 **Properties**
 
@@ -395,7 +401,7 @@ db.run("INSERT INTO users VALUES (2, 'Bob', 1)");
 
 <MemberHeading id="updatehookcallback" depth="3" name="UpdateHookCallback" sig="UpdateHookCallback: function" />
 
-<MemberMeta sourceHref="/source/api-js/#L1578" sourceLabel="api.js:1578" />
+<MemberMeta sourceHref="/source/api-js/#L1674" sourceLabel="api.js:1674" />
 
 **Parameters**
 
