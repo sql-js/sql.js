@@ -13,3 +13,4 @@ sqljs.zip
 
 # Generated API documentation:
 documentation/
+!/documentation/
