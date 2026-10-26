@@ -1124,8 +1124,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
      *
      * Exporting during an active write transaction throws an error. Commit or
      * roll back the transaction before exporting. Read transactions are
-     * allowed. Exporting never commits or rolls back transactions or savepoints,
-     * even when the export fails.
+     * allowed. Exporting never commits or rolls back a transaction or changes
+     * savepoints, even when the export fails.
      *
      * The exported file uses rollback-journal format, even if this connection
      * uses WAL mode.
