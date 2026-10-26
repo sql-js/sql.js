@@ -49,6 +49,10 @@ jobs:
       with:
         name: documentation
         path: documentation
+    - name: Include generated documentation in the Pages commit
+      # The deploy action copies .gitignore and uses git add, which would skip
+      # new documentation assets and pages under the development ignore rule.
+      run: echo '!/documentation/' >> .gitignore
     - name: Update github pages
       uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
       with:
