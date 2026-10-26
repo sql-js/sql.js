@@ -69,4 +69,14 @@ exports.test = function(SQL, assert){
   assert.deepEqual(updateHookCalls, [
     {operation: 'delete', databaseName: 'main', tableName: 'consoles', rowId: 1}
   ], "register the update hook again");
+
+  // EXPORT
+  updateHookCalls = []
+
+  db.export();
+  db.exec("INSERT INTO consoles VALUES (4, 'Nintendo', 'Switch');");
+
+  assert.deepEqual(updateHookCalls, [
+    {operation: "insert", databaseName: "main", tableName: "consoles", rowId: 4}
+  ], "keep the update hook after an export");
 }

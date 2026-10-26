@@ -1119,6 +1119,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
         registerExtensionFunctions(this.db);
+        if (this.updateHookFunctionPtr) {
+            sqlite3_update_hook(this.db, this.updateHookFunctionPtr, 0);
+        }
         return binaryDb;
     };
 
