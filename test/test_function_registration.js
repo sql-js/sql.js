@@ -25,7 +25,7 @@ exports.test = function(SQL, assert) {
         db.create_aggregate('total', sum);
         db.create_function('total__finalize', () => 8);
         assert.deepStrictEqual(values('SELECT total(6), total__finalize()'), [[6, 8]],
-            'Registrations work after export resets the registry');
+            'Registrations can be replaced after export');
     } finally {
         db.close();
     }

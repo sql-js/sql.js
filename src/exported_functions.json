@@ -2,6 +2,7 @@
 "_malloc",
 "_free",
 "_sqlite3_open",
+"_sqlite3_serialize",
 "_sqlite3_exec",
 "_sqlite3_free",
 "_sqlite3_errmsg",

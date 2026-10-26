@@ -1,6 +1,7 @@
 /* global
     FS
     HEAP8
+    HEAPU8
     Module
     _malloc
     _free
@@ -75,6 +76,12 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     // var - cwrap function
     var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
     var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
+    var sqlite3_serialize = cwrap(
+        "sqlite3_serialize",
+        "number",
+        ["number", "string", "number", "number"]
+    );
+    var sqlite3_free = cwrap("sqlite3_free", "", ["number"]);
     var sqlite3_exec = cwrap(
         "sqlite3_exec",
         "number",
@@ -1103,23 +1110,53 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return new StatementIterator(sql, this);
     };
 
-    /** Exports the contents of the database to a binary array. This
-     * operation will close and re-open the database which will cause
-     * any pragmas to be set back to their default values.
+    /** Exports a snapshot of the main database to a binary array without
+     * closing the connection. Prepared statements, registered functions,
+     * update hooks and connection settings (including pragmas) are preserved.
+     * TEMP objects and attached databases remain available on this connection,
+     * but are not included in the exported file.
+     *
+     * The snapshot includes uncommitted changes visible to this connection.
+     * Exporting does not commit or roll back an open transaction or savepoint;
+     * it can still be committed or rolled back afterwards. Rolling back the
+     * original database does not change an already exported snapshot.
+     *
+     * The exported file uses rollback-journal format, even if this connection
+     * uses WAL mode.
+     *
+     * The returned array is an independent copy. It can be used to create a
+     * new Database, but JavaScript functions, hooks and connection settings
+     * are not stored in the file and must be configured on the new connection.
     @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
     Database.prototype.export = function exportDatabase() {
-        Object.values(this.statements).forEach(function each(stmt) {
-            stmt.free();
-        });
-        this.functions.forEach(removeFunctionPointers);
-        this.functions.clear();
-        this.handleError(sqlite3_close_v2(this.db));
-        var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this.handleError(sqlite3_open(this.filename, apiTemp));
-        this.db = getValue(apiTemp, "i32");
-        registerExtensionFunctions(this.db);
-        return binaryDb;
+        if (!this.db) {
+            throw new Error("Database closed");
+        }
+        var stack = stackSave();
+        var buffer = NULL;
+        try {
+            var sizePtr = stackAlloc(8);
+            buffer = sqlite3_serialize(this.db, "main", sizePtr, 0) >>> 0;
+            // Read sqlite3_int64 without requiring BigInt support.
+            var size = (getValue(sizePtr, "i32") >>> 0)
+                + getValue(sizePtr + 4, "i32") * 4294967296;
+            // An empty database can have a zero size and a NULL buffer.
+            if (buffer === NULL && size !== 0) {
+                throw new Error("Unable to serialize database");
+            }
+            var binaryDb = HEAPU8.slice(buffer, buffer + size);
+            if (binaryDb.length > 0) {
+                // All pages, including WAL pages, are in this snapshot.
+                // Use rollback-journal format so no WAL file is required.
+                binaryDb[18] = 1;
+                binaryDb[19] = 1;
+            }
+            return binaryDb;
+        } finally {
+            sqlite3_free(buffer);
+            stackRestore(stack);
+        }
     };
 
     /** Close the database, and all associated prepared statements.
