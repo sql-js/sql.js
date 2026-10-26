@@ -60,6 +60,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var NULL = 0;
     // SQLite enum
     var SQLITE_OK = 0;
+    var SQLITE_BUSY = 5;
+    var SQLITE_LOCKED = 6;
     var SQLITE_ROW = 100;
     var SQLITE_DONE = 101;
     var SQLITE_INTEGER = 1;
@@ -75,6 +77,17 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     // var - cwrap function
     var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
     var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
+    var sqlite3_backup_init = cwrap(
+        "sqlite3_backup_init",
+        "number",
+        ["number", "string", "number", "string"]
+    );
+    var sqlite3_backup_step = cwrap(
+        "sqlite3_backup_step", "number", ["number", "number"]
+    );
+    var sqlite3_backup_finish = cwrap(
+        "sqlite3_backup_finish", "number", ["number"]
+    );
     var sqlite3_exec = cwrap(
         "sqlite3_exec",
         "number",
@@ -1103,23 +1116,75 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return new StatementIterator(sql, this);
     };
 
-    /** Exports the contents of the database to a binary array. This
-     * operation will close and re-open the database which will cause
-     * any pragmas to be set back to their default values.
+    /** Exports a snapshot of the main database to a binary array without
+     * closing the connection. Prepared statements, registered functions,
+     * update hooks and connection settings (including pragmas) are preserved.
+     * TEMP objects and attached databases remain available on this connection,
+     * but are not included in the exported file.
+     *
+     * Exporting during an active write transaction throws an error. Commit or
+     * roll back the transaction before exporting. Read transactions are
+     * allowed. Exporting never commits or rolls back a transaction or savepoint,
+     * including when the export fails.
+     *
+     * The exported file uses rollback-journal format, even if this connection
+     * uses WAL mode.
+     *
+     * The returned array is an independent copy. It can be used to create a
+     * new Database, but JavaScript functions, hooks and connection settings
+     * are not stored in the file and must be configured on the new connection.
     @return {Uint8Array} An array of bytes of the SQLite3 database file
      */
     Database.prototype.export = function exportDatabase() {
-        Object.values(this.statements).forEach(function each(stmt) {
-            stmt.free();
-        });
-        this.functions.forEach(removeFunctionPointers);
-        this.functions.clear();
-        this.handleError(sqlite3_close_v2(this.db));
-        var binaryDb = FS.readFile(this.filename, { encoding: "binary" });
-        this.handleError(sqlite3_open(this.filename, apiTemp));
-        this.db = getValue(apiTemp, "i32");
-        registerExtensionFunctions(this.db);
-        return binaryDb;
+        if (!this.db) {
+            throw new Error("Database closed");
+        }
+        var filename = this.filename + "_export";
+        FS.createDataFile("/", filename, [], true, true);
+        var destination = NULL;
+        var backup = NULL;
+        try {
+            var rc = sqlite3_open(filename, apiTemp);
+            destination = getValue(apiTemp, "i32");
+            if (rc !== SQLITE_OK) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            backup = sqlite3_backup_init(destination, "main", this.db, "main");
+            if (backup === NULL) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            rc = sqlite3_backup_step(backup, -1);
+            // Do not retry: this synchronous call cannot let a writer progress.
+            if (rc === SQLITE_BUSY || rc === SQLITE_LOCKED) {
+                throw new Error("Unable to export: SQLite is busy or locked. "
+                    + "Finish active write transactions before exporting.");
+            }
+            if (rc !== SQLITE_DONE) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            rc = sqlite3_backup_finish(backup);
+            backup = NULL;
+            if (rc !== SQLITE_OK) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            rc = sqlite3_close_v2(destination);
+            if (rc !== SQLITE_OK) {
+                throw new Error(sqlite3_errmsg(destination));
+            }
+            destination = NULL;
+            var binaryDb = FS.readFile(filename, { encoding: "binary" });
+            if (binaryDb.length > 0) {
+                // All pages, including WAL pages, are in the backup.
+                // Make the exported copy independent of WAL support.
+                binaryDb[18] = 1;
+                binaryDb[19] = 1;
+            }
+            return binaryDb;
+        } finally {
+            if (backup !== NULL) sqlite3_backup_finish(backup);
+            if (destination !== NULL) sqlite3_close_v2(destination);
+            FS.unlink("/" + filename);
+        }
     };
 
     /** Close the database, and all associated prepared statements.

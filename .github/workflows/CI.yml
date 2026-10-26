@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build:
@@ -24,6 +25,13 @@ jobs:
         if-no-files-found: error
     - name: test WebAssembly builds and distribution behavior
       run: npm ci && npm test
+    # Temporary experiment for the competing export PRs; remove after recording results.
+    - name: Compare backup export with the tested serialize PR
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh run download 40301139618 --repo sql-js/sql.js --name dist --dir "$RUNNER_TEMP/serialize-dist"
+        node test/compare_exports.cjs "$RUNNER_TEMP/serialize-dist" dist
     - name: generate documentation
       run: npm run doc
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
