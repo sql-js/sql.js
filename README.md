@@ -207,6 +207,36 @@ xhr.send();
 See: https://github.com/sql-js/sql.js/wiki/Load-a-database-from-the-server
 
 
+### Native SQLite functions and legacy extensions
+
+SQLite's native math functions are enabled in all builds. For backwards
+compatibility, sql.js also registers its old contributed extension functions
+by default, overriding native functions with the same name and argument count.
+This legacy mode prints a deprecation warning when sql.js initializes.
+
+To use native SQLite behavior without the old extensions:
+
+```javascript
+const SQL = await initSqlJs({ useOldExtensionFunctions: false });
+```
+
+In this mode, `log(x)` computes the base-10 logarithm instead of the natural
+logarithm, and `sign()` uses SQLite's built-in implementation, including support
+for expression indexes and generated columns. Legacy-only functions such as
+`stdev`, `variance`, `median`, `reverse`, and `charindex` are unavailable.
+Native-only functions such as `ln`, `log2`, `mod`, `trunc`, `pow`, `ceiling`, and
+two-argument `log(base, x)` are available in both modes. Use `ln(x)` for an
+explicit natural logarithm in either mode.
+
+Initialization is cached: the option passed to the first `initSqlJs()` call
+applies to every database created from that module. In worker builds, pass
+`config: { useOldExtensionFunctions: false }` with the first message, usually
+the `open` request.
+
+The next major version will disable legacy extension functions by default.
+See [the migration discussion](https://github.com/sql-js/sql.js/pull/619)
+and [the `sign()` compatibility issue](https://github.com/sql-js/sql.js/issues/646).
+
 ### Use from node.js
 
 The Emscripten 6 builds require **Node.js 18.3 or newer** when run in Node.js.

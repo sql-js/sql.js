@@ -51,7 +51,8 @@ async function testBrowserBuild(file) {
         await context.self.onmessage({ data: { id: 3, action: "close" } });
     }
 
-    assert.equal(warnings.length, 0, "WebAssembly builds do not warn");
+    assert.equal(warnings.length, 1, "Default initialization warns about legacy functions");
+    assert.match(warnings[0], /https:\/\/github.com\/sql-js\/sql.js\/pull\/619/);
     console.log("OK   browser distribution " + file);
 }
 
