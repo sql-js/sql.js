@@ -190,10 +190,10 @@ out/sqlite3.o: sqlite-src/$(SQLITE_AMALGAMATION) Makefile
 	$(EMCC) $(SQLITE_COMPILATION_FLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
 
 # Since the extension-functions.c includes other headers in the sqlite_amalgamation, we declare that this depends on more than just extension-functions.c
-out/extension-functions.o: sqlite-src/$(SQLITE_AMALGAMATION) Makefile
+out/extension-functions.o: sqlite-src/$(SQLITE_AMALGAMATION) src/legacy-functions.c Makefile
 	mkdir -p out
 	# Generate llvm bitcode
-	$(EMCC) $(SQLITE_COMPILATION_FLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+	$(EMCC) $(SQLITE_COMPILATION_FLAGS) -I sqlite-src/$(SQLITE_AMALGAMATION) -c src/legacy-functions.c -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js

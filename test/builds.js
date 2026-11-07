@@ -51,8 +51,12 @@ async function testBrowserBuild(file) {
         await context.self.onmessage({ data: { id: 3, action: "close" } });
     }
 
-    assert.equal(warnings.length, 1, "Default initialization warns about legacy functions");
-    assert.match(warnings[0], /https:\/\/github.com\/sql-js\/sql.js\/pull\/619/);
+    assert.equal(warnings.length, 0, "Initialization and ordinary SQL do not warn");
+    const legacyDb = new SQL.Database();
+    assert.equal(legacyDb.exec("SELECT reverse('abc')")[0].values[0][0], "cba");
+    legacyDb.close();
+    assert.equal(warnings.length, 1, "Calling a legacy function warns");
+    assert.match(warnings[0], /reverse\(\).*https:\/\/github.com\/sql-js\/sql.js\/pull\/619/);
     console.log("OK   browser distribution " + file);
 }
 
