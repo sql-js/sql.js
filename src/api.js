@@ -26,9 +26,14 @@
  */
 
 /**
- * @typedef {{locateFile:function(string):string}} SqlJsConfig
- * @property {function(string):string} locateFile
+ * @typedef {Object} SqlJsConfig
+ * @property {function(string):string} [locateFile]
  * a function that returns the full path to a resource given its file name
+ * @property {boolean} [useOldExtensionFunctions=true]
+ * Register deprecated extension functions for backwards compatibility.
+ * Calling a legacy function prints a deprecation warning.
+ * Set to false to use SQLite's native functions without legacy overrides.
+ * The first initialization determines this option for all databases.
  * @see https://emscripten.org/docs/api_reference/module.html
  */
 
@@ -52,6 +57,7 @@
  */
 // Wait for preRun to run, and then finish our initialization
 Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
+    var useOldExtensionFunctions = Module["useOldExtensionFunctions"] !== false;
     // Declare toplevel variables
     // register, used for temporary stack values
     var apiTemp = stackAlloc(4);
@@ -855,7 +861,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
-        registerExtensionFunctions(this.db);
+        if (useOldExtensionFunctions) {
+            registerExtensionFunctions(this.db);
+        }
         // A list of all prepared statements of the database
         this.statements = {};
         // Callback pointers for each user function, keyed by name and arity.
