@@ -89,9 +89,15 @@ function onError(err) {
 }
 
 db = null;
-var sqlModuleReady = initSqlJs();
+var sqlModuleReady;
 
 function global_sqljs_message_handler(event) {
+    if (!sqlModuleReady) {
+        var config = event["data"]["config"] || {};
+        sqlModuleReady = initSqlJs({
+            useOldExtensionFunctions: config["useOldExtensionFunctions"]
+        });
+    }
     return sqlModuleReady
         .then(onModuleReady.bind(event))
         .catch(onError.bind(event));

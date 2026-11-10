@@ -153,6 +153,25 @@ exports.test = async function test(SQL, assert) {
   await worker.postMessage({ action: "open" });
   data = await worker.postMessage({ action: "exec", sql: "SELECT 1" });
   assert.deepEqual(data.results, [{"columns":["1"],"values":[[1]]}]);
+  data = await worker.postMessage({ action: "exec", sql: "SELECT log(100), log(2, 8)" });
+  assert.deepEqual(data.results[0].values, [[Math.log(100), 3]],
+    'Workers default to legacy overrides with native-only arities');
+  await worker.worker.terminate();
+
+  const nativeWorker = await SQLWorker.fromFile(path.join(__dirname, filename));
+  try {
+    await nativeWorker.postMessage({
+      action: 'open', config: { useOldExtensionFunctions: false }
+    });
+    data = await nativeWorker.postMessage({
+      action: 'exec',
+      sql: "SELECT log(100), sign('abc'), typeof(sign(2.5))"
+    });
+    assert.deepEqual(data.results[0].values, [[2, null, 'integer']],
+      'The first worker message can select native SQLite behavior');
+  } finally {
+    await nativeWorker.worker.terminate();
+  }
 }
 
 function obj2array(obj) {

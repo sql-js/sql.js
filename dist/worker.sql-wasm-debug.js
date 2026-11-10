@@ -176,9 +176,14 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
  */
 
 /**
- * @typedef {{locateFile:function(string):string}} SqlJsConfig
- * @property {function(string):string} locateFile
+ * @typedef {Object} SqlJsConfig
+ * @property {function(string):string} [locateFile]
  * a function that returns the full path to a resource given its file name
+ * @property {boolean} [useOldExtensionFunctions=true]
+ * Register deprecated extension functions for backwards compatibility.
+ * Calling a legacy function prints a deprecation warning.
+ * Set to false to use SQLite's native functions without legacy overrides.
+ * The first initialization determines this option for all databases.
  * @see https://emscripten.org/docs/api_reference/module.html
  */
 
@@ -202,6 +207,7 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
  */
 // Wait for preRun to run, and then finish our initialization
 Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
+    var useOldExtensionFunctions = Module["useOldExtensionFunctions"] !== false;
     // Declare toplevel variables
     // register, used for temporary stack values
     var apiTemp = stackAlloc(4);
@@ -1005,7 +1011,9 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         }
         this.handleError(sqlite3_open(this.filename, apiTemp));
         this.db = getValue(apiTemp, "i32");
-        registerExtensionFunctions(this.db);
+        if (useOldExtensionFunctions) {
+            registerExtensionFunctions(this.db);
+        }
         // A list of all prepared statements of the database
         this.statements = {};
         // Callback pointers for each user function, keyed by name and arity.
@@ -6424,6 +6432,7 @@ var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
   }
 
 
+
   var getCFunc = (ident) => {
       var func = Module['_' + ident]; // closure exported function
       assert(func, `Cannot call unknown function ${ident}, make sure it is exported`);
@@ -7161,6 +7170,7 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onCOSCacheMiss');
   ignoredModuleProp('onCOSStore');
 }
+function warnLegacyFunction(name) { console.warn("sql.js: legacy function " + UTF8ToString(name) + "() is deprecated and will be disabled by default in the next major " + "version. Initialize with useOldExtensionFunctions: false to use " + "native SQLite functions. See https://github.com/sql-js/sql.js/pull/647"); }
 
 // Imports from the Wasm binary.
 var _sqlite3_free = Module['_sqlite3_free'] = makeInvalidEarlyAccess('_sqlite3_free');
@@ -7431,7 +7441,9 @@ var wasmImports = {
   /** @export */
   fd_sync: _fd_sync,
   /** @export */
-  fd_write: _fd_write
+  fd_write: _fd_write,
+  /** @export */
+  warnLegacyFunction
 };
 
 
@@ -7637,9 +7649,15 @@ function onError(err) {
 }
 
 db = null;
-var sqlModuleReady = initSqlJs();
+var sqlModuleReady;
 
 function global_sqljs_message_handler(event) {
+    if (!sqlModuleReady) {
+        var config = event["data"]["config"] || {};
+        sqlModuleReady = initSqlJs({
+            useOldExtensionFunctions: config["useOldExtensionFunctions"]
+        });
+    }
     return sqlModuleReady
         .then(onModuleReady.bind(event))
         .catch(onError.bind(event));

@@ -6,7 +6,7 @@ longname: Database~UpdateHookCallback
 
 # UpdateHookCallback
 
-<SourceLink href="/source/api-js/#L1674" label="api.js:1674" />
+<SourceLink href="/source/api-js/#L1682" label="api.js:1682" />
 
 **Parameters**
 
