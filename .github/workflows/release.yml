@@ -40,5 +40,5 @@ jobs:
             'dist/sqljs-all.zip#all versions, including non-minified javascript'
       - name: publish the package to NPM
         run: |
-          npm install -g npm@12.2.0
+          npm install -g npm@12.2.2
           npm publish --provenance --access public
