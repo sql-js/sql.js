@@ -47,7 +47,7 @@ async function testFunctions(assert, warnings) {
       assert.ok(warnings.every(message =>
         message.includes("deprecated") &&
         message.includes("next major version") &&
-        message.includes("https://github.com/sql-js/sql.js/pull/619")
+        message.includes("https://github.com/sql-js/sql.js/pull/647")
       ), "Usage warnings explain deprecation and link to the discussion");
       assert.ok(warnings[0].includes("log()"), "Warnings name the function");
       warnings.length = 0;

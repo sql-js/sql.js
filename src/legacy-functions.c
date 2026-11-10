@@ -15,7 +15,7 @@ EM_JS(void, warnLegacyFunction, (const char *name), {
   console.warn("sql.js: legacy function " + UTF8ToString(name) +
     "() is deprecated and will be disabled by default in the next major " +
     "version. Initialize with useOldExtensionFunctions: false to use " +
-    "native SQLite functions. See https://github.com/sql-js/sql.js/pull/619");
+    "native SQLite functions. See https://github.com/sql-js/sql.js/pull/647");
 });
 
 static void legacyScalar(sqlite3_context *context, int argc,
