@@ -84,6 +84,16 @@ exports.test = function(sql, assert) {
   assert.deepEqual(codeOf(function() {
     db.run("INSERT INTO child (name, parent) VALUES ('d', 9)");
   }), ["SQLITE_CONSTRAINT_FOREIGNKEY", 787], "A foreign key violation");
+  var err = null;
+  try {
+    db.run("INSERT INTO child (name) VALUES ('a')");
+  } catch (e) {
+    err = e;
+  }
+  assert.strictEqual(err.errcode, sql.constants.SQLITE_CONSTRAINT_UNIQUE,
+    "An error's code is one of the module's constants");
+  assert.strictEqual(sql.constants.SQLITE_OPEN_READWRITE, 2,
+    "The module has SQLite's other constants too");
   assert.deepEqual(codeOf(function() {
     db.exec("SELEC 1");
   }), ["SQLITE_ERROR", 1], "A syntax error");

@@ -1,6 +1,7 @@
 /* global
     FS
-    SQLITE_CODE_NAMES
+    SQLITE_CONSTANTS
+    SQLITE_RESULT_CODES
     HEAP8
     Module
     _malloc
@@ -24,6 +25,8 @@
  * @typedef {{Database:Database, Statement:Statement}} SqlJs
  * @property {Database} Database A class that represents an SQLite database
  * @property {Statement} Statement The prepared statement class
+ * @property {Object<string, number>} constants Every integer constant of
+ * SQLite's C API, by name, such as `SQLITE_CONSTRAINT_UNIQUE`
  */
 
 /**
@@ -81,6 +84,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var SQLITE_INSERT = 18;
     var SQLITE_UPDATE = 23;
     var SQLITE_DELETE = 9;
+    // var - The name of each result code, primary and extended, by number
+    var resultCodeNames = {};
+    SQLITE_RESULT_CODES.forEach(function nameResultCode(name) {
+        resultCodeNames[SQLITE_CONSTANTS[name]] = name;
+    });
     // var - cwrap function
     var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
     var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
@@ -1282,7 +1290,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             errcode = returnCode;
         }
         err = new Error(errmsg);
-        err["code"] = SQLITE_CODE_NAMES[errcode];
+        err["code"] = resultCodeNames[errcode];
         err["errcode"] = errcode;
         throw err;
     };
@@ -1734,4 +1742,5 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     // export Database to Module
     Module["Database"] = Database;
+    Module["constants"] = Object.freeze(SQLITE_CONSTANTS);
 };
