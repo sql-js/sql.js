@@ -9,6 +9,7 @@
 "_sqlite3_free",
 "_sqlite3_memory_used",
 "_sqlite3_errmsg",
+"_sqlite3_extended_errcode",
 "_sqlite3_changes",
 "_sqlite3_prepare_v2",
 "_sqlite3_sql",

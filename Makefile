@@ -75,9 +75,10 @@ BITCODE_FILES = out/sqlite3.o out/extension-functions.o
 
 OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
-SOURCE_API_FILES = src/api.js
+SOURCE_API_FILES = out/constants.js src/api.js
 
 EMFLAGS_PRE_JS_FILES = \
+	--pre-js out/constants.js \
 	--pre-js src/api.js
 
 MODULE_API_JSON_FILES = src/exported_functions.json src/exported_runtime_methods.json src/incoming_module_api.json
@@ -188,6 +189,12 @@ out/sqlite3.o: sqlite-src/$(SQLITE_AMALGAMATION) Makefile
 	mkdir -p out
 	# Generate llvm bitcode
 	$(EMCC) $(SQLITE_COMPILATION_FLAGS) -c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.c -o $@
+
+# SQLite's integer constants, as the C preprocessor reads the header of the SQLite being compiled
+out/constants.js: sqlite-src/$(SQLITE_AMALGAMATION) scripts/constants.cjs
+	mkdir -p out
+	$(EMCC) -E -dM -x c sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.h | node scripts/constants.cjs sqlite-src/$(SQLITE_AMALGAMATION)/sqlite3.h > $@.tmp
+	mv $@.tmp $@
 
 # Since the extension-functions.c includes other headers in the sqlite_amalgamation, we declare that this depends on more than just extension-functions.c
 out/extension-functions.o: sqlite-src/$(SQLITE_AMALGAMATION) src/legacy-functions.c Makefile
