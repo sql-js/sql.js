@@ -281,6 +281,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "number",
         ["number", "number", "number"]
     );
+    var sqlite3_bind_int64 = cwrap(
+        "sqlite3_bind_int64",
+        "number",
+        ["number", "number", "number"]
+    );
+    var sqlite3_memory_used = cwrap("sqlite3_memory_used", "number", []);
+    // The WebAssembly builds pass a 64-bit integer between JavaScript and C
+    // as a BigInt. The asm.js builds can't, so Emscripten splits it into its
+    // low and high 32 bits there.
+    var int64AsBigInt = typeof sqlite3_memory_used() === "bigint";
 
     var sqlite3_bind_parameter_index = cwrap(
         "sqlite3_bind_parameter_index",
@@ -748,6 +758,28 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return true;
     };
 
+    Statement.prototype.bindBigInt = function bindBigInt(num, pos) {
+        if (pos == null) {
+            pos = this.pos;
+            this.pos += 1;
+        }
+        if (BigInt.asIntN(64, num) !== num) {
+            throw new RangeError(
+                "BigInt value is out of range for a 64-bit integer: " + num
+            );
+        }
+        var ret = int64AsBigInt
+            ? sqlite3_bind_int64(this.stmt, pos, num)
+            : sqlite3_bind_int64(
+                this.stmt,
+                pos,
+                Number(BigInt.asIntN(32, num)),
+                Number(num >> BigInt(32))
+            );
+        this.db.handleError(ret);
+        return true;
+    };
+
     Statement.prototype.bindNull = function bindNull(pos) {
         if (pos == null) {
             pos = this.pos;
@@ -768,8 +800,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             case "number":
                 return this.bindNumber(val + 0, pos);
             case "bigint":
-                // BigInt is not fully supported yet at WASM level.
-                return this.bindString(val.toString(), pos);
+                return this.bindBigInt(val, pos);
             case "boolean":
                 return this.bindNumber(val + 0, pos);
             case "object":
@@ -6934,6 +6965,7 @@ function checkIncomingModuleAPI() {
 function warnLegacyFunction(name) { console.warn("sql.js: legacy function " + UTF8ToString(name) + "() is deprecated and will be disabled by default in the next major " + "version. Initialize with useOldExtensionFunctions: false to use " + "native SQLite functions. See https://github.com/sql-js/sql.js/pull/647"); }
 
 // Imports from the Wasm binary.
+var _sqlite3_memory_used = Module['_sqlite3_memory_used'] = makeInvalidEarlyAccess('_sqlite3_memory_used');
 var _sqlite3_free = Module['_sqlite3_free'] = makeInvalidEarlyAccess('_sqlite3_free');
 var _sqlite3_value_text = Module['_sqlite3_value_text'] = makeInvalidEarlyAccess('_sqlite3_value_text');
 var _sqlite3_prepare_v2 = Module['_sqlite3_prepare_v2'] = makeInvalidEarlyAccess('_sqlite3_prepare_v2');
@@ -6970,6 +7002,7 @@ var _sqlite3_column_double = Module['_sqlite3_column_double'] = makeInvalidEarly
 var _sqlite3_bind_blob = Module['_sqlite3_bind_blob'] = makeInvalidEarlyAccess('_sqlite3_bind_blob');
 var _sqlite3_bind_double = Module['_sqlite3_bind_double'] = makeInvalidEarlyAccess('_sqlite3_bind_double');
 var _sqlite3_bind_int = Module['_sqlite3_bind_int'] = makeInvalidEarlyAccess('_sqlite3_bind_int');
+var _sqlite3_bind_int64 = Module['_sqlite3_bind_int64'] = makeInvalidEarlyAccess('_sqlite3_bind_int64');
 var _sqlite3_bind_text = Module['_sqlite3_bind_text'] = makeInvalidEarlyAccess('_sqlite3_bind_text');
 var _sqlite3_bind_parameter_index = Module['_sqlite3_bind_parameter_index'] = makeInvalidEarlyAccess('_sqlite3_bind_parameter_index');
 var _sqlite3_sql = Module['_sqlite3_sql'] = makeInvalidEarlyAccess('_sqlite3_sql');
@@ -7000,6 +7033,7 @@ var wasmMemory = makeInvalidEarlyAccess('wasmMemory');
 var wasmTable = makeInvalidEarlyAccess('wasmTable');
 
 function assignWasmExports(wasmExports) {
+  assert(typeof wasmExports['sqlite3_memory_used'] !== 'undefined', 'missing Wasm export: sqlite3_memory_used');
   assert(typeof wasmExports['sqlite3_free'] !== 'undefined', 'missing Wasm export: sqlite3_free');
   assert(typeof wasmExports['sqlite3_value_text'] !== 'undefined', 'missing Wasm export: sqlite3_value_text');
   assert(typeof wasmExports['sqlite3_prepare_v2'] !== 'undefined', 'missing Wasm export: sqlite3_prepare_v2');
@@ -7036,6 +7070,7 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['sqlite3_bind_blob'] !== 'undefined', 'missing Wasm export: sqlite3_bind_blob');
   assert(typeof wasmExports['sqlite3_bind_double'] !== 'undefined', 'missing Wasm export: sqlite3_bind_double');
   assert(typeof wasmExports['sqlite3_bind_int'] !== 'undefined', 'missing Wasm export: sqlite3_bind_int');
+  assert(typeof wasmExports['sqlite3_bind_int64'] !== 'undefined', 'missing Wasm export: sqlite3_bind_int64');
   assert(typeof wasmExports['sqlite3_bind_text'] !== 'undefined', 'missing Wasm export: sqlite3_bind_text');
   assert(typeof wasmExports['sqlite3_bind_parameter_index'] !== 'undefined', 'missing Wasm export: sqlite3_bind_parameter_index');
   assert(typeof wasmExports['sqlite3_sql'] !== 'undefined', 'missing Wasm export: sqlite3_sql');
@@ -7062,6 +7097,7 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['__set_stack_limits'] !== 'undefined', 'missing Wasm export: __set_stack_limits');
   assert(typeof wasmExports['memory'] !== 'undefined', 'missing Wasm export: memory');
   assert(typeof wasmExports['__indirect_function_table'] !== 'undefined', 'missing Wasm export: __indirect_function_table');
+  _sqlite3_memory_used = Module['_sqlite3_memory_used'] = createExportWrapper('sqlite3_memory_used', wasmExports['sqlite3_memory_used'], 0);
   _sqlite3_free = Module['_sqlite3_free'] = createExportWrapper('sqlite3_free', wasmExports['sqlite3_free'], 1);
   _sqlite3_value_text = Module['_sqlite3_value_text'] = createExportWrapper('sqlite3_value_text', wasmExports['sqlite3_value_text'], 1);
   _sqlite3_prepare_v2 = Module['_sqlite3_prepare_v2'] = createExportWrapper('sqlite3_prepare_v2', wasmExports['sqlite3_prepare_v2'], 5);
@@ -7098,6 +7134,7 @@ function assignWasmExports(wasmExports) {
   _sqlite3_bind_blob = Module['_sqlite3_bind_blob'] = createExportWrapper('sqlite3_bind_blob', wasmExports['sqlite3_bind_blob'], 5);
   _sqlite3_bind_double = Module['_sqlite3_bind_double'] = createExportWrapper('sqlite3_bind_double', wasmExports['sqlite3_bind_double'], 3);
   _sqlite3_bind_int = Module['_sqlite3_bind_int'] = createExportWrapper('sqlite3_bind_int', wasmExports['sqlite3_bind_int'], 3);
+  _sqlite3_bind_int64 = Module['_sqlite3_bind_int64'] = createExportWrapper('sqlite3_bind_int64', wasmExports['sqlite3_bind_int64'], 3);
   _sqlite3_bind_text = Module['_sqlite3_bind_text'] = createExportWrapper('sqlite3_bind_text', wasmExports['sqlite3_bind_text'], 5);
   _sqlite3_bind_parameter_index = Module['_sqlite3_bind_parameter_index'] = createExportWrapper('sqlite3_bind_parameter_index', wasmExports['sqlite3_bind_parameter_index'], 2);
   _sqlite3_sql = Module['_sqlite3_sql'] = createExportWrapper('sqlite3_sql', wasmExports['sqlite3_sql'], 1);

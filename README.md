@@ -275,7 +275,7 @@ Example:
 </script>
 ```
 ### Enabling BigInt support
-If you need ```BigInt``` support, it is partially supported since most browsers now supports it including Safari.Binding ```BigInt``` is still not supported, only getting ```BigInt``` from the database is supported for now.
+A ```BigInt``` parameter is bound as a 64-bit INTEGER, and binding one outside the 64-bit range throws a ```RangeError```. To read INTEGER values as ```BigInt```, pass the ```useBigInt``` option:
 
 ```html
 <script>

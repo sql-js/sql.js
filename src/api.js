@@ -131,6 +131,16 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         "number",
         ["number", "number", "number"]
     );
+    var sqlite3_bind_int64 = cwrap(
+        "sqlite3_bind_int64",
+        "number",
+        ["number", "number", "number"]
+    );
+    var sqlite3_memory_used = cwrap("sqlite3_memory_used", "number", []);
+    // The WebAssembly builds pass a 64-bit integer between JavaScript and C
+    // as a BigInt. The asm.js builds can't, so Emscripten splits it into its
+    // low and high 32 bits there.
+    var int64AsBigInt = typeof sqlite3_memory_used() === "bigint";
 
     var sqlite3_bind_parameter_index = cwrap(
         "sqlite3_bind_parameter_index",
@@ -598,6 +608,28 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         return true;
     };
 
+    Statement.prototype.bindBigInt = function bindBigInt(num, pos) {
+        if (pos == null) {
+            pos = this.pos;
+            this.pos += 1;
+        }
+        if (BigInt.asIntN(64, num) !== num) {
+            throw new RangeError(
+                "BigInt value is out of range for a 64-bit integer: " + num
+            );
+        }
+        var ret = int64AsBigInt
+            ? sqlite3_bind_int64(this.stmt, pos, num)
+            : sqlite3_bind_int64(
+                this.stmt,
+                pos,
+                Number(BigInt.asIntN(32, num)),
+                Number(num >> BigInt(32))
+            );
+        this.db.handleError(ret);
+        return true;
+    };
+
     Statement.prototype.bindNull = function bindNull(pos) {
         if (pos == null) {
             pos = this.pos;
@@ -618,8 +650,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             case "number":
                 return this.bindNumber(val + 0, pos);
             case "bigint":
-                // BigInt is not fully supported yet at WASM level.
-                return this.bindString(val.toString(), pos);
+                return this.bindBigInt(val, pos);
             case "boolean":
                 return this.bindNumber(val + 0, pos);
             case "object":
