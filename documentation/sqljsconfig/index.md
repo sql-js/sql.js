@@ -6,7 +6,7 @@ longname: SqlJsConfig
 
 # SqlJsConfig
 
-<SourceLink href="/source/api-js/#L40" label="api.js:40" />
+<SourceLink href="/source/api-js/#L63" label="api.js:63" />
 
 **Properties**
 

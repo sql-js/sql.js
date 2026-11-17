@@ -9,7 +9,7 @@ description: An iterator over multiple SQL statements in a string, preparing and
 
 **Implements:&#x20;**`Iterator<Statement>`, `Iterable<Statement>`
 
-<SourceLink href="/source/api-js/#L775" label="api.js:775" />
+<SourceLink href="/source/api-js/#L813" label="api.js:813" />
 
 An iterator over multiple SQL statements in a string, preparing and returning a Statement object for the next SQL statement on each iteration.
 
@@ -67,7 +67,7 @@ try {
 
 <MemberHeading id="next" depth="3" name="next" sig="next(): StatementIterator.StatementIteratorResult" />
 
-<MemberMeta sourceHref="/source/api-js/#L799" sourceLabel="api.js:799" />
+<MemberMeta sourceHref="/source/api-js/#L838" sourceLabel="api.js:838" />
 
 Prepare the next available SQL statement
 
@@ -77,11 +77,12 @@ Prepare the next available SQL statement
 
 **Throws**
 
-- `String` — SQLite error or invalid iterator error
+- [`SqliteError`](/sqliteerror) — If SQLite fails to prepare the next statement
+- `String` — If the iterator is no longer valid
 
 <MemberHeading id="return" depth="3" name="[&#x22;return&#x22;]" sig="['return'](): StatementIterator.StatementIteratorResult" />
 
-<MemberMeta sourceHref="/source/api-js/#L852" sourceLabel="api.js:852" />
+<MemberMeta sourceHref="/source/api-js/#L891" sourceLabel="api.js:891" />
 
 Free the resources held by this iterator, in case it will not be run to completion. This is called automatically when a for..of loop exits early (e.g. via break, return, or an exception), and can also be called manually.
 
@@ -91,7 +92,7 @@ Free the resources held by this iterator, in case it will not be run to completi
 
 <MemberHeading id="getremainingsql" depth="3" name="getRemainingSQL" sig="getRemainingSQL(): String" />
 
-<MemberMeta sourceHref="/source/api-js/#L864" sourceLabel="api.js:864" />
+<MemberMeta sourceHref="/source/api-js/#L903" sourceLabel="api.js:903" />
 
 Get any un-executed portions remaining of the original SQL string
 
@@ -103,7 +104,7 @@ Get any un-executed portions remaining of the original SQL string
 
 <MemberHeading id="statementiteratorresult" depth="3" name="StatementIteratorResult" sig="StatementIteratorResult: Object | Object" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L795" sourceLabel="api.js:795" />
+<MemberMeta badges="static" sourceHref="/source/api-js/#L833" sourceLabel="api.js:833" />
 
 **Properties**
 

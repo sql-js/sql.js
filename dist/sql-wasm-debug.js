@@ -147,9 +147,622 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
+// include: out/constants.js
+// Generated from sqlite3.h by scripts/constants.cjs.
+var SQLITE_CONSTANTS = {
+    "SQLITE_ABORT": 4,
+    "SQLITE_ABORT_ROLLBACK": 516,
+    "SQLITE_ACCESS_EXISTS": 0,
+    "SQLITE_ACCESS_READ": 2,
+    "SQLITE_ACCESS_READWRITE": 1,
+    "SQLITE_ALTER_TABLE": 26,
+    "SQLITE_ANALYZE": 28,
+    "SQLITE_ANY": 5,
+    "SQLITE_ATTACH": 24,
+    "SQLITE_AUTH": 23,
+    "SQLITE_AUTH_USER": 279,
+    "SQLITE_BLOB": 4,
+    "SQLITE_BUSY": 5,
+    "SQLITE_BUSY_RECOVERY": 261,
+    "SQLITE_BUSY_SNAPSHOT": 517,
+    "SQLITE_BUSY_TIMEOUT": 773,
+    "SQLITE_CANTOPEN": 14,
+    "SQLITE_CANTOPEN_CONVPATH": 1038,
+    "SQLITE_CANTOPEN_DIRTYWAL": 1294,
+    "SQLITE_CANTOPEN_FULLPATH": 782,
+    "SQLITE_CANTOPEN_ISDIR": 526,
+    "SQLITE_CANTOPEN_NOTEMPDIR": 270,
+    "SQLITE_CANTOPEN_SYMLINK": 1550,
+    "SQLITE_CARRAY_BLOB": 4,
+    "SQLITE_CARRAY_DOUBLE": 2,
+    "SQLITE_CARRAY_INT32": 0,
+    "SQLITE_CARRAY_INT64": 1,
+    "SQLITE_CARRAY_TEXT": 3,
+    "SQLITE_CHECKPOINT_FULL": 1,
+    "SQLITE_CHECKPOINT_NOOP": -1,
+    "SQLITE_CHECKPOINT_PASSIVE": 0,
+    "SQLITE_CHECKPOINT_RESTART": 2,
+    "SQLITE_CHECKPOINT_TRUNCATE": 3,
+    "SQLITE_CONFIG_COVERING_INDEX_SCAN": 20,
+    "SQLITE_CONFIG_GETMALLOC": 5,
+    "SQLITE_CONFIG_GETMUTEX": 11,
+    "SQLITE_CONFIG_GETPCACHE": 15,
+    "SQLITE_CONFIG_GETPCACHE2": 19,
+    "SQLITE_CONFIG_HEAP": 8,
+    "SQLITE_CONFIG_LOG": 16,
+    "SQLITE_CONFIG_LOOKASIDE": 13,
+    "SQLITE_CONFIG_MALLOC": 4,
+    "SQLITE_CONFIG_MEMDB_MAXSIZE": 29,
+    "SQLITE_CONFIG_MEMSTATUS": 9,
+    "SQLITE_CONFIG_MMAP_SIZE": 22,
+    "SQLITE_CONFIG_MULTITHREAD": 2,
+    "SQLITE_CONFIG_MUTEX": 10,
+    "SQLITE_CONFIG_PAGECACHE": 7,
+    "SQLITE_CONFIG_PCACHE": 14,
+    "SQLITE_CONFIG_PCACHE2": 18,
+    "SQLITE_CONFIG_PCACHE_HDRSZ": 24,
+    "SQLITE_CONFIG_PMASZ": 25,
+    "SQLITE_CONFIG_ROWID_IN_VIEW": 30,
+    "SQLITE_CONFIG_SCRATCH": 6,
+    "SQLITE_CONFIG_SERIALIZED": 3,
+    "SQLITE_CONFIG_SINGLETHREAD": 1,
+    "SQLITE_CONFIG_SMALL_MALLOC": 27,
+    "SQLITE_CONFIG_SORTERREF_SIZE": 28,
+    "SQLITE_CONFIG_SQLLOG": 21,
+    "SQLITE_CONFIG_STMTJRNL_SPILL": 26,
+    "SQLITE_CONFIG_URI": 17,
+    "SQLITE_CONFIG_WIN32_HEAPSIZE": 23,
+    "SQLITE_CONSTRAINT": 19,
+    "SQLITE_CONSTRAINT_CHECK": 275,
+    "SQLITE_CONSTRAINT_COMMITHOOK": 531,
+    "SQLITE_CONSTRAINT_DATATYPE": 3091,
+    "SQLITE_CONSTRAINT_FOREIGNKEY": 787,
+    "SQLITE_CONSTRAINT_FUNCTION": 1043,
+    "SQLITE_CONSTRAINT_NOTNULL": 1299,
+    "SQLITE_CONSTRAINT_PINNED": 2835,
+    "SQLITE_CONSTRAINT_PRIMARYKEY": 1555,
+    "SQLITE_CONSTRAINT_ROWID": 2579,
+    "SQLITE_CONSTRAINT_TRIGGER": 1811,
+    "SQLITE_CONSTRAINT_UNIQUE": 2067,
+    "SQLITE_CONSTRAINT_VTAB": 2323,
+    "SQLITE_COPY": 0,
+    "SQLITE_CORRUPT": 11,
+    "SQLITE_CORRUPT_INDEX": 779,
+    "SQLITE_CORRUPT_SEQUENCE": 523,
+    "SQLITE_CORRUPT_VTAB": 267,
+    "SQLITE_CREATE_INDEX": 1,
+    "SQLITE_CREATE_TABLE": 2,
+    "SQLITE_CREATE_TEMP_INDEX": 3,
+    "SQLITE_CREATE_TEMP_TABLE": 4,
+    "SQLITE_CREATE_TEMP_TRIGGER": 5,
+    "SQLITE_CREATE_TEMP_VIEW": 6,
+    "SQLITE_CREATE_TRIGGER": 7,
+    "SQLITE_CREATE_VIEW": 8,
+    "SQLITE_CREATE_VTABLE": 29,
+    "SQLITE_DBCONFIG_DEFENSIVE": 1010,
+    "SQLITE_DBCONFIG_DQS_DDL": 1014,
+    "SQLITE_DBCONFIG_DQS_DML": 1013,
+    "SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE": 1020,
+    "SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE": 1021,
+    "SQLITE_DBCONFIG_ENABLE_COMMENTS": 1022,
+    "SQLITE_DBCONFIG_ENABLE_FKEY": 1002,
+    "SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER": 1004,
+    "SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION": 1005,
+    "SQLITE_DBCONFIG_ENABLE_QPSG": 1007,
+    "SQLITE_DBCONFIG_ENABLE_TRIGGER": 1003,
+    "SQLITE_DBCONFIG_ENABLE_VIEW": 1015,
+    "SQLITE_DBCONFIG_FP_DIGITS": 1023,
+    "SQLITE_DBCONFIG_LEGACY_ALTER_TABLE": 1012,
+    "SQLITE_DBCONFIG_LEGACY_FILE_FORMAT": 1016,
+    "SQLITE_DBCONFIG_LOOKASIDE": 1001,
+    "SQLITE_DBCONFIG_MAINDBNAME": 1000,
+    "SQLITE_DBCONFIG_MAX": 1023,
+    "SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE": 1006,
+    "SQLITE_DBCONFIG_RESET_DATABASE": 1009,
+    "SQLITE_DBCONFIG_REVERSE_SCANORDER": 1019,
+    "SQLITE_DBCONFIG_STMT_SCANSTATUS": 1018,
+    "SQLITE_DBCONFIG_TRIGGER_EQP": 1008,
+    "SQLITE_DBCONFIG_TRUSTED_SCHEMA": 1017,
+    "SQLITE_DBCONFIG_WRITABLE_SCHEMA": 1011,
+    "SQLITE_DBSTATUS_CACHE_HIT": 7,
+    "SQLITE_DBSTATUS_CACHE_MISS": 8,
+    "SQLITE_DBSTATUS_CACHE_SPILL": 12,
+    "SQLITE_DBSTATUS_CACHE_USED": 1,
+    "SQLITE_DBSTATUS_CACHE_USED_SHARED": 11,
+    "SQLITE_DBSTATUS_CACHE_WRITE": 9,
+    "SQLITE_DBSTATUS_DEFERRED_FKS": 10,
+    "SQLITE_DBSTATUS_LOOKASIDE_HIT": 4,
+    "SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL": 6,
+    "SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE": 5,
+    "SQLITE_DBSTATUS_LOOKASIDE_USED": 0,
+    "SQLITE_DBSTATUS_MAX": 13,
+    "SQLITE_DBSTATUS_SCHEMA_USED": 2,
+    "SQLITE_DBSTATUS_STMT_USED": 3,
+    "SQLITE_DBSTATUS_TEMPBUF_SPILL": 13,
+    "SQLITE_DELETE": 9,
+    "SQLITE_DENY": 1,
+    "SQLITE_DESERIALIZE_FREEONCLOSE": 1,
+    "SQLITE_DESERIALIZE_READONLY": 4,
+    "SQLITE_DESERIALIZE_RESIZEABLE": 2,
+    "SQLITE_DETACH": 25,
+    "SQLITE_DETERMINISTIC": 2048,
+    "SQLITE_DIRECTONLY": 524288,
+    "SQLITE_DONE": 101,
+    "SQLITE_DROP_INDEX": 10,
+    "SQLITE_DROP_TABLE": 11,
+    "SQLITE_DROP_TEMP_INDEX": 12,
+    "SQLITE_DROP_TEMP_TABLE": 13,
+    "SQLITE_DROP_TEMP_TRIGGER": 14,
+    "SQLITE_DROP_TEMP_VIEW": 15,
+    "SQLITE_DROP_TRIGGER": 16,
+    "SQLITE_DROP_VIEW": 17,
+    "SQLITE_DROP_VTABLE": 30,
+    "SQLITE_EMPTY": 16,
+    "SQLITE_ERROR": 1,
+    "SQLITE_ERROR_KEY": 1281,
+    "SQLITE_ERROR_MISSING_COLLSEQ": 257,
+    "SQLITE_ERROR_RESERVESIZE": 1025,
+    "SQLITE_ERROR_RETRY": 513,
+    "SQLITE_ERROR_SNAPSHOT": 769,
+    "SQLITE_ERROR_UNABLE": 1537,
+    "SQLITE_FAIL": 3,
+    "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE": 31,
+    "SQLITE_FCNTL_BLOCK_ON_CONNECT": 44,
+    "SQLITE_FCNTL_BUSYHANDLER": 15,
+    "SQLITE_FCNTL_CHUNK_SIZE": 6,
+    "SQLITE_FCNTL_CKPT_DONE": 37,
+    "SQLITE_FCNTL_CKPT_START": 39,
+    "SQLITE_FCNTL_CKSM_FILE": 41,
+    "SQLITE_FCNTL_COMMIT_ATOMIC_WRITE": 32,
+    "SQLITE_FCNTL_COMMIT_PHASETWO": 22,
+    "SQLITE_FCNTL_DATA_VERSION": 35,
+    "SQLITE_FCNTL_EXTERNAL_READER": 40,
+    "SQLITE_FCNTL_FILESTAT": 45,
+    "SQLITE_FCNTL_FILE_POINTER": 7,
+    "SQLITE_FCNTL_GET_LOCKPROXYFILE": 2,
+    "SQLITE_FCNTL_HAS_MOVED": 20,
+    "SQLITE_FCNTL_JOURNAL_POINTER": 28,
+    "SQLITE_FCNTL_LAST_ERRNO": 4,
+    "SQLITE_FCNTL_LOCKSTATE": 1,
+    "SQLITE_FCNTL_LOCK_TIMEOUT": 34,
+    "SQLITE_FCNTL_MMAP_SIZE": 18,
+    "SQLITE_FCNTL_NULL_IO": 43,
+    "SQLITE_FCNTL_OVERWRITE": 11,
+    "SQLITE_FCNTL_PDB": 30,
+    "SQLITE_FCNTL_PERSIST_WAL": 10,
+    "SQLITE_FCNTL_POWERSAFE_OVERWRITE": 13,
+    "SQLITE_FCNTL_PRAGMA": 14,
+    "SQLITE_FCNTL_RBU": 26,
+    "SQLITE_FCNTL_RESERVE_BYTES": 38,
+    "SQLITE_FCNTL_RESET_CACHE": 42,
+    "SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE": 33,
+    "SQLITE_FCNTL_SET_LOCKPROXYFILE": 3,
+    "SQLITE_FCNTL_SIZE_HINT": 5,
+    "SQLITE_FCNTL_SIZE_LIMIT": 36,
+    "SQLITE_FCNTL_SYNC": 21,
+    "SQLITE_FCNTL_SYNC_OMITTED": 8,
+    "SQLITE_FCNTL_TEMPFILENAME": 16,
+    "SQLITE_FCNTL_TRACE": 19,
+    "SQLITE_FCNTL_VFSNAME": 12,
+    "SQLITE_FCNTL_VFS_POINTER": 27,
+    "SQLITE_FCNTL_WAL_BLOCK": 24,
+    "SQLITE_FCNTL_WIN32_AV_RETRY": 9,
+    "SQLITE_FCNTL_WIN32_GET_HANDLE": 29,
+    "SQLITE_FCNTL_WIN32_SET_HANDLE": 23,
+    "SQLITE_FCNTL_ZIPVFS": 25,
+    "SQLITE_FINISH": 2,
+    "SQLITE_FLOAT": 2,
+    "SQLITE_FORMAT": 24,
+    "SQLITE_FULL": 13,
+    "SQLITE_FUNCTION": 31,
+    "SQLITE_GET_LOCKPROXYFILE": 2,
+    "SQLITE_IGNORE": 2,
+    "SQLITE_INDEX_CONSTRAINT_EQ": 2,
+    "SQLITE_INDEX_CONSTRAINT_FUNCTION": 150,
+    "SQLITE_INDEX_CONSTRAINT_GE": 32,
+    "SQLITE_INDEX_CONSTRAINT_GLOB": 66,
+    "SQLITE_INDEX_CONSTRAINT_GT": 4,
+    "SQLITE_INDEX_CONSTRAINT_IS": 72,
+    "SQLITE_INDEX_CONSTRAINT_ISNOT": 69,
+    "SQLITE_INDEX_CONSTRAINT_ISNOTNULL": 70,
+    "SQLITE_INDEX_CONSTRAINT_ISNULL": 71,
+    "SQLITE_INDEX_CONSTRAINT_LE": 8,
+    "SQLITE_INDEX_CONSTRAINT_LIKE": 65,
+    "SQLITE_INDEX_CONSTRAINT_LIMIT": 73,
+    "SQLITE_INDEX_CONSTRAINT_LT": 16,
+    "SQLITE_INDEX_CONSTRAINT_MATCH": 64,
+    "SQLITE_INDEX_CONSTRAINT_NE": 68,
+    "SQLITE_INDEX_CONSTRAINT_OFFSET": 74,
+    "SQLITE_INDEX_CONSTRAINT_REGEXP": 67,
+    "SQLITE_INDEX_SCAN_HEX": 2,
+    "SQLITE_INDEX_SCAN_UNIQUE": 1,
+    "SQLITE_INNOCUOUS": 2097152,
+    "SQLITE_INSERT": 18,
+    "SQLITE_INTEGER": 1,
+    "SQLITE_INTERNAL": 2,
+    "SQLITE_INTERRUPT": 9,
+    "SQLITE_IOCAP_ATOMIC": 1,
+    "SQLITE_IOCAP_ATOMIC16K": 64,
+    "SQLITE_IOCAP_ATOMIC1K": 4,
+    "SQLITE_IOCAP_ATOMIC2K": 8,
+    "SQLITE_IOCAP_ATOMIC32K": 128,
+    "SQLITE_IOCAP_ATOMIC4K": 16,
+    "SQLITE_IOCAP_ATOMIC512": 2,
+    "SQLITE_IOCAP_ATOMIC64K": 256,
+    "SQLITE_IOCAP_ATOMIC8K": 32,
+    "SQLITE_IOCAP_BATCH_ATOMIC": 16384,
+    "SQLITE_IOCAP_IMMUTABLE": 8192,
+    "SQLITE_IOCAP_POWERSAFE_OVERWRITE": 4096,
+    "SQLITE_IOCAP_SAFE_APPEND": 512,
+    "SQLITE_IOCAP_SEQUENTIAL": 1024,
+    "SQLITE_IOCAP_SUBPAGE_READ": 32768,
+    "SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN": 2048,
+    "SQLITE_IOERR": 10,
+    "SQLITE_IOERR_ACCESS": 3338,
+    "SQLITE_IOERR_AUTH": 7178,
+    "SQLITE_IOERR_BADKEY": 8970,
+    "SQLITE_IOERR_BEGIN_ATOMIC": 7434,
+    "SQLITE_IOERR_BLOCKED": 2826,
+    "SQLITE_IOERR_CHECKRESERVEDLOCK": 3594,
+    "SQLITE_IOERR_CLOSE": 4106,
+    "SQLITE_IOERR_CODEC": 9226,
+    "SQLITE_IOERR_COMMIT_ATOMIC": 7690,
+    "SQLITE_IOERR_CONVPATH": 6666,
+    "SQLITE_IOERR_CORRUPTFS": 8458,
+    "SQLITE_IOERR_DATA": 8202,
+    "SQLITE_IOERR_DELETE": 2570,
+    "SQLITE_IOERR_DELETE_NOENT": 5898,
+    "SQLITE_IOERR_DIR_CLOSE": 4362,
+    "SQLITE_IOERR_DIR_FSYNC": 1290,
+    "SQLITE_IOERR_FSTAT": 1802,
+    "SQLITE_IOERR_FSYNC": 1034,
+    "SQLITE_IOERR_GETTEMPPATH": 6410,
+    "SQLITE_IOERR_IN_PAGE": 8714,
+    "SQLITE_IOERR_LOCK": 3850,
+    "SQLITE_IOERR_MMAP": 6154,
+    "SQLITE_IOERR_NOMEM": 3082,
+    "SQLITE_IOERR_RDLOCK": 2314,
+    "SQLITE_IOERR_READ": 266,
+    "SQLITE_IOERR_ROLLBACK_ATOMIC": 7946,
+    "SQLITE_IOERR_SEEK": 5642,
+    "SQLITE_IOERR_SHMLOCK": 5130,
+    "SQLITE_IOERR_SHMMAP": 5386,
+    "SQLITE_IOERR_SHMOPEN": 4618,
+    "SQLITE_IOERR_SHMSIZE": 4874,
+    "SQLITE_IOERR_SHORT_READ": 522,
+    "SQLITE_IOERR_TRUNCATE": 1546,
+    "SQLITE_IOERR_UNLOCK": 2058,
+    "SQLITE_IOERR_VNODE": 6922,
+    "SQLITE_IOERR_WRITE": 778,
+    "SQLITE_LAST_ERRNO": 4,
+    "SQLITE_LIMIT_ATTACHED": 7,
+    "SQLITE_LIMIT_COLUMN": 2,
+    "SQLITE_LIMIT_COMPOUND_SELECT": 4,
+    "SQLITE_LIMIT_EXPR_DEPTH": 3,
+    "SQLITE_LIMIT_FUNCTION_ARG": 6,
+    "SQLITE_LIMIT_LENGTH": 0,
+    "SQLITE_LIMIT_LIKE_PATTERN_LENGTH": 8,
+    "SQLITE_LIMIT_PARSER_DEPTH": 12,
+    "SQLITE_LIMIT_SCHEMA": 13,
+    "SQLITE_LIMIT_SQL_LENGTH": 1,
+    "SQLITE_LIMIT_TRIGGER_DEPTH": 10,
+    "SQLITE_LIMIT_TRIGGER_STEPS": 14,
+    "SQLITE_LIMIT_VARIABLE_NUMBER": 9,
+    "SQLITE_LIMIT_VDBE_OP": 5,
+    "SQLITE_LIMIT_WORKER_THREADS": 11,
+    "SQLITE_LOCKED": 6,
+    "SQLITE_LOCKED_SHAREDCACHE": 262,
+    "SQLITE_LOCKED_VTAB": 518,
+    "SQLITE_LOCK_EXCLUSIVE": 4,
+    "SQLITE_LOCK_NONE": 0,
+    "SQLITE_LOCK_PENDING": 3,
+    "SQLITE_LOCK_RESERVED": 2,
+    "SQLITE_LOCK_SHARED": 1,
+    "SQLITE_MISMATCH": 20,
+    "SQLITE_MISUSE": 21,
+    "SQLITE_MUTEX_FAST": 0,
+    "SQLITE_MUTEX_RECURSIVE": 1,
+    "SQLITE_MUTEX_STATIC_APP1": 8,
+    "SQLITE_MUTEX_STATIC_APP2": 9,
+    "SQLITE_MUTEX_STATIC_APP3": 10,
+    "SQLITE_MUTEX_STATIC_LRU": 6,
+    "SQLITE_MUTEX_STATIC_LRU2": 7,
+    "SQLITE_MUTEX_STATIC_MAIN": 2,
+    "SQLITE_MUTEX_STATIC_MASTER": 2,
+    "SQLITE_MUTEX_STATIC_MEM": 3,
+    "SQLITE_MUTEX_STATIC_MEM2": 4,
+    "SQLITE_MUTEX_STATIC_OPEN": 4,
+    "SQLITE_MUTEX_STATIC_PMEM": 7,
+    "SQLITE_MUTEX_STATIC_PRNG": 5,
+    "SQLITE_MUTEX_STATIC_VFS1": 11,
+    "SQLITE_MUTEX_STATIC_VFS2": 12,
+    "SQLITE_MUTEX_STATIC_VFS3": 13,
+    "SQLITE_NOLFS": 22,
+    "SQLITE_NOMEM": 7,
+    "SQLITE_NOTADB": 26,
+    "SQLITE_NOTFOUND": 12,
+    "SQLITE_NOTICE": 27,
+    "SQLITE_NOTICE_RBU": 795,
+    "SQLITE_NOTICE_RECOVER_ROLLBACK": 539,
+    "SQLITE_NOTICE_RECOVER_WAL": 283,
+    "SQLITE_NULL": 5,
+    "SQLITE_OK": 0,
+    "SQLITE_OK_LOAD_PERMANENTLY": 256,
+    "SQLITE_OK_SYMLINK": 512,
+    "SQLITE_OPEN_AUTOPROXY": 32,
+    "SQLITE_OPEN_CREATE": 4,
+    "SQLITE_OPEN_DELETEONCLOSE": 8,
+    "SQLITE_OPEN_EXCLUSIVE": 16,
+    "SQLITE_OPEN_EXRESCODE": 33554432,
+    "SQLITE_OPEN_FULLMUTEX": 65536,
+    "SQLITE_OPEN_MAIN_DB": 256,
+    "SQLITE_OPEN_MAIN_JOURNAL": 2048,
+    "SQLITE_OPEN_MASTER_JOURNAL": 16384,
+    "SQLITE_OPEN_MEMORY": 128,
+    "SQLITE_OPEN_NOFOLLOW": 16777216,
+    "SQLITE_OPEN_NOMUTEX": 32768,
+    "SQLITE_OPEN_PRIVATECACHE": 262144,
+    "SQLITE_OPEN_READONLY": 1,
+    "SQLITE_OPEN_READWRITE": 2,
+    "SQLITE_OPEN_SHAREDCACHE": 131072,
+    "SQLITE_OPEN_SUBJOURNAL": 8192,
+    "SQLITE_OPEN_SUPER_JOURNAL": 16384,
+    "SQLITE_OPEN_TEMP_DB": 512,
+    "SQLITE_OPEN_TEMP_JOURNAL": 4096,
+    "SQLITE_OPEN_TRANSIENT_DB": 1024,
+    "SQLITE_OPEN_URI": 64,
+    "SQLITE_OPEN_WAL": 524288,
+    "SQLITE_PERM": 3,
+    "SQLITE_PRAGMA": 19,
+    "SQLITE_PREPARE_DONT_LOG": 16,
+    "SQLITE_PREPARE_FROM_DDL": 32,
+    "SQLITE_PREPARE_NORMALIZE": 2,
+    "SQLITE_PREPARE_NO_VTAB": 4,
+    "SQLITE_PREPARE_PERSISTENT": 1,
+    "SQLITE_PROTOCOL": 15,
+    "SQLITE_RANGE": 25,
+    "SQLITE_READ": 20,
+    "SQLITE_READONLY": 8,
+    "SQLITE_READONLY_CANTINIT": 1288,
+    "SQLITE_READONLY_CANTLOCK": 520,
+    "SQLITE_READONLY_DBMOVED": 1032,
+    "SQLITE_READONLY_DIRECTORY": 1544,
+    "SQLITE_READONLY_RECOVERY": 264,
+    "SQLITE_READONLY_ROLLBACK": 776,
+    "SQLITE_RECURSIVE": 33,
+    "SQLITE_REINDEX": 27,
+    "SQLITE_REPLACE": 5,
+    "SQLITE_RESULT_SUBTYPE": 16777216,
+    "SQLITE_ROLLBACK": 1,
+    "SQLITE_ROW": 100,
+    "SQLITE_SAVEPOINT": 32,
+    "SQLITE_SCANSTAT_COMPLEX": 1,
+    "SQLITE_SCANSTAT_EST": 2,
+    "SQLITE_SCANSTAT_EXPLAIN": 4,
+    "SQLITE_SCANSTAT_NAME": 3,
+    "SQLITE_SCANSTAT_NCYCLE": 7,
+    "SQLITE_SCANSTAT_NLOOP": 0,
+    "SQLITE_SCANSTAT_NVISIT": 1,
+    "SQLITE_SCANSTAT_PARENTID": 6,
+    "SQLITE_SCANSTAT_SELECTID": 5,
+    "SQLITE_SCHEMA": 17,
+    "SQLITE_SELECT": 21,
+    "SQLITE_SELFORDER1": 33554432,
+    "SQLITE_SERIALIZE_NOCOPY": 1,
+    "SQLITE_SETLK_BLOCK_ON_CONNECT": 1,
+    "SQLITE_SET_LOCKPROXYFILE": 3,
+    "SQLITE_SHM_EXCLUSIVE": 8,
+    "SQLITE_SHM_LOCK": 2,
+    "SQLITE_SHM_NLOCK": 8,
+    "SQLITE_SHM_SHARED": 4,
+    "SQLITE_SHM_UNLOCK": 1,
+    "SQLITE_STATUS_MALLOC_COUNT": 9,
+    "SQLITE_STATUS_MALLOC_SIZE": 5,
+    "SQLITE_STATUS_MEMORY_USED": 0,
+    "SQLITE_STATUS_PAGECACHE_OVERFLOW": 2,
+    "SQLITE_STATUS_PAGECACHE_SIZE": 7,
+    "SQLITE_STATUS_PAGECACHE_USED": 1,
+    "SQLITE_STATUS_PARSER_STACK": 6,
+    "SQLITE_STATUS_SCRATCH_OVERFLOW": 4,
+    "SQLITE_STATUS_SCRATCH_SIZE": 8,
+    "SQLITE_STATUS_SCRATCH_USED": 3,
+    "SQLITE_STMTSTATUS_AUTOINDEX": 3,
+    "SQLITE_STMTSTATUS_FILTER_HIT": 8,
+    "SQLITE_STMTSTATUS_FILTER_MISS": 7,
+    "SQLITE_STMTSTATUS_FULLSCAN_STEP": 1,
+    "SQLITE_STMTSTATUS_MEMUSED": 99,
+    "SQLITE_STMTSTATUS_REPREPARE": 5,
+    "SQLITE_STMTSTATUS_RUN": 6,
+    "SQLITE_STMTSTATUS_SORT": 2,
+    "SQLITE_STMTSTATUS_VM_STEP": 4,
+    "SQLITE_SUBTYPE": 1048576,
+    "SQLITE_SYNC_DATAONLY": 16,
+    "SQLITE_SYNC_FULL": 3,
+    "SQLITE_SYNC_NORMAL": 2,
+    "SQLITE_TESTCTRL_ALWAYS": 13,
+    "SQLITE_TESTCTRL_ASSERT": 12,
+    "SQLITE_TESTCTRL_ATOF": 34,
+    "SQLITE_TESTCTRL_BENIGN_MALLOC_HOOKS": 10,
+    "SQLITE_TESTCTRL_BITVEC_TEST": 8,
+    "SQLITE_TESTCTRL_BYTEORDER": 22,
+    "SQLITE_TESTCTRL_EXPLAIN_STMT": 19,
+    "SQLITE_TESTCTRL_EXTRA_SCHEMA_CHECKS": 29,
+    "SQLITE_TESTCTRL_FAULT_INSTALL": 9,
+    "SQLITE_TESTCTRL_FIRST": 5,
+    "SQLITE_TESTCTRL_FK_NO_ACTION": 7,
+    "SQLITE_TESTCTRL_GETOPT": 16,
+    "SQLITE_TESTCTRL_IMPOSTER": 25,
+    "SQLITE_TESTCTRL_INTERNAL_FUNCTIONS": 17,
+    "SQLITE_TESTCTRL_ISINIT": 23,
+    "SQLITE_TESTCTRL_ISKEYWORD": 16,
+    "SQLITE_TESTCTRL_JSON_SELFCHECK": 14,
+    "SQLITE_TESTCTRL_LAST": 34,
+    "SQLITE_TESTCTRL_LOCALTIME_FAULT": 18,
+    "SQLITE_TESTCTRL_LOGEST": 33,
+    "SQLITE_TESTCTRL_NEVER_CORRUPT": 20,
+    "SQLITE_TESTCTRL_ONCE_RESET_THRESHOLD": 19,
+    "SQLITE_TESTCTRL_OPTIMIZATIONS": 15,
+    "SQLITE_TESTCTRL_PARSER_COVERAGE": 26,
+    "SQLITE_TESTCTRL_PENDING_BYTE": 11,
+    "SQLITE_TESTCTRL_PRNG_RESET": 7,
+    "SQLITE_TESTCTRL_PRNG_RESTORE": 6,
+    "SQLITE_TESTCTRL_PRNG_SAVE": 5,
+    "SQLITE_TESTCTRL_PRNG_SEED": 28,
+    "SQLITE_TESTCTRL_RESERVE": 14,
+    "SQLITE_TESTCTRL_RESULT_INTREAL": 27,
+    "SQLITE_TESTCTRL_SCRATCHMALLOC": 17,
+    "SQLITE_TESTCTRL_SEEK_COUNT": 30,
+    "SQLITE_TESTCTRL_SORTER_MMAP": 24,
+    "SQLITE_TESTCTRL_TRACEFLAGS": 31,
+    "SQLITE_TESTCTRL_TUNE": 32,
+    "SQLITE_TESTCTRL_USELONGDOUBLE": 34,
+    "SQLITE_TESTCTRL_VDBE_COVERAGE": 21,
+    "SQLITE_TEXT": 3,
+    "SQLITE_TOOBIG": 18,
+    "SQLITE_TRACE_CLOSE": 8,
+    "SQLITE_TRACE_PROFILE": 2,
+    "SQLITE_TRACE_ROW": 4,
+    "SQLITE_TRACE_STMT": 1,
+    "SQLITE_TRANSACTION": 22,
+    "SQLITE_TXN_NONE": 0,
+    "SQLITE_TXN_READ": 1,
+    "SQLITE_TXN_WRITE": 2,
+    "SQLITE_UPDATE": 23,
+    "SQLITE_UTF16": 4,
+    "SQLITE_UTF16BE": 3,
+    "SQLITE_UTF16LE": 2,
+    "SQLITE_UTF16_ALIGNED": 8,
+    "SQLITE_UTF8": 1,
+    "SQLITE_UTF8_ZT": 16,
+    "SQLITE_VERSION_NUMBER": 3054001,
+    "SQLITE_VTAB_CONSTRAINT_SUPPORT": 1,
+    "SQLITE_VTAB_DIRECTONLY": 3,
+    "SQLITE_VTAB_INNOCUOUS": 2,
+    "SQLITE_VTAB_USES_ALL_SCHEMAS": 4,
+    "SQLITE_WARNING": 28,
+    "SQLITE_WARNING_AUTOINDEX": 284,
+    "SQLITE_WIN32_DATA_DIRECTORY_TYPE": 1,
+    "SQLITE_WIN32_TEMP_DIRECTORY_TYPE": 2,
+    "SQLITE_XFER": 1
+};
+var SQLITE_RESULT_CODES = [
+    "SQLITE_ABORT",
+    "SQLITE_ABORT_ROLLBACK",
+    "SQLITE_AUTH",
+    "SQLITE_AUTH_USER",
+    "SQLITE_BUSY",
+    "SQLITE_BUSY_RECOVERY",
+    "SQLITE_BUSY_SNAPSHOT",
+    "SQLITE_BUSY_TIMEOUT",
+    "SQLITE_CANTOPEN",
+    "SQLITE_CANTOPEN_CONVPATH",
+    "SQLITE_CANTOPEN_DIRTYWAL",
+    "SQLITE_CANTOPEN_FULLPATH",
+    "SQLITE_CANTOPEN_ISDIR",
+    "SQLITE_CANTOPEN_NOTEMPDIR",
+    "SQLITE_CANTOPEN_SYMLINK",
+    "SQLITE_CONSTRAINT",
+    "SQLITE_CONSTRAINT_CHECK",
+    "SQLITE_CONSTRAINT_COMMITHOOK",
+    "SQLITE_CONSTRAINT_DATATYPE",
+    "SQLITE_CONSTRAINT_FOREIGNKEY",
+    "SQLITE_CONSTRAINT_FUNCTION",
+    "SQLITE_CONSTRAINT_NOTNULL",
+    "SQLITE_CONSTRAINT_PINNED",
+    "SQLITE_CONSTRAINT_PRIMARYKEY",
+    "SQLITE_CONSTRAINT_ROWID",
+    "SQLITE_CONSTRAINT_TRIGGER",
+    "SQLITE_CONSTRAINT_UNIQUE",
+    "SQLITE_CONSTRAINT_VTAB",
+    "SQLITE_CORRUPT",
+    "SQLITE_CORRUPT_INDEX",
+    "SQLITE_CORRUPT_SEQUENCE",
+    "SQLITE_CORRUPT_VTAB",
+    "SQLITE_DONE",
+    "SQLITE_EMPTY",
+    "SQLITE_ERROR",
+    "SQLITE_ERROR_KEY",
+    "SQLITE_ERROR_MISSING_COLLSEQ",
+    "SQLITE_ERROR_RESERVESIZE",
+    "SQLITE_ERROR_RETRY",
+    "SQLITE_ERROR_SNAPSHOT",
+    "SQLITE_ERROR_UNABLE",
+    "SQLITE_FORMAT",
+    "SQLITE_FULL",
+    "SQLITE_INTERNAL",
+    "SQLITE_INTERRUPT",
+    "SQLITE_IOERR",
+    "SQLITE_IOERR_ACCESS",
+    "SQLITE_IOERR_AUTH",
+    "SQLITE_IOERR_BADKEY",
+    "SQLITE_IOERR_BEGIN_ATOMIC",
+    "SQLITE_IOERR_BLOCKED",
+    "SQLITE_IOERR_CHECKRESERVEDLOCK",
+    "SQLITE_IOERR_CLOSE",
+    "SQLITE_IOERR_CODEC",
+    "SQLITE_IOERR_COMMIT_ATOMIC",
+    "SQLITE_IOERR_CONVPATH",
+    "SQLITE_IOERR_CORRUPTFS",
+    "SQLITE_IOERR_DATA",
+    "SQLITE_IOERR_DELETE",
+    "SQLITE_IOERR_DELETE_NOENT",
+    "SQLITE_IOERR_DIR_CLOSE",
+    "SQLITE_IOERR_DIR_FSYNC",
+    "SQLITE_IOERR_FSTAT",
+    "SQLITE_IOERR_FSYNC",
+    "SQLITE_IOERR_GETTEMPPATH",
+    "SQLITE_IOERR_IN_PAGE",
+    "SQLITE_IOERR_LOCK",
+    "SQLITE_IOERR_MMAP",
+    "SQLITE_IOERR_NOMEM",
+    "SQLITE_IOERR_RDLOCK",
+    "SQLITE_IOERR_READ",
+    "SQLITE_IOERR_ROLLBACK_ATOMIC",
+    "SQLITE_IOERR_SEEK",
+    "SQLITE_IOERR_SHMLOCK",
+    "SQLITE_IOERR_SHMMAP",
+    "SQLITE_IOERR_SHMOPEN",
+    "SQLITE_IOERR_SHMSIZE",
+    "SQLITE_IOERR_SHORT_READ",
+    "SQLITE_IOERR_TRUNCATE",
+    "SQLITE_IOERR_UNLOCK",
+    "SQLITE_IOERR_VNODE",
+    "SQLITE_IOERR_WRITE",
+    "SQLITE_LOCKED",
+    "SQLITE_LOCKED_SHAREDCACHE",
+    "SQLITE_LOCKED_VTAB",
+    "SQLITE_MISMATCH",
+    "SQLITE_MISUSE",
+    "SQLITE_NOLFS",
+    "SQLITE_NOMEM",
+    "SQLITE_NOTADB",
+    "SQLITE_NOTFOUND",
+    "SQLITE_NOTICE",
+    "SQLITE_NOTICE_RBU",
+    "SQLITE_NOTICE_RECOVER_ROLLBACK",
+    "SQLITE_NOTICE_RECOVER_WAL",
+    "SQLITE_PERM",
+    "SQLITE_PROTOCOL",
+    "SQLITE_RANGE",
+    "SQLITE_READONLY",
+    "SQLITE_READONLY_CANTINIT",
+    "SQLITE_READONLY_CANTLOCK",
+    "SQLITE_READONLY_DBMOVED",
+    "SQLITE_READONLY_DIRECTORY",
+    "SQLITE_READONLY_RECOVERY",
+    "SQLITE_READONLY_ROLLBACK",
+    "SQLITE_ROW",
+    "SQLITE_SCHEMA",
+    "SQLITE_TOOBIG",
+    "SQLITE_WARNING",
+    "SQLITE_WARNING_AUTOINDEX"
+];
+// end include: out/constants.js
 // include: src/api.js
 /* global
     FS
+    SQLITE_CONSTANTS
+    SQLITE_RESULT_CODES
     HEAP8
     Module
     _malloc
@@ -173,6 +786,27 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
  * @typedef {{Database:Database, Statement:Statement}} SqlJs
  * @property {Database} Database A class that represents an SQLite database
  * @property {Statement} Statement The prepared statement class
+ * @property {Object<string, number>} constants Every integer constant of
+ * SQLite's C API, by name, such as `SQLITE_CONSTRAINT_UNIQUE`
+ */
+
+/**
+ * An error SQLite returned, thrown as an `Error` whose message is SQLite's.
+ * Its `code` and `errcode` say which error it was, so it can be told apart
+ * without reading the message.
+ * @typedef {Error} SqliteError
+ * @property {string} code The name of SQLite's extended result code, such as
+ * `"SQLITE_CONSTRAINT_UNIQUE"`
+ * @property {number} errcode The number of that code, such as `2067`, which
+ * is `SQL.constants.SQLITE_CONSTRAINT_UNIQUE`
+ * @example
+ * try {
+ *     db.run("INSERT INTO users (email) VALUES ('a@example.com')");
+ * } catch (e) {
+ *     if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+ *         // the email is taken
+ *     }
+ * }
  */
 
 /**
@@ -230,6 +864,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     var SQLITE_INSERT = 18;
     var SQLITE_UPDATE = 23;
     var SQLITE_DELETE = 9;
+    // var - The name of each result code, primary and extended, by number
+    var resultCodeNames = {};
+    SQLITE_RESULT_CODES.forEach(function nameResultCode(name) {
+        resultCodeNames[SQLITE_CONSTANTS[name]] = name;
+    });
     // var - cwrap function
     var sqlite3_open = cwrap("sqlite3_open", "number", ["string", "number"]);
     var sqlite3_close_v2 = cwrap("sqlite3_close_v2", "number", ["number"]);
@@ -299,6 +938,11 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
     var sqlite3_step = cwrap("sqlite3_step", "number", ["number"]);
     var sqlite3_errmsg = cwrap("sqlite3_errmsg", "string", ["number"]);
+    var sqlite3_extended_errcode = cwrap(
+        "sqlite3_extended_errcode",
+        "number",
+        ["number"]
+    );
     var sqlite3_column_count = cwrap(
         "sqlite3_column_count",
         "number",
@@ -500,7 +1144,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     * @param {Statement.BindParams} values The values to bind
     * @return {boolean} true if it worked
-    * @throws {String} SQLite Error
+    * @throws {SqliteError} If SQLite fails to bind a value
+    * @throws {String} If the statement was freed
     */
     Statement.prototype.bind = function bind(values) {
         if (!this.stmt) {
@@ -518,7 +1163,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     that can be retrieved with {@link Statement.get}.
 
     @return {boolean} true if a row of result available
-    @throws {String} SQLite Error
+    @throws {SqliteError} If SQLite fails to run the statement
+    @throws {String} If the statement was freed
      */
     Statement.prototype.step = function step() {
         if (!this.stmt) {
@@ -598,6 +1244,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     <caption>Enable BigInt support</caption>
     var stmt = db.prepare("SELECT * FROM test");
     while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
+    @throws {SqliteError} If SQLite fails to bind or to run the statement
      */
     Statement.prototype.get = function get(params, config) {
         config = config || {};
@@ -664,6 +1311,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         stmt.step(); // Execute the statement
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
+    @throws {SqliteError} If SQLite fails to bind or to run the statement
      */
     Statement.prototype.getAsObject = function getAsObject(params, config) {
         var values = this.get(params, config);
@@ -700,6 +1348,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     Bind the values, execute the statement, ignoring the rows it returns,
     and resets it
     @param {Statement.BindParams} [values] Value to bind to the statement
+    @throws {SqliteError} If SQLite fails to bind or to run the statement
      */
     Statement.prototype.run = function run(values) {
         if (values != null) {
@@ -944,7 +1593,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Prepare the next available SQL statement
      @return {StatementIterator.StatementIteratorResult}
-     @throws {String} SQLite error or invalid iterator error
+     @throws {SqliteError} If SQLite fails to prepare the next statement
+     @throws {String} If the iterator is no longer valid
      */
     StatementIterator.prototype.next = function next() {
         if (this.sqlPtr === null) {
@@ -1034,6 +1684,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * one stored in the byte array passed in first argument
     * @param {Array<number>} data An array of bytes representing
     * an SQLite database file
+    * @throws {SqliteError} If SQLite cannot open the database
     */
     function Database(data) {
         this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
@@ -1066,6 +1717,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
 
     @return {Database} The database object (useful for method chaining)
+    @throws {SqliteError} If SQLite fails to prepare or to run the SQL
      */
     Database.prototype.run = function run(sql, params) {
         if (!this.db) {
@@ -1156,6 +1808,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     you **cannot** provide an sql string that contains several statements
     (separated by `;`). This limitation does not apply to params as an object.
     * @return {Array<Database.QueryExecResult>} The results of each statement
+    * @throws {SqliteError} If SQLite fails to prepare or to run the SQL
     */
     Database.prototype.exec = function exec(sql, params, config) {
         if (!this.db) {
@@ -1232,6 +1885,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     db.each("SELECT name,age FROM users WHERE age >= $majority", {$majority:18},
             function (row){console.log(row.name + " is a grown-up.")}
     );
+    @throws {SqliteError} If SQLite fails to prepare or to run the SQL
      */
     // eslint-disable-next-line max-len
     Database.prototype.each = function each(sql, params, callback, done, config) {
@@ -1260,7 +1914,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     (`?`, `:VVV`, `:AAA`, `@AAA`)
     @param {Statement.BindParams} [params] values to bind to placeholders
     @return {Statement} the resulting statement
-    @throws {String} SQLite error
+    @throws {SqliteError} If SQLite fails to prepare the SQL
      */
     Database.prototype.prepare = function prepare(sql, params) {
         var sqlPtr = stringToNewUTF8(sql);
@@ -1416,6 +2070,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     *
     * Databases **must** be closed when you're finished with them, or the
     * memory consumption will grow forever
+    * @throws {SqliteError} If SQLite cannot close the database
      */
     Database.prototype.close = function close() {
         // do nothing if db is null or already closed
@@ -1439,16 +2094,27 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     };
 
     /** Analyze a result code, return null if no error occured, and throw
-    an error with a descriptive message otherwise
+    an error with a descriptive message otherwise. The error's `code` is the
+    name of SQLite's extended result code (such as
+    `"SQLITE_CONSTRAINT_UNIQUE"`), and its `errcode` is that code's number.
     @nodoc
      */
     Database.prototype.handleError = function handleError(returnCode) {
         var errmsg;
+        var errcode;
+        var err;
         if (returnCode === SQLITE_OK) {
             return null;
         }
         errmsg = sqlite3_errmsg(this.db);
-        throw new Error(errmsg);
+        errcode = sqlite3_extended_errcode(this.db);
+        if ((errcode & 0xff) !== (returnCode & 0xff)) {
+            errcode = returnCode;
+        }
+        err = new Error(errmsg);
+        err["code"] = resultCodeNames[errcode];
+        err["errcode"] = errcode;
+        throw err;
     };
 
     /** Returns the number of changed rows (modified, inserted or deleted)
@@ -1553,6 +2219,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
       SQL statements.
       @param {function(any)} func the actual function to be executed.
       @return {Database} The database object. Useful for method chaining
+      @throws {SqliteError} If SQLite refuses to register the function
        */
     Database.prototype.create_function = function create_function(
         name,
@@ -1620,6 +2287,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             will be used as the final value.
       @return {Database} The database object. Useful for method chaining
       @template T
+      @throws {SqliteError} If SQLite refuses to register the function
        */
     Database.prototype.create_aggregate = function create_aggregate(
         name,
@@ -1898,6 +2566,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     // export Database to Module
     Module["Database"] = Database;
+    Module["constants"] = Object.freeze(SQLITE_CONSTANTS);
 };
 // end include: src/api.js
 
@@ -7011,6 +7680,7 @@ var _sqlite3_changes = Module['_sqlite3_changes'] = makeInvalidEarlyAccess('_sql
 var _sqlite3_close_v2 = Module['_sqlite3_close_v2'] = makeInvalidEarlyAccess('_sqlite3_close_v2');
 var _sqlite3_create_function_v2 = Module['_sqlite3_create_function_v2'] = makeInvalidEarlyAccess('_sqlite3_create_function_v2');
 var _sqlite3_update_hook = Module['_sqlite3_update_hook'] = makeInvalidEarlyAccess('_sqlite3_update_hook');
+var _sqlite3_extended_errcode = Module['_sqlite3_extended_errcode'] = makeInvalidEarlyAccess('_sqlite3_extended_errcode');
 var _sqlite3_open = Module['_sqlite3_open'] = makeInvalidEarlyAccess('_sqlite3_open');
 var _strerror = makeInvalidEarlyAccess('_strerror');
 var _malloc = Module['_malloc'] = makeInvalidEarlyAccess('_malloc');
@@ -7079,6 +7749,7 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['sqlite3_close_v2'] !== 'undefined', 'missing Wasm export: sqlite3_close_v2');
   assert(typeof wasmExports['sqlite3_create_function_v2'] !== 'undefined', 'missing Wasm export: sqlite3_create_function_v2');
   assert(typeof wasmExports['sqlite3_update_hook'] !== 'undefined', 'missing Wasm export: sqlite3_update_hook');
+  assert(typeof wasmExports['sqlite3_extended_errcode'] !== 'undefined', 'missing Wasm export: sqlite3_extended_errcode');
   assert(typeof wasmExports['sqlite3_open'] !== 'undefined', 'missing Wasm export: sqlite3_open');
   assert(typeof wasmExports['strerror'] !== 'undefined', 'missing Wasm export: strerror');
   assert(typeof wasmExports['malloc'] !== 'undefined', 'missing Wasm export: malloc');
@@ -7143,6 +7814,7 @@ function assignWasmExports(wasmExports) {
   _sqlite3_close_v2 = Module['_sqlite3_close_v2'] = createExportWrapper('sqlite3_close_v2', wasmExports['sqlite3_close_v2'], 1);
   _sqlite3_create_function_v2 = Module['_sqlite3_create_function_v2'] = createExportWrapper('sqlite3_create_function_v2', wasmExports['sqlite3_create_function_v2'], 9);
   _sqlite3_update_hook = Module['_sqlite3_update_hook'] = createExportWrapper('sqlite3_update_hook', wasmExports['sqlite3_update_hook'], 3);
+  _sqlite3_extended_errcode = Module['_sqlite3_extended_errcode'] = createExportWrapper('sqlite3_extended_errcode', wasmExports['sqlite3_extended_errcode'], 1);
   _sqlite3_open = Module['_sqlite3_open'] = createExportWrapper('sqlite3_open', wasmExports['sqlite3_open'], 2);
   _strerror = createExportWrapper('strerror', wasmExports['strerror'], 1);
   _malloc = Module['_malloc'] = createExportWrapper('malloc', wasmExports['malloc'], 1);

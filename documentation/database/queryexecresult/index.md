@@ -6,7 +6,7 @@ longname: Database.QueryExecResult
 
 # QueryExecResult
 
-<SourceLink href="/source/api-js/#L955" label="api.js:955" />
+<SourceLink href="/source/api-js/#L996" label="api.js:996" />
 
 **Properties**
 

@@ -12,7 +12,7 @@ longname: Globals
 
 <MemberHeading id="initsqljs" depth="3" name="initSqlJs" sig="initSqlJs(config: SqlJsConfig): SqlJs" />
 
-<MemberMeta sourceHref="/source/api-js/#L55" sourceLabel="api.js:55" />
+<MemberMeta sourceHref="/source/api-js/#L78" sourceLabel="api.js:78" />
 
 Asynchronously initializes sql.js
 
