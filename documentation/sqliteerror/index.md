@@ -7,7 +7,7 @@ description: An error SQLite returned, thrown as an Error whose message is SQLit
 
 # SqliteError
 
-<SourceLink href="/source/api-js/#L51" label="api.js:51" />
+<SourceLink href="/documentation/source/api-js/#L51" label="api.js:51" />
 
 An error SQLite returned, thrown as an `Error` whose message is SQLite's. Its `code` and `errcode` say which error it was, so it can be told apart without reading the message.
 

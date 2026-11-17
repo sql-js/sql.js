@@ -6,8 +6,8 @@ longname: Statement.BindParams
 
 # BindParams
 
-<SourceLink href="/source/api-js/#L350" label="api.js:350" />
+<SourceLink href="/documentation/source/api-js/#L350" label="api.js:350" />
 
 **Type**
 
-`Array.<`[`Database.SqlValue`](/database#sqlvalue)`> | Object.<string, `[`Database.SqlValue`](/database#sqlvalue)`> | null`
+`Array.<`[`Database.SqlValue`](/documentation/database#sqlvalue)`> | Object.<string, `[`Database.SqlValue`](/documentation/database#sqlvalue)`> | null`

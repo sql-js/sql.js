@@ -7,7 +7,7 @@ description: Represents an SQLite database
 
 # Database
 
-<SourceLink href="/source/api-js/#L928" label="api.js:928" />
+<SourceLink href="/documentation/source/api-js/#L928" label="api.js:928" />
 
 Represents an SQLite database
 
@@ -29,22 +29,22 @@ Represents an SQLite database
 
 <MemberHeading id="run" depth="3" name="run" sig="run(sql: string, params?: Statement.BindParams): Database" />
 
-<MemberMeta sourceHref="/source/api-js/#L961" sourceLabel="api.js:961" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L961" sourceLabel="api.js:961" />
 
 Execute an SQL query, ignoring the rows it returns.
 
 **Parameters**
 
 - `sql` (string) — a string containing some SQL text to execute
-- `params` ([Statement.BindParams](/statement#bindparams), optional) — When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed. If you use the params argument, you **cannot** provide an sql string that contains several statements (separated by `;`)
+- `params` ([Statement.BindParams](/documentation/statement#bindparams), optional) — When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed. If you use the params argument, you **cannot** provide an sql string that contains several statements (separated by `;`)
 
 **Returns**
 
-- [`Database`](/database) — The database object (useful for method chaining)
+- [`Database`](/documentation/database) — The database object (useful for method chaining)
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite fails to prepare or to run the SQL
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite fails to prepare or to run the SQL
 
 **Example**
 
@@ -66,7 +66,7 @@ Execute an SQL query, ignoring the rows it returns.
 ): Array.<Database.QueryExecResult>"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1052" sourceLabel="api.js:1052" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1052" sourceLabel="api.js:1052" />
 
 Execute an SQL query, and returns the result.
 
@@ -113,15 +113,15 @@ var res = db.exec(
 **Parameters**
 
 - `sql` (string) — a string containing some SQL text to execute
-- `params` ([Statement.BindParams](/statement#bindparams), optional) — When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed. If you use the params argument as an array, you **cannot** provide an sql string that contains several statements (separated by `;`). This limitation does not apply to params as an object.
+- `params` ([Statement.BindParams](/documentation/statement#bindparams), optional) — When the SQL statement contains placeholders, you can pass them in here. They will be bound to the statement before it is executed. If you use the params argument as an array, you **cannot** provide an sql string that contains several statements (separated by `;`). This limitation does not apply to params as an object.
 
 **Returns**
 
-- `Array.<`[`Database.QueryExecResult`](/database#queryexecresult)`>` — The results of each statement
+- `Array.<`[`Database.QueryExecResult`](/documentation/database#queryexecresult)`>` — The results of each statement
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite fails to prepare or to run the SQL
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite fails to prepare or to run the SQL
 
 <MemberHeading
   id="each"
@@ -135,7 +135,7 @@ var res = db.exec(
 ): Database"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1130" sourceLabel="api.js:1130" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1130" sourceLabel="api.js:1130" />
 
 Execute an sql statement, and call a callback for each row of result.
 
@@ -147,17 +147,17 @@ has been called on every row of the result. But this might change.
 **Parameters**
 
 - `sql` (string) — A string of SQL text. Can contain placeholders that will be bound to the parameters given as the second argument
-- `params=` ([Statement.BindParams](/statement#bindparams), optional) — Parameters to bind to the query
+- `params=` ([Statement.BindParams](/documentation/statement#bindparams), optional) — Parameters to bind to the query
 - `callback` (function) — Function to call on each row of result
 - `done` (function) — A function that will be called when all rows have been retrieved
 
 **Returns**
 
-- [`Database`](/database) — The database object. Useful for method chaining
+- [`Database`](/documentation/database) — The database object. Useful for method chaining
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite fails to prepare or to run the SQL
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite fails to prepare or to run the SQL
 
 **Example**
 
@@ -171,28 +171,28 @@ db.each("SELECT name,age FROM users WHERE age >= $majority", {$majority:18},
 
 <MemberHeading id="prepare" depth="3" name="prepare" sig="prepare(sql: string, params?: Statement.BindParams): Statement" />
 
-<MemberMeta sourceHref="/source/api-js/#L1158" sourceLabel="api.js:1158" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1158" sourceLabel="api.js:1158" />
 
 Prepare an SQL statement
 
 **Parameters**
 
 - `sql` (string) — a string of SQL, that can contain placeholders (`?`, `:VVV`, `:AAA`, `@AAA`)
-- `params` ([Statement.BindParams](/statement#bindparams), optional) — values to bind to placeholders
+- `params` ([Statement.BindParams](/documentation/statement#bindparams), optional) — values to bind to placeholders
 
 **Returns**
 
-- [`Statement`](/module/sqljs#statement) — the resulting statement
+- [`Statement`](/documentation/module/sqljs#statement) — the resulting statement
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite fails to prepare the SQL
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite fails to prepare the SQL
 
 <MemberHeading id="iteratestatements" depth="3" name="iterateStatements" sig="iterateStatements(sql: string): StatementIterator" />
 
-<MemberMeta sourceHref="/source/api-js/#L1197" sourceLabel="api.js:1197" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1197" sourceLabel="api.js:1197" />
 
-Iterate over multiple SQL statements in a SQL string. This function returns an iterator over [Statement](/module/sqljs#statement) objects. You can use a for..of loop to execute the returned statements one by one.
+Iterate over multiple SQL statements in a SQL string. This function returns an iterator over [Statement](/documentation/module/sqljs#statement) objects. You can use a for..of loop to execute the returned statements one by one.
 
 **Parameters**
 
@@ -200,7 +200,7 @@ Iterate over multiple SQL statements in a SQL string. This function returns an i
 
 **Returns**
 
-- [`StatementIterator`](/module/sqljs#statementiterator) — the resulting statement iterator
+- [`StatementIterator`](/documentation/module/sqljs#statementiterator) — the resulting statement iterator
 
 **Example**
 
@@ -220,7 +220,7 @@ for (const statement of db.iterateStatements(sql_queries)) {
 
 <MemberHeading id="export" depth="3" name="export" sig="export(): Uint8Array" />
 
-<MemberMeta sourceHref="/source/api-js/#L1220" sourceLabel="api.js:1220" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1220" sourceLabel="api.js:1220" />
 
 Exports a snapshot of the main database to a binary array without closing the connection. Prepared statements, registered functions, update hooks and connection settings (including pragmas) are preserved. TEMP objects and attached databases remain available on this connection, but are not included in the exported file.
 
@@ -236,7 +236,7 @@ The returned array is an independent copy. It can be used to create a new Databa
 
 <MemberHeading id="close" depth="3" name="close" sig="close()" />
 
-<MemberMeta sourceHref="/source/api-js/#L1314" sourceLabel="api.js:1314" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1314" sourceLabel="api.js:1314" />
 
 Close the database, and all associated prepared statements. The memory associated to the database and all associated statements will be freed.
 
@@ -246,17 +246,17 @@ Databases **must** be closed when you're finished with them, or the memory consu
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite cannot close the database
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite cannot close the database
 
 <MemberHeading id="handleerror" depth="3" name="handleError" sig="handleError()" />
 
-<MemberMeta sourceHref="/source/api-js/#L1341" sourceLabel="api.js:1341" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1341" sourceLabel="api.js:1341" />
 
 Analyze a result code, return null if no error occured, and throw an error with a descriptive message otherwise. The error's `code` is the name of SQLite's extended result code (such as `"SQLITE_CONSTRAINT_UNIQUE"`), and its `errcode` is that code's number.
 
 <MemberHeading id="getrowsmodified" depth="3" name="getRowsModified" sig="getRowsModified(): number" />
 
-<MemberMeta sourceHref="/source/api-js/#L1366" sourceLabel="api.js:1366" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1366" sourceLabel="api.js:1366" />
 
 Returns the number of changed rows (modified, inserted or deleted) by the latest completed INSERT, UPDATE or DELETE statement on the database. Executing any other type of SQL statement does not modify the value returned by this function.
 
@@ -266,7 +266,7 @@ Returns the number of changed rows (modified, inserted or deleted) by the latest
 
 <MemberHeading id="createfunction" depth="3" name="create_function" sig="create_function(name: string, func: function): Database" />
 
-<MemberMeta sourceHref="/source/api-js/#L1463" sourceLabel="api.js:1463" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1463" sourceLabel="api.js:1463" />
 
 Register a custom function with SQLite
 
@@ -277,11 +277,11 @@ Register a custom function with SQLite
 
 **Returns**
 
-- [`Database`](/database) — The database object. Useful for method chaining
+- [`Database`](/documentation/database) — The database object. Useful for method chaining
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite refuses to register the function
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite refuses to register the function
 
 **Example**
 
@@ -302,7 +302,7 @@ db.create_function("addOne", function (x) {return x+1;})
 ): Database"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1531" sourceLabel="api.js:1531" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1531" sourceLabel="api.js:1531" />
 
 Register a custom aggregate with SQLite
 
@@ -316,11 +316,11 @@ Register a custom aggregate with SQLite
 
 **Returns**
 
-- [`Database`](/database) — The database object. Useful for method chaining
+- [`Database`](/documentation/database) — The database object. Useful for method chaining
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite refuses to register the function
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite refuses to register the function
 
 **Example**
 
@@ -344,7 +344,7 @@ db.create_aggregate("js_sum", {
 ): Database"
 />
 
-<MemberMeta sourceHref="/source/api-js/#L1698" sourceLabel="api.js:1698" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1698" sourceLabel="api.js:1698" />
 
 Registers an update hook with SQLite.
 
@@ -363,11 +363,11 @@ See SQLite documentation on [sqlite3_update_hook](https://www.sqlite.org/c3ref/u
 
 **Parameters**
 
-- `callback` ([Database\~UpdateHookCallback](/database#updatehookcallback) | null)
+- `callback` ([Database\~UpdateHookCallback](/documentation/database#updatehookcallback) | null)
 
 **Returns**
 
-- [`Database`](/database) — The database object. Useful for method chaining
+- [`Database`](/documentation/database) — The database object. Useful for method chaining
 
 **Example**
 
@@ -412,20 +412,20 @@ db.run("INSERT INTO users VALUES (2, 'Bob', 1)");
 
 <MemberHeading id="sqlvalue" depth="3" name="SqlValue" sig="SqlValue: string | number | null | Uint8Array" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L345" sourceLabel="api.js:345" />
+<MemberMeta badges="static" sourceHref="/documentation/source/api-js/#L345" sourceLabel="api.js:345" />
 
 <MemberHeading id="queryexecresult" depth="3" name="QueryExecResult" sig="QueryExecResult: Object" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L996" sourceLabel="api.js:996" />
+<MemberMeta badges="static" sourceHref="/documentation/source/api-js/#L996" sourceLabel="api.js:996" />
 
 **Properties**
 
 - `columns` (Array.\<string>) — the name of the columns of the result (as returned by `Statement.getColumnNames`)
-- `values` (Array.\<Array.\<[Database.SqlValue](/database#sqlvalue)>>) — one array per row, containing the column values
+- `values` (Array.\<Array.\<[Database.SqlValue](/documentation/database#sqlvalue)>>) — one array per row, containing the column values
 
 <MemberHeading id="updatehookcallback" depth="3" name="UpdateHookCallback" sig="UpdateHookCallback: function" />
 
-<MemberMeta sourceHref="/source/api-js/#L1770" sourceLabel="api.js:1770" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L1770" sourceLabel="api.js:1770" />
 
 **Parameters**
 

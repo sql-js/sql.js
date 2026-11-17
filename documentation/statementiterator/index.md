@@ -9,11 +9,11 @@ description: An iterator over multiple SQL statements in a string, preparing and
 
 **Implements:&#x20;**`Iterator<Statement>`, `Iterable<Statement>`
 
-<SourceLink href="/source/api-js/#L813" label="api.js:813" />
+<SourceLink href="/documentation/source/api-js/#L813" label="api.js:813" />
 
 An iterator over multiple SQL statements in a string, preparing and returning a Statement object for the next SQL statement on each iteration.
 
-You can't instantiate this class directly, you have to use a [Database](/database) object in order to create a statement iterator
+You can't instantiate this class directly, you have to use a [Database](/documentation/database) object in order to create a statement iterator
 
 {@see Database#iterateStatements}
 
@@ -59,7 +59,7 @@ try {
 **Parameters**
 
 - `sql` (string) — A string containing multiple SQL statements
-- `db` ([Database](/database)) — The database from which this iterator was created
+- `db` ([Database](/documentation/database)) — The database from which this iterator was created
 
 ---
 
@@ -67,32 +67,32 @@ try {
 
 <MemberHeading id="next" depth="3" name="next" sig="next(): StatementIterator.StatementIteratorResult" />
 
-<MemberMeta sourceHref="/source/api-js/#L838" sourceLabel="api.js:838" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L838" sourceLabel="api.js:838" />
 
 Prepare the next available SQL statement
 
 **Returns**
 
-- [`StatementIterator.StatementIteratorResult`](/statementiterator#statementiteratorresult)
+- [`StatementIterator.StatementIteratorResult`](/documentation/statementiterator#statementiteratorresult)
 
 **Throws**
 
-- [`SqliteError`](/sqliteerror) — If SQLite fails to prepare the next statement
+- [`SqliteError`](/documentation/sqliteerror) — If SQLite fails to prepare the next statement
 - `String` — If the iterator is no longer valid
 
 <MemberHeading id="return" depth="3" name="[&#x22;return&#x22;]" sig="['return'](): StatementIterator.StatementIteratorResult" />
 
-<MemberMeta sourceHref="/source/api-js/#L891" sourceLabel="api.js:891" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L891" sourceLabel="api.js:891" />
 
 Free the resources held by this iterator, in case it will not be run to completion. This is called automatically when a for..of loop exits early (e.g. via break, return, or an exception), and can also be called manually.
 
 **Returns**
 
-- [`StatementIterator.StatementIteratorResult`](/statementiterator#statementiteratorresult)
+- [`StatementIterator.StatementIteratorResult`](/documentation/statementiterator#statementiteratorresult)
 
 <MemberHeading id="getremainingsql" depth="3" name="getRemainingSQL" sig="getRemainingSQL(): String" />
 
-<MemberMeta sourceHref="/source/api-js/#L903" sourceLabel="api.js:903" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L903" sourceLabel="api.js:903" />
 
 Get any un-executed portions remaining of the original SQL string
 
@@ -104,9 +104,9 @@ Get any un-executed portions remaining of the original SQL string
 
 <MemberHeading id="statementiteratorresult" depth="3" name="StatementIteratorResult" sig="StatementIteratorResult: Object | Object" />
 
-<MemberMeta badges="static" sourceHref="/source/api-js/#L833" sourceLabel="api.js:833" />
+<MemberMeta badges="static" sourceHref="/documentation/source/api-js/#L833" sourceLabel="api.js:833" />
 
 **Properties**
 
-- `value` ([Statement](/module/sqljs#statement)) — the next available Statement (as returned by `Database.prepare`)
+- `value` ([Statement](/documentation/module/sqljs#statement)) — the next available Statement (as returned by `Database.prepare`)
 - `done` (boolean) — true if there are no more available statements

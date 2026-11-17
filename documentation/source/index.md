@@ -5,4 +5,4 @@ kind: guide
 
 # Source Files
 
-- [api.js](/source/api-js/)
+- [api.js](/documentation/source/api-js/)

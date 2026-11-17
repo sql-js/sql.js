@@ -6,7 +6,7 @@ longname: module:SqlJs
 
 # SqlJs
 
-<SourceLink href="/source/api-js/#L81" label="api.js:81" />
+<SourceLink href="/documentation/source/api-js/#L81" label="api.js:81" />
 
 ---
 
@@ -14,11 +14,11 @@ longname: module:SqlJs
 
 <MemberHeading id="statement" depth="3" name="Statement" sig="Statement" />
 
-<MemberMeta sourceHref="/source/api-js/#L334" sourceLabel="api.js:334" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L334" sourceLabel="api.js:334" />
 
 Represents a prepared statement. Prepared statements allow you to have a template sql string, that you can execute multiple times with different parameters.
 
-You can't instantiate this class directly, you have to use a [Database](/database) object in order to create a statement.
+You can't instantiate this class directly, you have to use a [Database](/documentation/database) object in order to create a statement.
 
 **Warnings**
 
@@ -32,21 +32,21 @@ Statements can't be created by the API user directly, only by Database::prepare
 **Parameters**
 
 - `stmt1` (number) — The SQLite statement reference
-- `db` ([Database](/database)) — The database from which this statement was created
+- `db` ([Database](/documentation/database)) — The database from which this statement was created
 
 * **See:**
-  - [Database#prepare](/database#prepare)
+  - [Database#prepare](/documentation/database#prepare)
   - [https://en.wikipedia.org/wiki/Prepared_statement](https://en.wikipedia.org/wiki/Prepared_statement)
 
 <MemberHeading id="statementiterator" depth="3" name="StatementIterator" sig="StatementIterator" />
 
-<MemberMeta sourceHref="/source/api-js/#L813" sourceLabel="api.js:813" />
+<MemberMeta sourceHref="/documentation/source/api-js/#L813" sourceLabel="api.js:813" />
 
 **Implements:&#x20;**`Iterator<Statement>`, `Iterable<Statement>`
 
 An iterator over multiple SQL statements in a string, preparing and returning a Statement object for the next SQL statement on each iteration.
 
-You can't instantiate this class directly, you have to use a [Database](/database) object in order to create a statement iterator
+You can't instantiate this class directly, you have to use a [Database](/documentation/database) object in order to create a statement iterator
 
 {@see Database#iterateStatements}
 
@@ -55,7 +55,7 @@ You can't instantiate this class directly, you have to use a [Database](/databas
 **Parameters**
 
 - `sql` (string) — A string containing multiple SQL statements
-- `db` ([Database](/database)) — The database from which this iterator was created
+- `db` ([Database](/documentation/database)) — The database from which this iterator was created
 
 **Example**
 
