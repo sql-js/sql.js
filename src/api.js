@@ -30,6 +30,25 @@
  */
 
 /**
+ * An error SQLite returned, thrown as an `Error` whose message is SQLite's.
+ * Its `code` and `errcode` say which error it was, so it can be told apart
+ * without reading the message.
+ * @typedef {Error} SqliteError
+ * @property {string} code The name of SQLite's extended result code, such as
+ * `"SQLITE_CONSTRAINT_UNIQUE"`
+ * @property {number} errcode The number of that code, such as `2067`, which
+ * is `SQL.constants.SQLITE_CONSTRAINT_UNIQUE`
+ * @example
+ * try {
+ *     db.run("INSERT INTO users (email) VALUES ('a@example.com')");
+ * } catch (e) {
+ *     if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+ *         // the email is taken
+ *     }
+ * }
+ */
+
+/**
  * @typedef {Object} SqlJsConfig
  * @property {function(string):string} [locateFile]
  * a function that returns the full path to a resource given its file name
@@ -354,7 +373,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     * @param {Statement.BindParams} values The values to bind
     * @return {boolean} true if it worked
-    * @throws {String} SQLite Error
+    * @throws {SqliteError} If SQLite fails to bind a value
+    * @throws {String} If the statement was freed
     */
     Statement.prototype.bind = function bind(values) {
         if (!this.stmt) {
@@ -372,7 +392,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     that can be retrieved with {@link Statement.get}.
 
     @return {boolean} true if a row of result available
-    @throws {String} SQLite Error
+    @throws {SqliteError} If SQLite fails to run the statement
+    @throws {String} If the statement was freed
      */
     Statement.prototype.step = function step() {
         if (!this.stmt) {
@@ -452,6 +473,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     <caption>Enable BigInt support</caption>
     var stmt = db.prepare("SELECT * FROM test");
     while (stmt.step()) console.log(stmt.get(null, {useBigInt: true}));
+    @throws {SqliteError} If SQLite fails to bind or to run the statement
      */
     Statement.prototype.get = function get(params, config) {
         config = config || {};
@@ -518,6 +540,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
         stmt.step(); // Execute the statement
         console.log(stmt.getAsObject());
         // Will print {nbr:5, data: Uint8Array([1,2,3]), null_value:null}
+    @throws {SqliteError} If SQLite fails to bind or to run the statement
      */
     Statement.prototype.getAsObject = function getAsObject(params, config) {
         var values = this.get(params, config);
@@ -554,6 +577,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     Bind the values, execute the statement, ignoring the rows it returns,
     and resets it
     @param {Statement.BindParams} [values] Value to bind to the statement
+    @throws {SqliteError} If SQLite fails to bind or to run the statement
      */
     Statement.prototype.run = function run(values) {
         if (values != null) {
@@ -777,7 +801,8 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
 
     /** Prepare the next available SQL statement
      @return {StatementIterator.StatementIteratorResult}
-     @throws {String} SQLite error or invalid iterator error
+     @throws {SqliteError} If SQLite fails to prepare the next statement
+     @throws {String} If the iterator is no longer valid
      */
     StatementIterator.prototype.next = function next() {
         if (this.sqlPtr === null) {
@@ -867,6 +892,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     * one stored in the byte array passed in first argument
     * @param {Array<number>} data An array of bytes representing
     * an SQLite database file
+    * @throws {SqliteError} If SQLite cannot open the database
     */
     function Database(data) {
         this.filename = "dbfile_" + (0xffffffff * Math.random() >>> 0);
@@ -899,6 +925,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     );
 
     @return {Database} The database object (useful for method chaining)
+    @throws {SqliteError} If SQLite fails to prepare or to run the SQL
      */
     Database.prototype.run = function run(sql, params) {
         if (!this.db) {
@@ -989,6 +1016,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     you **cannot** provide an sql string that contains several statements
     (separated by `;`). This limitation does not apply to params as an object.
     * @return {Array<Database.QueryExecResult>} The results of each statement
+    * @throws {SqliteError} If SQLite fails to prepare or to run the SQL
     */
     Database.prototype.exec = function exec(sql, params, config) {
         if (!this.db) {
@@ -1065,6 +1093,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     db.each("SELECT name,age FROM users WHERE age >= $majority", {$majority:18},
             function (row){console.log(row.name + " is a grown-up.")}
     );
+    @throws {SqliteError} If SQLite fails to prepare or to run the SQL
      */
     // eslint-disable-next-line max-len
     Database.prototype.each = function each(sql, params, callback, done, config) {
@@ -1093,7 +1122,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     (`?`, `:VVV`, `:AAA`, `@AAA`)
     @param {Statement.BindParams} [params] values to bind to placeholders
     @return {Statement} the resulting statement
-    @throws {String} SQLite error
+    @throws {SqliteError} If SQLite fails to prepare the SQL
      */
     Database.prototype.prepare = function prepare(sql, params) {
         var sqlPtr = stringToNewUTF8(sql);
@@ -1249,6 +1278,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
     *
     * Databases **must** be closed when you're finished with them, or the
     * memory consumption will grow forever
+    * @throws {SqliteError} If SQLite cannot close the database
      */
     Database.prototype.close = function close() {
         // do nothing if db is null or already closed
@@ -1397,6 +1427,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
       SQL statements.
       @param {function(any)} func the actual function to be executed.
       @return {Database} The database object. Useful for method chaining
+      @throws {SqliteError} If SQLite refuses to register the function
        */
     Database.prototype.create_function = function create_function(
         name,
@@ -1464,6 +1495,7 @@ Module["onRuntimeInitialized"] = function onRuntimeInitialized() {
             will be used as the final value.
       @return {Database} The database object. Useful for method chaining
       @template T
+      @throws {SqliteError} If SQLite refuses to register the function
        */
     Database.prototype.create_aggregate = function create_aggregate(
         name,
